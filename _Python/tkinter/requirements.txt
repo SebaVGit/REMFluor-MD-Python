@@ -1,0 +1,9 @@
+# tkinter is in the Python stdlib — no install needed.
+# Pillow gives smooth image scaling and JPG support; without it, only
+# PNG/GIF render at integer scales.
+Pillow>=10.0
+# openpyxl: reads .xlsm cells back into the GUI after dist/popups_*.exe
+# mutates the workbook, so users see updated values without restarting.
+openpyxl>=3.1
+# Phase 3: build a single-file Windows EXE
+# pyinstaller>=6.0

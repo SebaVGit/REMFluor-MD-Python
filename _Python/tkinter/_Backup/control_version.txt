@@ -1,0 +1,2015 @@
+REMFluor-MD Tkinter UI — Version Log
+=====================================
+File:   _Python/tkinter/main.py
+Backup: _Python/tkinter/_Backup/v{N}.py
+Always update this file when a new backup is added.
+
+Latest = v81
+
+
+# Pre-session backups (colleague iterative port)
+-------------------------------------------------
+v1   Apr 28  Initial colleague tkinter port.
+v2   Apr 28  Colleague iteration.
+v3   Apr 28  Colleague iteration.
+v4   Apr 29  Colleague iteration.
+v5   Apr 29  Colleague iteration.
+v7   Apr 29  Colleague iteration (v6 skipped).
+v8   Apr 29  Last colleague version before this session began.
+             - 11 section builders + _build_action_row in place
+             - §10 inline MW table, basic §9, §11 stacked layout
+             - No detailed-only toggle for §7 Precursor columns
+
+
+# Session changes (Apr 29 evening)
+------------------------------------
+v9   §7 Detailed_2 rebuild
+       - Added Precursor 1 / Precursor 2 columns (XLSM Z, AB)
+       - Rotated "Go to Section 2 to Change Years" label (T8)
+       - Option 2 (Upload PFAS-LEACH) and Option 3 frames
+       - State: v_src_pre1[11], v_src_pre2[11] + XLSM map
+       - Detailed-only widgets registered for toggle
+
+v10  §5 + §8 + §9 first pass
+       - §5: Transformation Rate + Yield Factor rows (white cell, red text)
+              + Modeling Transformation Low K button (Detailed-only)
+       - §8: Blue chevron arrows (LATER REVERTED in v11)
+       - §9: Precursor 1 / Precursor 2 columns added to Freundlich grid
+
+v11  §8 arrows reverted; §9 horizontal layout
+       - Removed §8 chevron arrows per user feedback
+       - §9: split into LEFT (Freundlich) + RIGHT (image + Total Width stack)
+       - State: v_psb_a_2/3/4, v_psb_kf_2/3/4, v_psb_kf_conv2/3/4
+       - §11: added "Falta et al. (2025)" caption (LATER REMOVED in v21)
+
+v12  §7/§9/§10 refinements
+       - §7: species cells under PFAA1/2/Pre1/Pre2 changed from dropdowns
+              to locked black labels (mirror §5 selection)
+       - §9: Unit cells peach (BG_PULLDOWN), bigger buttons, image
+              moved to right side beside PSB Dist From Source label
+       - §10: 2-column layout (LEFT helper / RIGHT MW table) with
+               red text on conc + distance values
+
+v13  §7 sky-blue years + §9 figure on top + §10 3-column
+       - §7: year cells BG_INPUT_BLUE (was BG_LOCKED), width 6 -> 8
+       - §7: rotated label bigger font + canvas
+       - §7/§8 spacing increased (padx 8 -> 20)
+       - §9: figure moved to top of section, Year PSB next to figure
+       - §9: Converted Kf unit cell BLACK; value cells sky blue
+       - §10: 3-column layout — header+SY+notes / table / sep / right
+
+v14  §10 Simple/Detailed split
+       - Added _simple_only_frames list
+       - _on_model_version_change extended with _toggle_widgets helper
+       - §10 Detailed shows just "Enter Monitoring Well Data" button
+       - §10 Simple keeps full 3-column table
+
+v15  Attempted toggle bug fix (file truncated mid-edit; not used)
+
+v16  §6 Custom radio + §10 button macro fix
+       - §6: "Enter Your Own Value Below" added as 4th radio next to Weak
+              (replaces standalone label; entry cells stay editable)
+       - §10 button macro: ImportMassDischarge -> CalibrationDataLoader
+              (wired to existing dispatcher → popups_calibration.run)
+
+v17  §6 cells reset on Custom + popups_calibration row spacing
+       - §6: clicking Custom now blanks v_alpha_l/t/v
+       - functions/popups_calibration.py: ttk.Style rowheight=26
+              (later bumped to 36 with clam theme — see v17->v18 diff)
+
+v18  §7 phantom button removed + Option 2 macro fix
+       - Removed "Enter PFAA Source Concentrations" bottom button
+              (no XLSM counterpart)
+       - Option 2 macro: ImportMassDischarge -> SourceOption2
+              (matches VBA name + dispatcher branch)
+
+v19  Toggle bug fix attempt #2 (grid_info detection)
+       - _toggle_widgets used grid_info() as marker for grid widgets
+       - Worked for some cases but unreliable across Tk builds
+
+v20  Toggle bug FIXED (manager type tagging at registration)
+       - Each registered widget now carries _toggle_kind = "grid"|"pack"
+       - §10 sy_block / detailed_block / simple_block tagged "pack"
+       - Everything else defaults to "grid"
+       - No more reliance on Tk introspection of hidden widgets
+
+v21  §11 rebuilt to match user reference image
+       - 3-column horizontal layout in _build_s11_output:
+           LEFT   = multi-line "11. MODEL OUTPUT AND / NUMERICAL
+                    PARAMETERS" header + Change Numerical Parameters btn
+           MIDDLE = See Results / Every: + entry + (years) + ?
+           RIGHT  = blue panel with Run Model + Run Model w/ Auto-Cal
+                    + 3x2 grid (Authors/Load/Save | Clear/Paste)
+       - Removed: Falta et al. caption, Go to Section 2 hint, Help btn
+       - _build_action_row(right) call removed; panel inlined into §11
+
+v22  §9 compact horizontal rebuild (CURRENT)
+       - Top row: Freundlich grid | vertical line | PSB Dist multi-line
+                  label (PSB / Dist. / From / Source) + entry + (m)? |
+                  PSB image (Section9_1.png, 120px)
+       - Mid row: Year PSB Installed (indented under grid) +
+                  Total Width / PSB Loading / # of cells stack on right
+                  (red unit labels)
+       - Bottom row: Where to Get Freundlich + Simple CAC Barrier btns
+       - Cell colors:
+           * Unit cells in F."a" / F.Kf rows  → peach (BG_PULLDOWN)
+           * Unit cell in Converted Kf row     → BLACK (BG_LOCKED)
+           * Value cells F."a" / F.Kf          → sky blue (BG_INPUT_BLUE)
+           * Value cells Converted Kf          → BLACK locked
+           * "PSB" prefix + (m)/(%)/(-) units  → red (#C00000)
+       - Saves vertical space so §10/§11 below have more room to breathe
+
+v23  §9 tighten + §11 Run buttons gray (CURRENT)
+       - §9: Section9_1.png 120 → 70 px target_height
+       - §9: Where to Get Freundlich + Simple CAC buttons —
+              FONT_BTN_SM → FONT_BTN, width 34 → 38, padx 8 → 14,
+              pady 4 → 8 (matches Excel button size)
+       - §9: Year PSB Installed indent 140 → 220 px (closer to PSB
+              Dist column / image area)
+       - §11: Run Model + Run Model w/ Auto-Calibration bg
+              BTN_FILL_BLUE → BTN_FILL (gray); panel still blue
+
+v24  §9 round 3 (CURRENT)
+       - PSB Freundlich Kf Unit cell → dropdown (state v_psb_kf_unit;
+         XLSM U24); options: (mg/kg)(mg/L)^(-a) | (ug/kg)(ug/L)^(-a)
+       - PSB Freundlich "a" Unit cell bg peach → grey (BTN_FILL)
+       - Buttons "Where to Get Freundlich" + "Simple CAC Barrier"
+         moved UP to row right under Freundlich grid (was bottom);
+         FONT_BTN_SM → FONT_BTN, width 38 → 42, padx 14 → 18, pady 8 → 10
+       - Year PSB Installed indent 220 → 380 px (closer to image)
+       - "PSB" prefix label + units (m)/(%)/(-)/(Typical 4) → BLACK
+         (no more red #C00000)
+
+v25  §9 round 4 (CURRENT)
+       - Kf Unit dropdown expanded to 6 options (per XLSM data
+         validation on U24): ng/kg, ug/kg, mg/kg, nmol/kg,
+         umol/kg, mmol/kg variants
+       - Buttons relocated BELOW the right cluster (was above the
+         grid); now bottom of section
+       - Buttons taller + narrower: width 42 → 28, pady 10 → 16,
+         text wrapped onto 2 lines
+       - RIGHT cluster (image + Total Width stack + Year PSB)
+         packed vertically and centered together — single rcluster
+         frame, anchor="center" on each child
+       - §9 outer pady reduced to free space for §11 below
+
+v26  §9 connector + §11 looser (CURRENT)
+       - §9: 2-px black horizontal connector line below right cluster,
+              spanning section width, links grid+image area to the
+              buttons row
+       - §9: button frame pady tightened so buttons sit closer to
+              the connector line (no more big empty gap)
+       - §11: blue panel padx/pady 8 → 14
+       - §11: Run Model buttons pady 10 → 14, padx 12 → 18, side pad
+              6 → 10
+       - §11: 3x2 grid buttons pady 4 → 8, padx 10 → 14, cell padding
+              3 → 6, width 13 → 14, gap to grid 12 → 20
+       - Net: §11 looks less tight, more spacing between buttons
+
+v27  §9 curved connector + leftcol restructure + §10 nudged up
+       - §9: replaced bottom 2-px black connector + bottom-packed
+              buttons with a `leftcol` Frame inside `top` that holds
+              the Freundlich grid and the two action buttons
+              ("Where to Get Freundlich Parameters" / "Simple CAC
+              Barrier Longevity Tool") packed flush underneath the
+              form — eliminates the empty band between the form cell
+              and the button row that was visible in v26.
+       - §9: image now lives inside a tk.Canvas (was tk.Label) so a
+              smooth gray (#7F7F7F) curved line can be overlaid on
+              top.  The curve originates at the canvas bottom-left
+              (visually adjacent to the PSB Dist From Source input
+              chicklet in `psbd`) and arcs up to land on the red
+              SOURCE square (~6% W × 42% H of the resized PNG),
+              matching the green-circled connector in the Excel
+              storyboard reference.
+       - §10: outer pady (4, 4) → (0, 4) — pulls §10 closer to §9.
+       - §11: untouched (kept v26 layout per user feedback).
+       - No state-var changes; all StringVars/BooleanVars unchanged.
+
+v28  §9 mol-unit MW row + curve→"?" + Year PSB above Total Width (CURRENT)
+       - §9: Added 4 new state vars (v_psb_mw_1..4) for the
+              "S molecular weight (g/mol)" row.
+       - §9: Inserted MW row at grid row 3 (Converted Kf shifted to
+              row 4).  Row is grid()-shown only when v_psb_kf_unit
+              contains "mol" (nmol/umol/mmol); otherwise grid_remove'd
+              so row 3 collapses to zero height.  Detailed-only cells
+              (mw_e3/mw_e4) additionally require active_sheet ==
+              "Detailed_2".  Trace on v_psb_kf_unit drives toggling.
+       - §9: _on_model_version_change re-runs _on_psb_kf_unit_change
+              after toggling _detailed_only_frames so MW Detailed
+              cells stay correctly hidden under non-mol units.
+       - §9: Curve start moved from canvas (0, ih-2) to (0, ch-2) by
+              giving the canvas an extra `extra=34*scale` strip below
+              the image.  Bottom of canvas is now level with the help
+              "?" chicklet inside `psbd.dist_row`, so the curve reads
+              as starting AT the "?" button and arcing up to the red
+              SOURCE square at (~6% W, ~42% H) of the resized PNG.
+       - §9: Year PSB Installed moved ABOVE the Total Width / fcac /
+              # cells stack.  YR frame is anchor="w" (left-stuck);
+              Total Width grid is anchor="e" (right-stuck).  Net
+              effect: Year PSB sits visually on top-left of the
+              right-side controls, exactly above the Total Width
+              row.
+
+
+v29  §10 Excel-red text + §9 yr/rg compressed + §11 looser spacing (CURRENT)
+       - §10: Helper notes ("Enter up to 7 shallow / centerline wells /
+              for key monitoring event") changed from FG_GREY → "#C00000"
+              red italic, matching the Excel storyboard.
+       - §10: Right-side descriptive notes ("For simple model use only /
+              monitoring wells on or / near the top of the plume / and
+              on the / centerline of the plume") changed from FG_GREY →
+              "#C00000".
+       - §10: Sample Year entry now uses tk.Entry(fg="#C00000") (red
+              text) instead of make_entry's default black, matching the
+              red field-data column convention.
+       - §9 : Image canvas extra strip 34 → 14 px; img_canvas pack pady
+              (0, 4) → (0, 0); yr.pack pady (0, 4) → (0, 0); rg.pack
+              pady (0, 4) → (0, 0).  Total ~32 px reclaimed below the
+              image — Year PSB / Total Width / fcac / # cells stack
+              now hugs the bottom of the figure.  The curve still
+              droops below the image enough to read as pointing at
+              the "?" chicklet.
+       - §11: Blue panel padx/pady 14 → 20; Run Model side-pad 10 → 16;
+              gap from Run buttons to 3x2 grid 20 → 32; per-cell
+              padx/pady 6 → 10.  Net: visibly looser spacing inside
+              the panel, both between the two Run buttons and across
+              the 3x2 action grid.
+       - Right-column section divider (_hsep default pady) bumped 3 → 8
+              so the gap between sections in the right column reads
+              more clearly (matches the Excel layout's roomier look).
+
+v30  §9 PFAS-MW row redesign + Converted Kf formula + Run wiring (CURRENT)
+       - §9 MW row (row 3 of Freundlich grid): dropped the left
+              "S molecular weight (g/mol)" caption and changed the
+              UNIT cell text from "(g/mol)" to "PFAS molecular weight
+              (mol/g)" — matches XLSM cell U25 verbatim.  Data cells
+              switched from BG_LOCKED (black, readonly) to BG_FORMULA
+              (sky-blue, editable) so the user can type the molecular
+              weight in g/mol.
+       - §9: Added _recompute_psb_conv_kf — auto-computes the
+              "Converted PSB's Freundlich Kf" output cells (V26/X26/
+              Z26/AB26) from Kf, "a", Kf-unit and MW.  Conversion to
+              (ug/kg)(ug/L)^(-a) uses Kf_ug = Kf * m^(1-a) where m is
+              the unit-prefix factor (1e-3 for ng, 1.0 for ug, 1e3 for
+              mg, MW*1e-3 for nmol, MW for umol, MW*1e3 for mmol).
+              Trace_add wired on all 13 driving StringVars; recompute
+              fires on every keystroke.
+       - functions/xlsm_io.py CELL_MAP: extended with all §9 vars that
+              were previously missing — v_psb_a_3/4, v_psb_kf_3/4,
+              v_psb_kf_unit (U24), v_psb_mw_1..4 (V25/X25/Z25/AB25),
+              v_psb_kf_conv2/3/4 (X26/Z26/AB26), v_psb_cells (AC82).
+              v_psb_yr corrected: Y75 → AB28.  This is what was
+              causing §9 inputs to not reach input.inp on Run.
+       - main.py XLSM_CELL_MAP: same additions, kept in sync.
+
+v31  §9 sky-blue input cells (CURRENT)
+       - §9 Row 1 (PSB's Freundlich "a") data cells changed from
+              BG_INPUT_BLUE (white) → BG_FORMULA (sky blue #DAE9F8) for
+              all four columns (PFOS / None / PFAA-3 / PFAA-4) — matches
+              the Excel storyboard "formula or default, but ok to
+              overwrite" legend entry.
+       - §9 Row 2 (PSB's Freundlich Kf) data cells: same change for
+              all four columns.
+       - Row 3 (PFAS molecular weight) was already BG_FORMULA (v30).
+       - No change to Row 4 (Converted Kf) — those stay BLACK locked
+              since they are calculated outputs.
+       - No state-var or formula changes; visual-only adjustment.
+
+v32  §10 color overhaul to match Excel exactly (CURRENT)
+       - "Event" header: BG_MAIN gray → BG_LOCKED black with white
+              text (relief solid, padded), to mirror the existing
+              PFOS / None black header cells.
+       - Well-name cells (MW-504, FS-MW504..FS-MW509): swapped from
+              BLACK bg + WHITE text → WHITE (BG_INPUT_BLUE) bg + BLACK
+              text.  Still read-only.
+       - Concentration value cells (PFOS / None columns of the MW
+              table): font color RED (#C00000) → BLACK (FG_INPUT).
+       - "(ug/L)" inline labels: RED → BLACK.
+       - Sample Year value entry: RED → BLACK.
+       - Helper notes under Sample Year ("Enter up to 7 shallow /
+              centerline wells / for key monitoring event"): RED → BLACK.
+       - Right-side descriptive notes ("For simple model use only / ...
+              centerline of the plume"): RED → BLACK.
+       - Distance-from-Source column: KEPT RED — that's the only red
+              column in §10 per the Excel reference.
+       - No layout / state-var changes.
+
+v33  Top bar — entire title in greenish tint (CURRENT)
+       - Top-bar title labels "-MD Model Input Screen" and "Vers. 2.6"
+              changed from FG_TITLE (white) → FG_TITLE_GREEN (#DAF2D0).
+              "REMFluor" was already green; now the whole header reads
+              in the same Excel-storyboard greenish tint.
+       - No other changes.
+
+v34  Title color split corrected + bold (CURRENT)
+       - Reverted v33's overly-broad green tint.  Now ONLY "REMFluor-MD"
+              uses FG_TITLE_GREEN (#DAF2D0); " Model Input Screen" and
+              "Vers. 2.6" are back to FG_TITLE (white) — matches the
+              Excel reference.
+       - Moved the "-MD" suffix into the green label so the product
+              name reads as one greenish span ("REMFluor-MD") instead
+              of being split with "-MD" white.
+       - FONT_TITLE and FONT_VERSION weight: "normal" → "bold", so the
+              entire title line is now visually heavier (Arial Narrow
+              28pt bold for the product/screen name, 26pt bold for
+              the version).
+
+v35  §7 Excel cell colors + Total PFAS Mass formula (CURRENT)
+       - §7 Row 0 column headers ("PFAA 1", "PFAA 2", "Precursors 1",
+              "Precursors 2"): bold black → italic gray (FONT_LABEL_BI
+              + FG_GREY) per Excel reference.
+       - §7 Year column (col 2) cells: BG_INPUT_BLUE (white) → BG_LOCKED
+              (black with white text).  Years come from §2; Excel locks
+              the column.
+       - §7 Concentration cells in all four columns (PFAA 1 / PFAA 2 /
+              Precursors 1 / Precursors 2): BG_INPUT_BLUE (white) →
+              BG_FORMULA (sky blue #DAE9F8).
+       - §7 "(ug/L)" inline labels: FONT_LABEL_SM → FONT_LABEL_SMI
+              (italic) to match the Excel italic styling.
+       - §7 Total PFAS Mass formula auto-computed from the XLSM V19
+              expression:  Total_kg = 1e-6 * Vd * thickness * width *
+              Σ(C_i * Δt_i).  Δt uses forward year-differences plus
+              (end_year - 2077) for the final term.  Verified against
+              XLSM Detailed_2 sample: 1e-6 * 0.011992 * 5 * 60 *
+              112000 = 0.4029 kg (matches sheet).
+       - Trace_add wired on v_darcy, v_sw_thick, v_sw_width, v_yr_e,
+              all 11 v_src_years, all 11 v_src_pfaa1/2, and all 11
+              v_src_pre1/2 — total recomputes on every keystroke.
+       - Missing/blank geometry input → result reads "#VALUE!" (mirrors
+              Excel's behaviour for incomplete inputs).
+
+v36  §7 version-specific cell colors (CURRENT)
+       - §7 Year column (col 2): BG_LOCKED (black) → BG_FORMULA
+              (sky blue) for BOTH Simple and Detailed.  Excel reference
+              shows the year column matching the rest of the editable
+              "formula or default" cells.
+       - §7 PFAA 1/2 concentration cells: bg now version-specific —
+              Simple = BG_INPUT_BLUE (white)
+              Detailed = BG_FORMULA (sky blue)
+              (cells are stored in self._s7_conc12_cells so the version
+              toggle can recolor them at runtime.)
+       - §7 Row 0 header labels (PFAA 1 / PFAA 2 / Precursors 1 /
+              Precursors 2): bg now version-specific —
+              Simple = BG_MAIN (blends into section bg)
+              Detailed = BG_INPUT_BLUE (white card)
+              (Stored in self._s7_hdr_labels.)
+       - Added REMFluorApp._apply_s7_version_colors() — single helper
+              that sets the right bg on §7 conc12 + header widgets per
+              the current active_sheet.  Called at end of
+              _build_s7_source AND from _on_model_version_change.
+       - Precursors 1/2 conc cells stay BG_FORMULA in all cases (they
+              are Detailed-only and that already matches both reference
+              figures).
+
+v37  Paste Example — fix missing CELL_MAP entries (CURRENT)
+       - Bug: in Detailed mode, Paste Example wrote values into the
+              shared AppState but state.push(app) didn't propagate
+              them to the UI because functions/state.py CELL_MAP was
+              missing many of the cells that inp_to_state.write_inp_to
+              _state writes.  Result: §7 Precursor 1/2 columns,
+              §9 Detailed PSB cells, §5 Precursor species, §5
+              transformation row, etc. all stayed blank.
+       - functions/state.py CELL_MAP extended with:
+           §5: K38 → v_pfaa3, M38 → v_pfaa4
+                K41/K42/M41/M42 → trans_rate / yield (Detailed)
+           §7: Z8..Z18 → v_src_pre1_*  (Detailed Precursor 1 col)
+                AB8..AB18 → v_src_pre2_* (Detailed Precursor 2 col)
+           §9: Z23/AB23 → v_psb_a_3/4    (Detailed PFAA-3/4 a)
+                U24 → v_psb_kf_unit
+                Z24/AB24 → v_psb_kf_3/4  (Detailed PFAA-3/4 Kf)
+                V25/X25/Z25/AB25 → v_psb_mw_1..4 (PFAS molecular wt)
+                X26/Z26/AB26 → v_psb_kf_conv2/3/4 (Converted Kf)
+                AC82 → v_psb_cells
+       - Corrected v_psb_yr mapping: Y75 → AB28 (matches workbook).
+       - Total CELL_MAP entries: 79 → 136.  Now Paste Example fully
+              populates the UI in both Simple and Detailed modes.
+       - Companion backup: _Backup/functions_v37/state.py snapshot.
+
+v38  Paste Example — fix §9 PSB cell-addr mismatch (CURRENT)
+       - functions/inp_to_state.py rewrote the PSB / plume-remediation
+              block.  Previously it wrote PSB Distance, Total Width,
+              PSB Loading and # of cells to the legacy XLSM addresses
+              (AE25, AH27, AH28, AH29).  Those addresses are NOT in
+              state.CELL_MAP for the current sheet — the UI controls
+              live at X74, Y82, AA82, AC82 — so the values never
+              reached the §9 widgets.
+       - New writes: state.set("X74", x1); state.set("Y82", x2-x1);
+              state.set("AA82", psb_loading); state.set("AC82", nxpsb).
+              Legacy addrs are still written in parallel for any code
+              that still reads them (generate_input_file.py, etc.).
+       - Also force state.set("U24", "(ug/kg)(ug/L)^(-a)") on restore.
+              input.inp stores fcackf already in ug, so V24 = fcackf
+              /loading is in (ug/kg)(ug/L)^(-a) — pinning the Kf unit
+              dropdown keeps the §9 Converted-Kf auto-formula
+              self-consistent.
+       - Empty branch (iwall == 0): now blanks all the UI-bound PSB
+              cells, not just the legacy two.
+       - Verified by simulating write_inp_to_state on
+              Example/3_Detailed_2/input.inp + additional info: every
+              §9 cell now arrives in state at an addr that CELL_MAP
+              maps to a real UI StringVar.
+       - Companion backup: _Backup/functions_v38/{state,inp_to_state}.py.
+
+v39  PSB Loading 'fcac' — display as percent value (CURRENT)
+       - inp_to_state.py: state.set("AA82", psb_load * 100) — the UI
+              cell now shows 0.24 (the (%) label sits next to it),
+              instead of the raw 0.0024 fraction.  Legacy AH28 still
+              gets the unscaled fraction for any path that reads it.
+       - generate_input_file.py: PSBloading is now read from AA82 with
+              an automatic /100 conversion (with optional "%" suffix
+              tolerated).  Falls back to legacy AH28 if AA82 is empty
+              — keeps backward compatibility.
+       - Verified round-trip on Example/3_Detailed_2: AA82 display
+              "0.24" → parsed fraction 0.0024 → fcackf2 = V24 * 0.0024
+              = 2947.0824, matches the example input.inp exactly.
+       - Companion backup: _Backup/functions_v39/{inp_to_state,
+              generate_input_file,state}.py.
+
+v40  state.push/snapshot — fix scalar-vs-list resolution (CURRENT)
+       - ROOT CAUSE of "Paste Example doesn't fill §9 cells":
+              functions/state.py snapshot() and push() both treated
+              every CELL_MAP var_name ending with "_<digits>" as a
+              list element on the app object.  But §9 holds those
+              vars as SCALAR StringVars: app.v_psb_a_1, v_psb_a_2,
+              v_psb_a_3, v_psb_a_4 (and similarly for v_psb_kf_*,
+              v_psb_mw_*, v_trans_rate_*, v_yield_factor_*).  The
+              code did getattr(app, "v_psb_a"), got None (no such
+              attr), then silently skipped via `continue`.  Result:
+              16 §5/§9 cells were never written back to the UI on
+              Paste Example or Load Data.
+       - Fix: try the scalar attribute FIRST.  If getattr(app,
+              var_name) is a tk.Variable, use it.  Only fall back
+              to the list-element form (base + _N) if the scalar
+              attr doesn't exist — that path still serves §7 source
+              rows and §10 monitoring-well rows.
+       - Affected vars now propagate correctly:
+            v_psb_a_1..4    (Freundlich "a"  — 4 cells)
+            v_psb_kf_1..4   (Freundlich Kf   — 4 cells)
+            v_psb_mw_1..4   (PFAS molec. wt. — 4 cells)
+            v_trans_rate_3/4, v_yield_factor_3/4 (§5 detailed — 4)
+       - Companion backup: _Backup/functions_v40/state.py.
+
+v41  §9 Kf cells comma-format + Converted Kf reads correctly (CURRENT)
+       - inp_to_state.py: added _fmt_kf() helper.  V24/X24/Z24/AB24
+              are now stored in state as comma-formatted strings:
+              1227951.0 → "1,227,951" ; 0 → "0" ; 0.33 → "0.33".
+              The §9 _recompute_psb_conv_kf trace already strips
+              commas before re-floating (replace(",", "")), so the
+              Converted-Kf formula keeps working with the formatted
+              input.
+       - main.py _recompute_psb_conv_kf: output formatter rewritten.
+              Was using f"{conv:.4g}" which produced scientific
+              notation ("1.228e+06") for large values — that's why
+              the user saw the §9 Converted-Kf row apparently empty.
+              Now: zero → "0"; integers (within 1e-9 tolerance) →
+              "{int:,}" ("1,227,951"); fractional values →
+              "{:,.4f}" with trailing zeros stripped ("1,234.56").
+              Never falls back to scientific.
+       - Companion backup: _Backup/functions_v41/{inp_to_state,
+              state}.py.
+
+v42  Converted-Kf wipeout fix on Paste/Load/Clear (CURRENT)
+       - ROOT CAUSE: state.push iterates CELL_MAP in dict order.
+              When V24/U24/V23 are set, the §9 trace_add fires and
+              correctly populates V26..AB26 (Converted Kf).  But
+              state.push then keeps iterating and reaches V26 itself
+              — and since inp_to_state.py never writes V26 to state
+              (it's auto-computed in the app), state.get("V26") is
+              None, so state.push does var.set("") and OVERWRITES
+              the trace's correct value with a blank string.
+       - Fix: after state.push() finishes, call
+              app._recompute_psb_conv_kf() to re-populate the four
+              Converted-Kf cells from the now-final V24/V23/U24/V25.
+              The recompute is idempotent and cheap.
+       - Patched call sites:
+              functions/restore_from_example.py  (Paste Example)
+              functions/restore_from_saved.py    (Load Data)
+              functions/clear_for_restore.py     (Clear All Data)
+       - Companion backup: _Backup/functions_v42/{restore_from_example,
+              restore_from_saved, clear_for_restore, state,
+              inp_to_state}.py.
+
+v43  Year PSB Installed (and other §9 cells) clear properly (CURRENT)
+       - CLEAR_CELLS in functions/state.py was missing the cells that
+              v37+ added to CELL_MAP: AB28 (Year PSB Installed in
+              Detailed), AC82 (# of cells), U24 (Kf unit dropdown),
+              V25/X25/Z25/AB25 (PFAS MW), V26/X26/Z26/AB26 (Converted
+              Kf), and the legacy AE25/AH27/AH28/AH29 PSB addrs.
+              Result: clicking "Clear All Data" left the previous
+              values in place — Year PSB Installed in particular
+              looked "static" because clear_restore_cells skipped it,
+              and state.push then re-applied the stale value.
+       - Fix: extended CLEAR_CELLS with the missing addresses.  Now a
+              clear cycle blanks every §9 cell — Year PSB Installed,
+              Total Width, PSB Loading, # of cells, Distance, all four
+              MW cells, all four Converted Kf cells, the Kf unit
+              dropdown, and the legacy AE25/AH27/AH28/AH29 mirrors.
+       - Companion backup: _Backup/functions_v43/state.py + the four
+              other still-active functions modules for completeness.
+
+v44  Pink-dropdown cells preserved across Clear All Data (CURRENT)
+       - Excel macro behaviour: peach / pink "Pull Down Menu" cells
+              (per the legend) keep their selection across clears.
+              Our implementation was clearing them.
+       - Removed from CLEAR_CELLS:
+            E38  v_pfaa1            (PFAA 1 species — §5 / §7 / §9)
+            G38  v_pfaa2            (PFAA 2 species — §5 / §7 / §9)
+            K38  v_pfaa3            (Detailed Precursor 1 species)
+            M38  v_pfaa4            (Detailed Precursor 2 species)
+            U24  v_psb_kf_unit      (§9 Freundlich Kf unit dropdown)
+       - K26 (Low-k zone media) was already NOT in CLEAR_CELLS, so no
+              change needed — already matches Excel.
+       - Result: clicking "Clear All Data" now blanks every editable
+              cell BUT leaves the dropdown selections intact.
+
+v45  Run Model popup bigger + dashboard launch diagnostics + CAC Longevity fix (CURRENT)
+       - functions/run_model.py:
+            * Runtime-clock popup font 18pt → 26pt bold; detail font
+              10pt → 12pt; outer padding 24/18 → 36/28; minsize
+              460x200 → 780x380.  resizable(True,True) so user can
+              expand if they want.  attributes(-topmost) flashed for
+              800 ms so the clock surfaces above the main app.
+            * Auto-hide after 10 s removed — clock now stays visible
+              after model finishes so the user can read the dashboard
+              launch status (or any error message).
+            * _launch_dashboard_async rewritten:
+                - stdout+stderr are now captured to dashboard.log in
+                  the project dir (was DEVNULL via DETACHED_PROCESS,
+                  which silently swallowed crashes).
+                - DETACHED_PROCESS flag dropped so the file handles
+                  stay open; CREATE_NEW_PROCESS_GROUP retained.
+                - Polls the child for ~5 s.  If proc exits in that
+                  window → reads tail of dashboard.log and surfaces
+                  it in BOTH the runtime-clock label AND a
+                  messagebox.  If still running → label shows
+                  "Dashboard Launched (check browser http://
+                  localhost:8050)".
+              Net: when the dashboard fails (e.g. missing pywin32 /
+              dash / plotly modules), the user now sees the actual
+              Python error instead of a silent "Finished" message.
+       - functions/popups_longevity.py — Simple CAC Barrier button:
+            * Added _get_var(app, name, default="") helper that does
+              getattr(...) → .get() with a fallback.  Replaced the
+              brittle getattr(app.v_psb_load, "get", lambda: "")()
+              chain (which would AttributeError if v_psb_load itself
+              was missing).
+            * Fixed fcac default logic: was 1.0 (= 100 %, nonsense)
+              when the cell was blank.  Now blank/zero → 0.01 (1 %),
+              raw > 1 → divided by 100, otherwise → as-is.
+            * Removed root.withdraw() up front — it made grab_set()
+              fail silently because the window wasn't viewable.
+              Replaced grab_set-before-deiconify with grab_set-after
+              -lift sequence.  Added attributes("-topmost") flash so
+              the popup surfaces reliably on Windows.
+            * Added transient(parent or app) so Win10/11 treats it as
+              a child dialog (focus reaches it more reliably).
+       - main.py LongevityTool dispatcher:
+            * Now imports traceback and prints the full Python
+              traceback to stdout when the popup raises, in addition
+              to the existing messagebox.showerror.  The messagebox
+              now also shows the last line of the traceback so we can
+              diagnose without needing to read the console.
+       - Companion backup: _Backup/functions_v45/{run_model,
+              popups_longevity}.py.
+
+v46  Longevity popup matches Excel + Run Model popup bigger + dashboard pre-flight (CURRENT)
+       - functions/popups_longevity.py — visual rebuild to mirror the
+         Excel "Longevity Calculator" reference screenshot:
+            * Title bar: "Simple CAC Barrier Longevity Tool" → "Longevity
+              Calculator" (matches Excel).
+            * In-popup heading "Longevity Calculator" — centered, 22pt
+              bold (was 16pt left-aligned "Simple CAC Barrier Longevity
+              Tool" caption).
+            * Section headers ("Select PFAS Compound:", "Concentration
+              (ug/L):", "Parameters from Excel:") promoted to FONT_HDR
+              (14pt bold).  Body text bumped 11pt → 12pt.
+            * Section caption "Parameters from current model:" → "Parameters
+              from Excel:" — matches the Excel popup wording.
+            * Bulk Density label "kg/m^3" → "kg/m³" (proper Unicode
+              superscript).
+            * Calculate / Cancel / Help buttons widened (10 → 11) and
+              center-aligned, with 10px gaps and 28px top padding.
+            * Popup minsize 600x640 → 720x820 — fits all four params
+              and result rows without scrolling.
+            * Hyperlink color #0000FF → #1B6EC2 (cleaner Excel-style blue).
+            * Concentration Entry now has relief="solid", bd=1 to match
+              the bordered look in the screenshot.
+       - functions/run_model.py — bigger popup + dashboard pre-flight:
+            * Runtime-clock title font 26pt → 36pt bold.  Detail label
+              12pt → 14pt.  Outer padding 36/28 → 48/56-40.  Wraplength
+              720 → 900.  Minsize 780x380 → 1000x520 — much more
+              prominent on screen.
+            * Added _check_dashboard_imports(py_exec) helper.  Runs the
+              user's Python interpreter with a tiny script that tries
+              to import each of pandas/numpy/plotly/dash/openpyxl/
+              win32com.client/pythoncom and reports which are missing.
+              Typical runtime <0.5 s.
+            * _launch_dashboard_async now calls the pre-flight FIRST.
+              If anything is missing (most commonly pywin32 in conda
+              envs that didn't install it), it aborts with a clear
+              messagebox + runtime-clock label naming the missing
+              modules and the exact `pip install <packages>` command
+              the user needs to run.  Stops the silent "Finished /
+              nothing happens" symptom.
+       - Companion backup: _Backup/functions_v46/{run_model,
+              popups_longevity}.py.
+
+v47  Run Model font-down + Longevity popup full-size from start (CURRENT)
+       - functions/run_model.py — runtime-clock popup retuned:
+            * Title font 36pt → 22pt bold (was wrapping mid-word at
+              36pt+1000px on standard displays).  Detail font 14pt →
+              12pt.  Padding 48/56-40 → 32/40-28.  Wraplength 900 →
+              1080.
+            * Window size 1000x520 → 1180x360 (wider, less tall — fits
+              the "Dashboard launched — see your browser" status on a
+              single visual block instead of stacking 4-5 lines).
+            * Success message text shortened: "Dashboard Launched\n
+              (check your browser — http://localhost:8050)" → "Finished
+              in MM:SS\nDashboard launched — see your browser".  No URL
+              in the label so the layout stays compact; the dashboard
+              auto-opens the browser anyway.
+       - functions/popups_longevity.py — popup self-contained from start:
+            * Extracted result-rendering into _render_results(longevity=
+              None) inside run().  Called once UP FRONT with no
+              argument → paints two placeholder rows ("— years") plus
+              the blue "(Click here to see CAC paper for more details)"
+              link before the user clicks Calculate.  Net effect: the
+              window's reqheight already accounts for results +
+              link + buttons, so the initial geometry is big enough
+              and nothing gets cropped.
+            * _calc() now just calls _render_results(longevity) instead
+              of inlining the rendering logic.
+            * Initial popup minsize 720x820 → 980x980 (matches the
+              Excel popup's footprint; user no longer has to resize
+              to see results).
+       - main.py: unchanged this round.
+       - Companion backup: _Backup/functions_v47/{run_model,
+              popups_longevity}.py.  v47.py = main.py snapshot
+              (identical to v46.py since main.py wasn't touched).
+
+v48  Calibration panel rebuilt to match Excel reference (CURRENT)
+       - main.py _build_calibration_panel — full rewrite to mirror the
+         Simple + Detailed Excel screenshots:
+            * Header band: title row + 5-line Step 1-5 blurb (left)
+              with red "Step N)" tags and black bodies; iterations +
+              Estim. Time Remaining (right) with sheet-aware unit
+              "(minutes)" Simple / "(hours)" Detailed.
+            * Three-box row replacing the old two-box body:
+                - Step 2: "Calibrate using:" — PFOS/None checkboxes
+                  always visible, PFAA 1-able/None added beneath in
+                  Detailed mode (registered as Detailed-only).
+                - Step 3: "Calibration Options - enter any weighting
+                  factors." — 4-column table.  Monitoring Point Name +
+                  Distance from Source columns now BLACK (locked,
+                  white text) per the Excel "Calculated value" legend
+                  entry; Weighting Factor column SKY BLUE per the
+                  "Formula or default" entry; Source column shows
+                  italic "Section 10".  "(Often downgradient
+                  monitoring wells are weighted higher)" red caption
+                  added under the table.
+                - LEGEND: 4 colored swatches + their descriptions
+                  ("Enter value directly", "Formula or default, but
+                  ok to overwrite**", "Pull Down Menu", "Calculated
+                  value or taken from other cell.") — matches the
+                  inline legend in the Excel screenshot.
+            * Step 4 ranges table redesigned:
+                - 7 columns: Param name (italic, right-aligned) |
+                  Use this Parameter? (chk) | Lowest (sky blue) |
+                  Mid-Range (BLACK locked, yellow header) | Highest
+                  (sky blue) | unit (xxxx)/(m/yr)/(-)/x(Ct) | Section
+                  reference.
+                - "Mid-Range Values are taken from in the input cells
+                  in these sections:" lozenge + caption added at the
+                  Step 4 header (yellow highlight on "Mid-Range
+                  Values").
+                - 11 Simple rows with all the Excel default values
+                  (1965/1977/1980, 0.31536/3.15/31.536, etc.).
+                - 6 additional Precursor rows (Detailed-only):
+                  decayf(1)/decayf(3) decay coefficients,
+                  ock(1)/ock(3) retardation, czero(1,n)/czero(3,n)
+                  multipliers — separated by an 8-px gap that's also
+                  Detailed-only.
+                - Pre-checked rows (Hydraulic Conductivity,
+                  Hydraulic Gradient, czero(2,n) multiplier,
+                  czero(1,n) multiplier) match the Excel screenshot
+                  defaults.
+                - Right-side red caption rendered at the multiplier
+                  rows: "(All 11 source concentrations for PFAA-1 /
+                  Precursor-1 are changed by the same amount during
+                  calibration runs)."
+            * Action buttons recentered: 3 rows packed in a centered
+              actwrap frame.  Buttons sized 24 / 30 / 18 (row 1) and
+              24 / 16 / 16 / 14 (row 2), 24 (row 3 standalone).  All
+              padded uniformly so the rows visually balance.
+            * Initial-state hide: Detailed-only widgets call
+              grid_remove() at the end of build when active_sheet ==
+              "Simple".  Existing _on_model_version_change toggle
+              continues to work for runtime version flips.
+       - main.py run_script() dispatcher — added 4 new pure-Python
+         macro stubs (no exe equivalents needed):
+            * DefaultRanges — fills v_calib_low / v_calib_high from
+              the row's mid value times 0.5 / 2.0 ("default +/- x2").
+            * Run_Optimal_Model — routes to run_model.run() (same as
+              the main "Run Model" button).
+            * Save_Optimal_Model — exports current chk + lo/mid/hi
+              state to optimal_model.txt in the project dir.
+            * Help_Calibration — shows a tkinter messagebox with the
+              calibration workflow summary.
+       - functions/: unchanged this round (no .py files modified).
+       - Companion backup: _Backup/v48.py.  No functions_v48/ folder
+              needed since no function modules were touched; v47's
+              functions_v47/ snapshots remain authoritative.
+
+v49  Calibration polish + smoother scrolling (CURRENT)
+       - main.py _build_calibration_panel — three layout fixes:
+            * Header band switched from pack(side=left/right) to a
+              two-column grid.  Left column (head_l) holds the title
+              + 5 step lines; right column (head_r) holds Number of
+              iteration + Estim. Time Remaining + caveat.  Right block
+              now sits flush against the right edge of the step text
+              with a tight 24-px gap (was floating to the panel's far
+              right with a wide empty band between).
+            * Step lines lost their wraplength=620 and now render on
+              a single line each.  Step 3 / 4 / 5 used to wrap to 3-4
+              lines; in the new layout the panel grows wide enough to
+              fit each Step N) on one row.
+            * Action buttons unified: every button now uses the SAME
+              width (22), padx (12), pady (12), and gap (8).  Captions
+              that previously sat on one line were broken with "\n"
+              into 2-line versions ("1. Save\nCalibration Data",
+              "Go Back to\nMain Interface", etc.).  The Help button
+              has a trailing "\n " to match the 2-line height of the
+              others.  Net: visually-identical buttons in 3 centered
+              rows (3 / 4 / 1).
+       - main.py canvas + scroll handlers — smoother wheel:
+            * self.canvas now created with yscrollincrement=1 +
+              xscrollincrement=1 → yview_scroll/xview_scroll operate
+              in single-pixel units.
+            * _on_mousewheel rewritten: 1 wheel tick → 24 px (was 1
+              "unit" ≈ row of text, which felt chunky).  Returns
+              "break" to stop event propagation up the widget tree.
+            * Added _on_mousewheel_x for Shift+wheel horizontal
+              scroll (Win/macOS), and _wheel_dir for X11 Linux
+              fallback (Button-4/5 + Shift-Button-4/5).
+            * _scroll_y_pixels / _scroll_x_pixels helpers — pass the
+              pixel delta straight through since yscrollincrement=1.
+            * Net: scrolling responds to every wheel tick smoothly
+              with predictable 24 px / 36 px-x steps; Shift+wheel and
+              the X11 wheel buttons all wired up.
+       - Companion backup: _Backup/v49.py.  No function modules
+              changed; v47's functions_v47/ snapshots remain
+              authoritative for the functions/ folder.
+
+v50  §9 PSB → input.inp pipeline FIXED (CURRENT)
+       - ROOT CAUSE: when the user filled §9 cells in the app and clicked
+              Run Model, the PSB block silently disappeared from
+              input.inp.  Two stacked bugs:
+                (1) "Model PSB?" checkbox (R22) was a hard gate.  If the
+                    user filled distance / width / loading / # cells
+                    but didn't tick the checkbox, iwall=0 → no PSB
+                    block.
+                (2) Even with the checkbox ticked, generate_input_file
+                    read PSB geometry from the LEGACY addresses
+                    AE25 / AH27 / AH29.  The §9 UI was migrated in v38
+                    to the modern addresses X74 / Y82 / AC82 — those
+                    legacy addrs are NOT in CELL_MAP, so the UI never
+                    populated them; state.get() returned None; PSB
+                    geometry collapsed to x1=0, x2_offset=0, nxpsb=0.
+                Result: even an apparently-correct PSB setup produced
+                a no-PSB run, which is exactly what the user reported.
+       - main.py _build_vars (Section 9 block) — auto-enable PSB:
+            * Added a trace_add("write", _maybe_enable_psb) on the §9
+              StringVars (v_psb_dist, v_psb_width, v_psb_load,
+              v_psb_cells, v_psb_yr, v_psb_a_1, v_psb_a_2, v_psb_kf_1,
+              v_psb_kf_2).
+            * As soon as the user types a non-empty / non-zero value
+              into ANY of those cells, v_model_psb is auto-set to True
+              — which ticks the "Model PSB?" checkbox visually AND
+              flips R22 to True in the snapshot.  Excel parity: in
+              the workbook, values alone drive the PSB block; the
+              checkbox is decorative.
+            * Idempotent: only flips the checkbox if it's currently
+              False, so the user can still uncheck it deliberately
+              without it bouncing back unless they re-edit a cell.
+       - functions/generate_input_file.py — fix legacy address read:
+            * Added _addr_first(*addrs) helper inside build_inp_data
+              that returns the first non-empty state value among a
+              list of addresses.
+            * x1 (PSB distance from source):
+                state.get("AE25")  →  _addr_first("X74", "AE25")
+            * x2_offset (Total Width of PSB in X-direction):
+                state.get("AH27")  →  _addr_first("Y82", "AH27")
+            * nxpsb (# of cells in PSB in x direction):
+                state.get("AH29")  →  _addr_first("AC82", "AH29")
+            * Net: the modern UI-bound addresses are tried FIRST so
+              fresh values from the app reach input.inp; the legacy
+              addrs are kept as a fallback so old saved .inp files
+              still load.
+            * Also fixed an unrelated bug nearby: tplume1_raw =
+              state.get("AB28") or state.get("AB26") — AB26 is the
+              Converted-Kf cell (a number unrelated to year), so the
+              fallback produced garbage tplume1.  Changed fallback
+              from AB26 to Y75 (the legacy Year-PSB-Installed addr).
+       - Companion backup: _Backup/functions_v50/generate_input_file.py
+              + _Backup/v50.py (main.py snapshot).
+
+v51  §11 "See Results Every" load fix (CURRENT)
+       - User asked whether the §11 "See Results Every" widget was
+         working.  Save side worked (v_see_every → V47 → see_every →
+         input.inp via npt = int(see_every / dt)).  LOAD side was
+         broken.
+       - functions/inp_to_state.py: was doing
+            state.set("V47", data.get('npt'))
+         straight-up.  But V47 is the years-between-outputs cell, and
+         npt is the timestep count (= see_every / dt).  With the
+         default dt=0.1, "See Results Every: 100" was being parsed
+         back as 1000 — wrong by a factor of dt.
+       - Fix: invert the formula.  Now reads npt + dt out of data,
+         computes see_every = npt * dt, formats as int when integral
+         (most common case) else trims to 4 decimals.  Falls back to
+         raw npt only if dt is missing.
+       - Also confirmed (no change needed):
+            * v_see_every StringVar → V47 mapping (state.CELL_MAP +
+              main.py XLSM_CELL_MAP) is correct.
+            * "?" help link "OpenTable11_1" → docs/_site/data_chicklets/
+              Step11_ModelingParameters.html#see-results-every — the
+              HTML file exists, the dispatcher route works.
+            * generate_input_file.py read of V47 already correct.
+       - Companion backup: _Backup/functions_v51/inp_to_state.py +
+              _Backup/v51.py (main.py snapshot — no main.py change
+              this round).
+
+v52  Dashboard kill-and-replace + wider §9/§10 cells (CURRENT)
+       - functions/run_model.py — fix "I changed See Results Every
+         and the dashboard didn't update":
+            * ROOT CAUSE: Plotly-Dash binds to a fixed port (8050).
+              The previous Run Model click left a dashboard subprocess
+              listening on that port; the next click spawned a new
+              subprocess that failed to bind silently.  The browser
+              then opened http://localhost:8050 and the user saw
+              STALE data from the old run.
+            * Added module-level _LAST_DASHBOARD_PROC handle.  Every
+              spawn records its proc; every fresh launch first calls
+              _kill_previous_dashboard() which:
+                - terminate()s _LAST_DASHBOARD_PROC if alive (3-s
+                  grace, then kill())
+                - belt-and-suspenders: enumerates listeners on port
+                  8050 via psutil (preferred) or netstat+taskkill on
+                  Windows / fuser on Linux/macOS, and kills them.
+                  Catches dashboards left over from a crashed prior
+                  app session that we don't have a Popen handle for.
+            * 500-ms grace sleep after the kill so the OS releases
+              the socket before the new dash binds.
+            * Net: every Run Model click guarantees a fresh dashboard
+              talking to the latest .out files — including changes to
+              See Results Every, source concentrations, PSB params,
+              etc.
+       - main.py — wider input cells per user request:
+            * §9 (PSB) — value cells (Freundlich "a", Freundlich Kf,
+              PFAS molecular weight, Converted Kf) bumped width 8 →
+              12.  Header labels (PFOS/None/PFAA-3/PFAA-4) bumped
+              width 8/10 → 12 uniformly.  Same change applies to
+              both Simple (PFOS, None) and Detailed (+ PFAA-3,
+              PFAA-4) versions since the same builder paints both.
+            * §10 (Field Data to Calibrate) — Distance from Source
+              column entries width 6 → 10.  PFOS / None concentration
+              columns (entries + headers) width 8 → 12.  Both Simple
+              and Detailed views.
+            * Net: the cells now comfortably hold 6-7 digit numbers
+              (e.g. "1,227,951") without truncating.
+       - Companion backup: _Backup/v52.py + _Backup/functions_v52/
+              run_model.py.
+
+v53  §8 Apply Remediation collapse-to-zero fix (CURRENT)
+       - User: "when I put the source concentration reduction as 1%
+         or less, the §7 table collapses and shows 0 or other nonsense."
+       - ROOT CAUSE: functions/popups_source_remediation.py line 55:
+            factor = 1.0 - (reduction / 100.0 if reduction > 1
+                             else reduction)
+         The branch tried to auto-detect "fraction vs. percent" by
+         testing reduction > 1 — but the §8 cell label literally says
+         "(%)" so the user always types a percent.  When the user
+         typed "1" (= 1%), the condition `1 > 1` is False, so factor
+         was computed as `1.0 - 1.0 = 0` — every PFAA-1 / PFAA-2
+         concentration in §7 from the start year onward got
+         multiplied by zero.  Same trap for any value <= 1 (typed as
+         a percent but interpreted as a fraction).  E.g. "0.5"
+         silently became a 50% reduction instead of the intended
+         0.5%.
+       - Fix: drop the heuristic.  Always interpret the §8 cell as
+         a percent, divide by 100 unconditionally:
+            factor = 1.0 - (reduction / 100.0)
+         Plus a defensive clamp to [0, 1] (validation already guards
+         0..100 so this is belt-and-suspenders).
+       - Verified arithmetic:
+            user types  1   → factor 0.99   →  1% reduction (1600→1584)
+            user types  0.5 → factor 0.995  →  0.5% reduction
+            user types 50   → factor 0.5    → 50% reduction
+            user types 100  → factor 0      → 100% reduction (zero out)
+       - Companion backup: _Backup/functions_v53/popups_source_remediation.py
+              + _Backup/v53.py (main.py snapshot — no main.py change
+              this round).
+
+v54  §8 % auto-applies to §7 PFAA / Precursor table on every keystroke (CURRENT)
+       - User: "if the user changes the % the table in §7 should
+         update automatically — more user-friendly".
+       - main.py _build_vars (Section 8 block) — added a per-row
+         baseline tracker self._s7_baseline = {pfaa1, pfaa2, pre1,
+         pre2}: each is a list of 11 None entries that gets seeded
+         with the current §7 column values on demand.
+       - main.py _build_s7_source — three new pieces wired up at the
+         end of the builder:
+            * _refresh_s7_baseline (bound to self for outside callers
+              like restore_from_example) that snapshots every §7 cell
+              into the baseline dict.
+            * _apply_s8_to_s7 — the trace handler.  Reads §8 % +
+              start year, finds the closest §7 year, and rewrites
+              PFAA-1 / PFAA-2 / Precursor-1 / Precursor-2 cells from
+              row >= start_idx to baseline × (1 - %/100).  Rows
+              before start_idx revert to baseline (so backing the
+              start year off has the right effect too).
+            * Per-cell baseline updaters on every §7 v_src_pfaa* /
+              v_src_pre* StringVar.  When the user MANUALLY edits a
+              §7 cell, the updater refreshes that row's baseline so
+              subsequent §8 changes don't fight the user's manual
+              entry.  A self._s8_applying guard flag stops the
+              updater from firing during the §8 trace's programmatic
+              writes (would otherwise feed the trace's own output
+              back into the baseline and lock the value).
+            * trace_add on v_src_conc_red and v_src_rem_yr → both
+              fire _apply_s8_to_s7.
+            * Lazy-seed: if every baseline entry is still None when
+              the first §8 keystroke arrives, baseline is captured
+              from the current §7 cells right then.
+       - functions/restore_from_example.py + restore_from_saved.py
+         + clear_for_restore.py: each now calls
+              app._refresh_s7_baseline()
+         after state.push so the baseline reflects the freshly-loaded
+         (or freshly-cleared) data.  Without this, after Paste
+         Example the baseline would still hold whatever was in §7
+         before the paste, and the very next §8 keystroke would
+         corrupt the example values.
+       - functions/popups_source_remediation.py: still works; clicking
+         "Apply Remediation" now does the same thing the trace already
+         does, so it's effectively a no-op when % is already typed.
+         (We keep the button for Excel parity / explicit invocation.)
+       - Behaviour matrix:
+            user types §8 %=1   → §7 reduces by 1% from start year on
+            user types §8 %=0   → §7 returns to baseline
+            user clears §8 cell → trace returns; §7 unchanged
+            user manually edits §7 row 4 → row 4's baseline updated
+            user then types §8 %=10 → row 4 (and every row >= start)
+                                      uses NEW baseline × 0.9
+       - Companion backup: _Backup/v54.py + _Backup/functions_v54/{
+              restore_from_example, restore_from_saved,
+              clear_for_restore}.py.
+
+v55  §10 + Calibration Step 2 follow §5 PFAA names + uniform big_check (CURRENT)
+       - main.py — three asks, one round:
+            (a) §10 monitoring well column headers were hardcoded
+                "PFOS" / "None".  Now bound via textvariable= to
+                self.v_pfaa1 / self.v_pfaa2 — when the user changes
+                the §5 PFAA dropdowns, the §10 headers live-update.
+            (b) Calibration panel Step 2 ("Calibrate using:") was also
+                hardcoded ("PFOS" / "None" / "PFAA 1-able" / "None").
+                Now its 4 row-labels are bound to v_pfaa1 / v_pfaa2 /
+                v_pfaa3 / v_pfaa4.  Detailed-only rows still hide in
+                Simple mode.
+            (c) Replicated the §1 / §6 big_radio Canvas-drawn circle
+                style across every checkbox in the app — Windows
+                locks the native tk.Checkbutton indicator regardless
+                of font, so the small circles looked tiny next to the
+                big_radio circles.  Added a new big_check helper
+                (sibling of big_radio, same RADIO_R = 9 → 18 px
+                diameter) and wired it into:
+                    §9 "Model PSB?" checkbox
+                    Calibration Step 2 (4 rows: PFAA-1/2/3/4)
+                    Calibration Step 4 "Use this Parameter?" column
+                      (≈17 rows in Detailed mode)
+                Net: every clickable circle on the page is now the
+                same size + style as the §1 Simple/Detailed and §6
+                Heterogeneity radios.
+       - Companion backup: _Backup/v55.py.  No function modules
+              changed this round.
+
+v56  §5 Detailed precursor dropdowns scoped + widened (CURRENT)
+       - main.py _build_s5_transport — replaced the shared
+         PRE_CHOICES = ["PFAA 1-able", "PFAA 2-able"] + PFAA1_CHOICES
+         (which let the user pick PFOS/PFOA/etc. in either precursor
+         column) with two precursor-specific lists:
+            PRE1_CHOICES = ["PFAA 1-able", "None"]
+            PRE2_CHOICES = ["PFAA 2-able", "None"]
+         dd3 (v_pfaa3 — Precursor 1) takes PRE1_CHOICES; dd4
+         (v_pfaa4 — Precursor 2) takes PRE2_CHOICES.  Per Excel
+         storyboard: each precursor only transforms into its paired
+         PFAA, so the cross-options never made physical sense.
+       - Widened §5 dropdowns:
+            v_pfaa1 / v_pfaa2 / dd3 / dd4   width 8 → 14
+         Fits "PFAA 1-able" (10 chars) and "User-Specified" (14 chars)
+         comfortably without trimming.
+       - Companion backup: _Backup/v56.py.  No function modules
+              changed this round.
+
+v57  §5 entry cells match dropdown width (CURRENT)
+       - main.py _build_s5_transport — bumped width on the cells that
+         live BELOW the §5 dropdowns so the column reads as one
+         visual block:
+            * Retardation Factor for Transmissive Zones  (row 2)
+              — 4 cells (PFAA-1/2 + Detailed Precursor 1/2)
+              width 8 → 14.
+            * Retardation Factor for Low-k Units         (row 3)
+              — same 4 cells, width 8 → 14.
+            * Transformation Rate                        (row 4)
+              — Detailed-only Precursor 1/2 cells, width 8 → 14.
+            * Yield Factor                               (row 5)
+              — Detailed-only Precursor 1/2 cells, width 8 → 14.
+       - General Molecular Diffusion Coefficient row left at width 10
+         (it's a single full-width entry on its own row, not part of
+         the dropdown column).
+       - Companion backup: _Backup/v57.py.  No function modules
+              changed this round.
+
+v58  Detailed Run fix + calibration buttons standalone (CURRENT)
+       - User: "when I pasted the example from the detailed version,
+         and then I run it, it didn't work, something happened and
+         maybe it broke down".
+       - ROOT CAUSE — functions/generate_input_file.py, line 165:
+            precursor_flag = (version_flag == 2 and k38 and
+                              str(k38).strip() not in
+                              ('', 'None', 'none', 'PFAA 1-able'))
+         "PFAA 1-able" was wrongly in the SKIP set.  But "PFAA 1-able"
+         is exactly the value that *means* "precursor is active and
+         transforms into PFAA 1".  Excluding it meant ipre dropped to
+         0 in every Detailed run with the default Precursor 1
+         species — Precursor 1 source concentrations got zeroed out
+         in input.inp, decay/yield terms went silent, and the solver
+         produced wrong / no plume output.  The Detailed example
+         (which carries ipre=1) was the most visible casualty.
+       - Fix: dropped "PFAA 1-able" from the skip set.  Now ipre=1
+         whenever Detailed AND K38 is non-blank-non-None, which
+         matches the Excel reference (`ncomp, ipre, iwall, iTVD =
+         1, 1, 2, 1` in Example/3_Detailed_2/input.inp).
+       - main.py — calibration buttons fully standalone (no .exe):
+            * Save_Data_Calibration: was shelling out to
+              generate_input_file.exe + export_calibration_data.exe.
+              Now runs the in-app generate_input_file.run(app) +
+              writes calibration_inputs.txt directly via the new
+              _save_calibration_inputs(app) helper.
+            * Run_Machine_Based_Calibration: was launching
+              cali_1.exe.  Now saves the calibration inputs (as
+              above) and shows a messagebox explaining the standalone
+              optimizer is not yet implemented and pointing the user
+              at "5. Run Optimal Model" for a single forward run.
+              Once a Python optimizer lands, swap this branch to
+              call it.
+            * Load_Optimal_Data: was launching restore_from_optimal.
+              exe.  Now reads optimal_model.txt (written by Save
+              Optimal Model) via the new _load_optimal_model(app,
+              path) helper and pushes lo/mid/hi/use back into the
+              calibration widgets.  If the file doesn't exist, tells
+              the user to click "6. Save Optimal Model" first.
+            * Added module-level _CALIB_PARAMS constant — the 17 row
+              labels in Step 4, used to make the saved
+              calibration_inputs.txt human-readable.
+       - main.py imports: added `import re` for the optimal_model.txt
+         parser regex.
+       - Companion backup: _Backup/v58.py + _Backup/functions_v58/
+              generate_input_file.py.
+
+v59  Standalone Python calibration optimizer (CURRENT)
+       - functions/cali_1.py — NEW.  Standalone port of
+         Source_Py/cali_1.py without xlwings / sklearn / pandas /
+         matplotlib / Excel template dependencies.  Uses numpy only.
+            * DDS (Dynamically Dimensioned Search) optimizer class —
+              verbatim port of the source's DDS, simplified to drop
+              the matplotlib plot.  Maximizes a -RMSLE objective so
+              the best DDS solution is the lowest-error parameter
+              set.
+            * PARAM_MAP — calibration row label → state-cell setter.
+              Implemented for the most common rows (Source Start
+              Year, k/i → vd, porf, alphax, czero(*,n) multipliers).
+              Rows whose mapping needs sidecar-file edits
+              (transformation_inputs.txt, retardation_inputs.txt,
+              heterogeneity_inputs.txt) are listed but resolve to
+              no-op for now — DDS still picks values for them, they
+              just don't yet propagate to input.inp.  Expand the map
+              as new sidecar writers land.
+            * _read_obs_wells parses obs_well1.out..obs_wellN.out
+              after each solver call; nearest-time match to the §10
+              sample year drives the comparison.  RMSLE computed
+              against §10 monitoring well concentrations
+              (v_mw_conc + v_mw_conc2).
+            * Progress popup (Toplevel) shows iteration #, current
+              RMSLE, best-so-far.  Cancel button stops the loop
+              cleanly via a stop_flag dict.  Worker runs on a daemon
+              thread so the popup stays responsive.
+            * On completion, best parameter values are pushed back
+              into the §Step 4 Mid-Range column (v_calib_mid) so the
+              user sees the optimum without leaving the panel.
+            * run_history.csv written next to input.inp — CSV with
+              one column per checked parameter + a final RMSLE
+              column, one row per DDS evaluation.  Compatible with
+              the existing "3. See All Calibration Data" button.
+       - main.py:
+            * Imported `cali_1` from functions package.
+            * Run_Machine_Based_Calibration dispatcher: removed the
+              "optimizer not implemented" placeholder.  Now saves
+              the calibration sidecar (input.inp +
+              calibration_inputs.txt) then calls cali_1.run(_app_ref).
+              Errors are caught with a full traceback printed and a
+              messagebox shown.
+       - Companion backup: _Backup/v59.py + _Backup/functions_v59/
+              cali_1.py.
+
+v60  Calibration UX polish — three asks (CURRENT)
+       - main.py show_main_panel ("Go Back to Main Interface"):
+            * Was yview_moveto(0.0) only — vertical reset, but if the
+              user had scrolled horizontally (e.g. into the §11 right-
+              column), Go Back left them mid-page horizontally.
+            * Now also xview_moveto(0.0) + lift() + focus_force() so
+              the view returns to the same top-left corner the app
+              opened with.
+       - functions/cali_1.py — calibration progress popup retuned:
+            * Added a 22-pt bold "Calibration in Progress" title
+              above the iteration line.
+            * Iteration label 16 pt → 26 pt bold (matches the Run
+              Model runtime clock — readable from across the room).
+            * Detail line 11 pt → 14 pt; outer padding 24/14 → 36/24.
+            * Window minsize 540x220 → 900x520, resizable, centered
+              via screenwidth/height math.  Cancel/Close buttons
+              width 12 → 14, font 11 pt → 13 pt.
+       - main.py §11 "Run Model with Auto-Calibration" buttons —
+         BOTH copies (calibration-mode panel + main action row):
+            * Macro changed from "Show_Visualization" (which just
+              ran a single forward simulation — the same thing the
+              plain "Run Model" button does) to
+              "Run_Machine_Based_Calibration".  Now actually triggers
+              the DDS optimizer in functions/cali_1.py with progress
+              popup.
+       - Companion backup: _Backup/v60.py + _Backup/functions_v60/
+              cali_1.py.
+
+v61  Calibration "Number of iteration" + "Estim. Time" go live (CURRENT)
+       - User: "the number of iteration and the estim. time remaining
+         should change or do something".  Both cells were dead — the
+         iteration count was just a static text input, the time cell
+         held a hardcoded "2".  Now they react.
+       - main.py _build_calibration_panel:
+            * v_t_remain default "2" → "0" (zero rather than a
+              meaningless "2 minutes" before the user has done
+              anything).
+            * Added _refresh_estim_time() helper bound to a trace on
+              v_n_iter.  Whenever the user types in "Number of
+              iteration", the Estim. Time Remaining cell auto-fills
+              with N × per_iter_secs converted to the active sheet's
+              unit ("(minutes)" Simple / "(hours)" Detailed).
+              Per-iter estimate: 30 s Simple, 120 s Detailed (rough
+              empirical values; tune by editing
+              self._cali_idle_per_iter_secs).
+            * Added _cali_progress_update(i, total, elapsed) bound
+              to the app — when called by cali_1.py during a running
+              calibration, computes per-iter pace from actual
+              elapsed time and writes a real ETA into v_t_remain.
+            * Added self._cali_running flag — distinguishes "idle
+              estimate from N" vs "live ETA from elapsed".  The
+              static estimate trace exits early when the flag is set
+              so a running calibration owns the cell.
+            * Added _format_t_remain(secs) helper that formats the
+              ETA appropriately for minutes vs hours (2-decimal for
+              <0.1, 1-decimal up to 10, integer above).
+       - functions/cali_1.py:
+            * Captures run_start = time.time() at the top of the
+              progress popup so elapsed seconds are tracked.
+            * _progress callback now also calls
+              app._cali_progress_update(i, total, elapsed) via
+              root.after(0, ...) (Tk-thread-safe).  Writes the live
+              ETA to the §calibration cell on every iteration.
+            * _worker flips app._cali_running True at start, False
+              at end.  After the run completes, calls
+              app._refresh_estim_time() so the cell snaps back to
+              the static estimate (useful for the next planned run).
+       - Companion backup: _Backup/v61.py + _Backup/functions_v61/
+              cali_1.py.
+
+v62  Calibration loaded by Paste/Clear + bad default cleaned up (CURRENT)
+       - User report:
+            (a) "Paste Example didn't change calibration much"
+            (b) "weighting factor of 2 for the last well isn't good"
+            (c) "Step 4 not changing or clearing on Paste / Clear"
+       - main.py: changed Step 3 default weights from [1,1,1,1,1,1,2]
+         to [1,1,1,1,1,1,1].  The trailing 2 was inherited from the
+         Excel example's downgradient-emphasis preset, not a sensible
+         default for a blank app.
+       - functions/restore_calibration.py — NEW.  Pushes example
+         calibration values into the §calibration quadrant:
+            * Step 3 weighting factors (per well, 7 entries)
+            * Step 4 parameter ranges (low / mid / high keyed by
+              variable label) — only the params that ARE in the
+              example get checked + filled, others are left
+              un-checked
+            * Step 2 PFOS / Precursor "Calibrate using" checkboxes
+         IMPORTANT: the values are HARDCODED in EXAMPLES dict, NOT
+         read from CalibrationTemplate_*.xlsx at the project root.
+         Reason: those .xlsx files are *outputs* of Save Calibration
+         Data, not reliable inputs — they'd disappear or get
+         overwritten by user actions and break Paste Example.
+         Adding a new example dataset = add a new key to EXAMPLES
+         (no Excel file editing required).
+       - functions/restore_from_example.py — calls
+         restore_calibration.run(app) after the main state push.
+       - functions/clear_for_restore.py — clears the calibration
+         quadrant on Clear All Data: weights → 1.0, ranges blanked,
+         every "Use this Parameter?" + Step 2 checkbox un-ticked.
+       - Companion backup: _Backup/v62.py + _Backup/functions_v62/{
+              restore_calibration, restore_from_example,
+              clear_for_restore}.py.
+
+v63  §2 approx-run-time live + Calib Step 4 Mid dynamic from sources (CURRENT)
+       - User asks:
+         (1) "§2 approx run time cell isn't working"
+         (2) "Step 4 looks weird; the values should be dynamic from
+              the other cells, not hardcoded — when user clicks the
+              checkbox the black cell should update from those cells."
+       - main.py — §2 "approx. run time":
+            * Was a static "0.0" cell.  Now wired to a live
+              _recompute_run_time() helper that estimates seconds as
+                nt × nx × ny × nz × (ncomp + ipre) × 5e-7 × 1.4
+              where nt = (yr_end - yr_start) / 0.1, grid cell sizes
+              default to (5, 5, 1) m, ncomp = 2 if PFAA-2 != "None",
+              ipre = 1 if Detailed AND v_pfaa3 set.
+            * Empirical constant tuned against Example/1_Simple
+              (~10 s for ~1e7 evals); 1.4× safety factor for slow
+              hardware.
+            * trace_add wired on every driver var (yr_start, yr_end,
+              x_size, y_size, z_size, v_pfaa1, v_pfaa2, v_pfaa3,
+              v_pfaa4) at the end of _build_vars.  Initial paint
+              triggered there too so the cell shows a real value as
+              soon as the app launches.
+            * Output formatted: <0.1 → 2 decimals, <10 → 1 decimal,
+              else integer.
+       - main.py — Step 4 Mid-Range column LIVE:
+            * The black BG_LOCKED Mid cells were previously seeded
+              with hardcoded values from a `simple_rows` list.  The
+              user pointed out they should track the source cells in
+              §3, §5, §7, §2 — the Mid value IS the canonical input
+              to compare ranges against.
+            * Added SRC_MAP at the end of _build_calibration_panel —
+              row label → source StringVar.  Wires:
+                Source Start Year (nt)              → v_yr_start
+                Hydraulic Conductivity (k)          → v_darcy (vd display)
+                Effective Porosity (porf)           → v_porf
+                Retardation Factor of PFAA-1/-2     → v_ret_trans1/2
+                Retardation Factor of Pre-1/-2      → v_ret_trans3/4
+                Longitudinal Dispersivity (alphax)  → v_alpha_l
+                Multiplier rows                     → "1" (baseline factor)
+              Rows whose source lives in sidecar txt files (volfrac,
+              difflen, decayf) keep blank Mid for now — to be wired
+              when those sidecar Python writers land.
+            * _refresh_calib_mids() helper bound to self pulls the
+              source values into v_calib_mid[i].  trace_add on each
+              distinct source StringVar so any §3/§5/§2 keystroke
+              auto-updates the calibration Mid column.
+            * Initial paint at the end of build so Mid shows real
+              values from the moment the app opens.
+       - functions/restore_calibration.py:
+            * EXAMPLES dict no longer pushes mid values.  Mid is
+              owned by the live trace; setting it from the example
+              would be overwritten on the next source-cell change
+              and briefly show stale numbers.  Only lo / hi / chk
+              get pushed.
+       - functions/restore_from_example.py:
+            * Calls app._refresh_calib_mids() at the end of run()
+              so Paste Example's freshly-loaded source cells
+              propagate into the Mid column on close.
+       - Companion backup: _Backup/v63.py + _Backup/functions_v63/{
+              restore_calibration, restore_from_example}.py.
+
+v64  Calib Step 4 — K/i editable + linked, sidecar sources wired (CURRENT)
+       - User asks (paraphrased):
+         (a) "K and i should come from §3 GW Velocity Calculator,
+              K in m/year"
+         (b) "volfrac and difflen should come from
+              heterogeneity_inputs.txt if present"
+         (c) "if no heterogeneity file, use K = §3 darcy velocity
+              and gradient = 1"
+         (d) "K and i Mid cells should be sky-blue (editable)"
+         (e) "checking K should auto-check i, and vice versa —
+              unchecking either unchecks both"
+       - main.py — SRC_MAP restructured:
+            * Entries can now be tk.StringVar OR a callable.
+              Callables are sidecar-file readers used for K, i,
+              volfrac, difflen — the values live outside the §
+              cells, in the GW Velocity Calculator and Heterogeneity
+              Calculator popup output files.
+            * _read_gw_inputs() parses gwvelocity_inputs.txt —
+              k_value, k_unit, gradient.  Unit-converts K to m/year
+              via UNIT_TO_MYR (m/s, m/day, ft/day, etc.).
+            * _read_hetero_inputs() parses heterogeneity_inputs.txt —
+              "Transmissive Fraction of Model (-)" → volfrac,
+              "Diffusion Length (m)" → difflen.
+            * _src_K() / _src_i() fall back to v_darcy / "1" when no
+              GW file exists, per the user's spec.
+            * _src_volfrac() / _src_difflen() blank when no
+              heterogeneity file.
+            * Callable sources can't be trace_add'd — _refresh_calib
+              _mids re-reads them on every call.  Callers (Paste
+              Example, GW/Heterogeneity popup close) trigger refresh
+              explicitly.
+       - main.py — K and i Mid cells editable:
+            * EDITABLE_MID_LABELS set lists rows whose Mid uses
+              BG_FORMULA (sky blue editable) instead of BG_LOCKED
+              (black readonly).  Currently just K and i.
+            * _add_row picks per-row mid_bg based on the label.
+       - main.py — K ↔ i checkboxes linked:
+            * After _add_row finishes, if both K and i indices are
+              in v_calib_chk, register a trace pair: each row's
+              checkbox toggle mirrors into the other's.
+            * self._ki_link_busy guard prevents the infinite recursion
+              that would otherwise happen when one trace fires and
+              triggers the other.
+       - Companion backup: _Backup/v64.py.
+
+v65  Calib K/i sources cleaned + popup-close refresh + §11 auto-cal scroll (CURRENT)
+       - User clarifications:
+         (1) Paste Example: K should = example's velocity, gradient = 1
+              (already true — fallback path).  Add: clear stale
+              gwvelocity_inputs.txt on Paste so a previous session's
+              GW values don't override the example.
+         (2) GW Velocity Calculator + Heterogeneity Calculator popups
+              write sidecar txts.  Make sure §calibration Step 4 Mid
+              cells refresh when those popups close.
+         (3) §11 "Run Model with Auto-Calibration" should NOT execute
+              calibration — it should scroll the user to the
+              §calibration quadrant where they fill out Step 2-4
+              first, then explicitly click "2. Run Machine Based
+              Calibration" from there.
+       - functions/state.py INPUT_TXT_FILES:
+            * Added "gwvelocity_inputs.txt", "longevity_inputs.txt",
+              "optimal_model.txt".  These are deleted on Clear All
+              Data / Paste Example / Load Data so a fresh paste
+              doesn't carry over stale values.
+       - main.py run_script() — calibration refresh hooks on popup
+         close:
+            * GWVelocityCalculator dispatcher: after popup return,
+              calls _app_ref._refresh_calib_mids() so the new K/i
+              values written to gwvelocity_inputs.txt propagate to
+              the Step 4 Mid cells immediately.
+            * Same hook on both HeterogeneityCalculator branches
+              (Unconsolidated_Media + Fractured_Rock) for volfrac /
+              difflen.
+       - main.py — §11 "Run Model with Auto-Calibration" rewired:
+            * Was Run_Machine_Based_Calibration → kicked the
+              optimizer immediately.
+            * Now ScrollToCalibration → routes to a new
+              app.scroll_to_calibration() method that yview_moveto
+              0.62 (lands at the calibration header) + xview_moveto
+              0.  User then fills out Step 2-4 and clicks "2. Run
+              Machine Based Calibration" from inside the panel.
+       - Companion backup: _Backup/v65.py + _Backup/functions_v65/
+              state.py.
+
+v66  §11 Auto-Cal scroll uses widget bbox (CURRENT)
+       - User: clicking §11 "Run Model with Auto-Calibration" should
+         land the calibration quadrant at the top of the visible
+         screen, matching the Excel reference screenshot.
+       - main.py:
+            * _build_calibration_panel saves its outer Frame to
+              self._calib_panel_frame so other code can reach it.
+            * scroll_to_calibration() rewritten:
+                - update_idletasks first so geometry is accurate.
+                - Walks up from self._calib_panel_frame summing
+                  winfo_y() until it hits self.inner (the scrolled
+                  frame).  That gives the panel's y-coordinate
+                  inside the scrolled content, in pixels.
+                - Divides by self.inner.winfo_height() (total
+                  scrollable content) → fraction 0..1.
+                - Calls canvas.yview_moveto(fraction) +
+                  xview_moveto(0).  Clamps the fraction to the
+                  valid range.
+                - Falls back to 0.55 if the panel reference or
+                  geometry isn't ready (very early startup).
+              Net: the calibration header lands at the top of the
+              visible canvas regardless of how the layout shifts.
+       - Companion backup: _Backup/v66.py.
+
+v67  §11 Auto-Cal scroll — fix horizontal axis (CURRENT)
+       - User screenshot showed v66's scroll landed at the right
+         vertical position but kept x at 0 — the calibration panel
+         lives in the RIGHT column of the bottom layout, so
+         xview_moveto(0) meant the visible canvas showed the empty
+         left half (with the right column just barely peeking in
+         from the right edge, cropped).
+       - main.py scroll_to_calibration():
+            * Now walks up the parent chain summing BOTH winfo_x
+              and winfo_y until it reaches self.inner.  Two
+              fractions instead of one:
+                fy = (panel_y - 4) / inner_height
+                fx = (panel_x - 4) / inner_width
+              4-px nudge keeps the panel border off the scrollbar
+              bevel.  Tk auto-clamps when the requested position
+              would scroll past the end, so on a wide window the
+              panel lands exactly at the top-left of the visible
+              canvas — matching the Excel reference layout.
+            * Fallback path now uses (0.55, 0.5) — old fallback
+              had x=0 which exhibited the same bug.
+       - Companion backup: _Backup/v67.py.
+
+v68  Calib K Mid = Darcy velocity (not raw K input) (CURRENT)
+       - User screenshot: typed K=10 m/day, i=0.01 in GW Velocity
+         Calculator → calculator output v=36.525 m/yr (correct).
+         Clicked Apply → calibration Step 4 K Mid showed 3652.5
+         m/yr.  User: "this is wrong, not the same as what I input".
+       - Diagnosis: my _src_K() was reading the raw K from
+         gwvelocity_inputs.txt (10 m/day) and unit-converting it
+         to m/yr (10 × 365.25 = 3652.5 m/yr).  But the GW
+         Calculator's Apply button writes the computed Darcy
+         velocity v = K × i (= 36.525 m/yr) into v_darcy.  So the
+         calibration view had two different numbers for "K" — one
+         from the calculator output, one from the raw K reading.
+         3652.5 also fell wildly outside the typical lo/hi range
+         (0.31536 ↔ 31.536) which made it look broken.
+       - Fix:  In the calibration view "Hydraulic Conductivity"
+         really means "the K that produces this Darcy velocity at
+         the chosen gradient" — i.e. K_calib effectively ≡ vd / i.
+         Simplest reconciliation: pull K_calib_mid directly from
+         v_darcy (= the solver's vd, in m/yr) regardless of whether
+         the user used the calculator, pasted an example, or typed
+         vd manually.  This matches the user's earlier rule:
+         "if I paste an example then K should equal velocity".
+       - main.py _src_K() rewritten — reads v_darcy unconditionally,
+         no more sidecar K parsing.  The unit-conversion table is
+         now only used for sanity (UNIT_TO_MYR is still defined for
+         future use but not currently invoked).
+       - main.py — added explicit trace_add on self.v_darcy →
+         _refresh_all_mids so K Mid updates instantly when GW Calc
+         Apply changes v_darcy (callable sources can't be traced
+         on their own, so v_darcy needs the explicit hook).
+       - i (Hydraulic Gradient) handling unchanged — still reads
+         from gwvelocity_inputs.txt if present (user's typed
+         gradient), else "1".
+       - Companion backup: _Backup/v68.py.
+
+v69  Calib K Mid = actual K from GW Calc (revert v68) (CURRENT)
+       - User clarification: "the hydraulic K still the same as
+         velocity but we need to use the K!! save the K from the
+         button.  Also the gradient — if there is no more
+         information we can use same as the velocity, as long as
+         there is a value in that velocity cell."
+       - v68 reading: collapsed K → vd to make the calibration
+         number match the GW Calc's *velocity* output.  But the
+         user actually wants the K (typed in the calculator,
+         unit-converted to m/yr) when the calculator is used.
+       - main.py _src_K() — restored to the v67 logic:
+            * GW Calc used      → K_typed × UNIT_TO_MYR[unit]
+            * No GW Calc, only v_darcy → fallback to v_darcy
+              (per user: "use same as the velocity, as long as
+              there is a value in that velocity cell")
+            * Neither            → blank
+       - main.py _src_i() — unchanged: GW Calc gradient if typed,
+         else 1.  Matches the K fallback (K_eff = v_darcy when
+         i = 1).
+       - v68's explicit v_darcy.trace_add → _refresh_all_mids
+         hook KEPT — still useful for the fallback path so K Mid
+         updates when v_darcy changes.
+       - Net behavior:
+            User types K=10 m/day, i=0.01 in GW Calc → Apply →
+              K Mid: 3652.5 m/yr  (= 10 × 365.25)
+              i Mid: 0.01
+              v_darcy: 36.525 m/yr (= K × i, written by Apply)
+            User pastes example without using GW Calc →
+              K Mid: v_darcy from example
+              i Mid: 1
+       - Companion backup: _Backup/v69.py.
+
+v70  Dashboard reads See_Results_Every from input.inp (CURRENT)
+       - User: "I change §11 See Results Every and the dashboard
+         only shows 2077 — not multiple years".
+       - ROOT CAUSE found by inspection: Source_Py/generate_dashboard
+         .py reads V47 (See Results Every) directly from the .xlsm
+         workbook (`get_cell_value(ws, "V47")`).  Our standalone
+         Python app stores the user's V47 in a tk.StringVar and
+         writes it through generate_input_file → input.inp, but
+         NEVER touches the workbook.  V47 in the workbook is
+         hardcoded to 100, so the dashboard always saw "every 100
+         years" — over a 100-year run that filters down to just
+         year 1977 and 2077, which the user perceived as "only
+         2077".
+       - Source_Py/generate_dashboard.py patched:
+            * Now reads input.inp first.  Looks for the
+                "dt (yr), nt, npt"
+              header line and parses dt + npt from the next data
+              line, then computes See_Results_Every = npt × dt.
+              That's the canonical user value because the Run
+              Model pipeline rewrites input.inp from the §11
+              cell on every click.
+            * Falls back to the workbook V47 only if input.inp
+              can't be parsed (file missing, malformed, etc.).
+       - No changes needed in main.py or the function package —
+         the existing pipeline (state.snapshot → generate_input
+         _file → input.inp) already carries the right see_every
+         value through to where the dashboard now reads it.
+       - Companion backup: _Backup/source_py_v70/
+              generate_dashboard.py (under a new source_py_vNN/
+              naming since this is the first time we modify a
+              Source_Py file).
+
+v71  Calib popup bigger + best params propagate to §inputs (CURRENT)
+       - User: "calibration popup is small, the Best RMSLE summary
+         text wraps and the Close button is barely visible".
+       - functions/cali_1.py — popup retuned:
+            * Title font 22pt → 20pt (was overlapping with Best
+              RMSLE line on smaller windows).  Added wraplength
+              1100 to title + label + detail so the long summary
+              line ("Best values pushed into the Mid-Range column")
+              breaks at word boundaries instead of clipping at the
+              window edge.
+            * Window minsize 900x520 → 1200x640 (covers the 3-line
+              summary + Close button comfortably).
+            * Cancel / Close button width 14 → 16, font 13pt → 14pt
+              so the button is easy to hit and reads clearly.
+       - User: "when calibration finishes / loading optimal data,
+         the parameters should switch back to the interface app —
+         this is important to create the correct inputs and run
+         everything smoothly".
+       - main.py _build_calibration_panel — added REVERSE_MAP +
+         _push_calib_mids_to_inputs() helper bound to self:
+            * REVERSE_MAP mirrors SRC_MAP but only includes rows
+              whose canonical source is a StringVar (the §1-§7
+              cells we can write back to).
+                Source Start Year (nt)            → v_yr_start
+                Hydraulic Conductivity (k)        → v_darcy
+                Effective Porosity (porf)         → v_porf
+                Retardation Factor of PFAA-1/-2   → v_ret_trans1/2
+                Retardation Factor of Pre-1/-2    → v_ret_trans3/4
+                Longitudinal Dispersivity (alphax)→ v_alpha_l
+            * Sidecar-driven rows (i, volfrac, difflen, decayf,
+              multipliers) are deliberately NOT in REVERSE_MAP —
+              they'd require writing the underlying txt files
+              which is the user's deliberate action via the
+              calculator popups.
+            * _push_calib_mids_to_inputs() walks v_calib_mid,
+              writes each non-blank value to its REVERSE_MAP
+              target.
+       - functions/cali_1.py _on_done — after the best DDS values
+         are pushed into v_calib_mid, calls
+         app._push_calib_mids_to_inputs() so §1-§7 cells
+         immediately reflect the optimum.  Subsequent "5. Run
+         Optimal Model" then runs against the right inputs.
+       - main.py Load_Optimal_Data dispatcher — same call after
+         _load_optimal_model().  Messagebox now also tells the
+         user "Mid values propagated to §1-§7 inputs; click '5.
+         Run Optimal Model' to run."
+       - Companion backup: _Backup/v71.py + _Backup/functions_v71/
+              cali_1.py.
+
+v72  Save/Load Optimal — robust format + trace-overwrite fix (CURRENT)
+       - User: "Load Optimal Data isn't changing K / gradient /
+         velocity in the app — calibration panel showing nonsense
+         values".
+       - ROOT CAUSE — three stacked bugs:
+         (1) Save Optimal Model was writing one-line-per-row with
+             no row label.  Load matched by index.  Any future
+             reorder of _CALIB_PARAMS would silently desync.
+         (2) After Load wrote v_calib_mid[k_idx], the dispatcher
+             called _push_calib_mids_to_inputs which called
+             v_darcy.set(...).  v_darcy's trace fired
+             _refresh_all_mids → _src_K read STALE
+             gwvelocity_inputs.txt → wrote the stale K back into
+             v_calib_mid[k_idx].  The user-loaded value was lost
+             before the popup even closed.
+         (3) Source-cell snapshot wasn't saved at all, so
+             retardation, alphax, porf, year couldn't be restored
+             accurately — load only restored the lo/mid/hi columns.
+       - main.py Save_Optimal_Model:
+            * Format upgraded to v2 — labeled blocks per row plus a
+              "src.<varname>=<value>" snapshot of the §3 / §5 / §6
+              source cells.  Header line now reads "REMFluor-MD
+              Optimal Model snapshot v2".
+       - main.py _load_optimal_model rewritten:
+            * Parses both v1 (legacy) and v2 (current) formats.
+              v2 matches Step 4 rows by label name (robust to
+              reorder); v1 falls back to index matching.
+            * Restores the source-cell snapshot (v_darcy, v_porf,
+              v_alpha_l, v_yr_start, v_ret_trans1..4).
+            * Sets app._calib_pushing = True around all writes so
+              the trace handlers don't fire mid-load.
+       - main.py _build_calibration_panel:
+            * Added self._calib_pushing flag (default False).
+              _refresh_all_mids short-circuits when True.  This
+              kills the trace-overwrite cascade.
+            * _push_calib_mids_to_inputs now uses the same guard
+              and calls _refresh_all_mids() once at the end to
+              re-sync.
+       - main.py Load_Optimal_Data dispatcher:
+            * Deletes gwvelocity_inputs.txt + heterogeneity_inputs
+              .txt before loading.  Otherwise the callable sources
+              (_src_K / _src_i / _src_volfrac / _src_difflen) would
+              re-read stale sidecars on the next refresh and clobber
+              the just-loaded values.  optimal_model.txt v2 carries
+              the canonical source snapshot directly, so the
+              sidecars are redundant after load.
+            * Calls app._on_pfaa_change() after the push so
+              v_ret_trans1..4 recompute from the restored porf +
+              PFAA species (otherwise they'd reflect the pre-load
+              state).
+            * Messagebox text updated to confirm "source cells
+              restored" + "click 5. Run Optimal Model to run".
+       - Behaviour matrix:
+            User runs calibration → click 6. Save Optimal Model →
+              optimal_model.txt v2 written with full state
+            User then Loads Optimal Data later →
+              sidecar files deleted, source cells restored,
+              calibration table restored, trace overwrite blocked
+            Click 5. Run Optimal Model → input.inp built from
+              the restored v_darcy / porf / alphax → solver runs
+              with the actual optimum
+       - Companion backup: _Backup/v72.py.
+
+v73  Calibration finish + sidecar cleanup (CURRENT)
+       - User: "Save Optimal Model isn't getting an update every
+         run.  Load Optimal should also update Step 4 + the rest
+         of the interface (sections 3, 4, 7).  Make sure buttons
+         work."
+       - Audit results & root causes:
+         (a) After a calibration run, _on_done pushed best DDS
+             values into v_calib_mid AND called _push_calib_mids_
+             to_inputs, but did NOT delete the gwvelocity_inputs
+             .txt / heterogeneity_inputs.txt sidecars.  Any future
+             refresh (typing in §3, opening a popup, etc.) re-read
+             the stale K / volfrac / difflen → clobbered the
+             optimal Mid values.  Save Optimal Model would then
+             save the clobbered values, not the actual optimum.
+         (b) After load (or run finish), v_ret_trans1..4 retained
+             whatever they were before — porf might have changed,
+             leaving retardation cells out of sync.
+       - functions/cali_1.py _on_done extended:
+            * After _push_calib_mids_to_inputs, deletes
+              gwvelocity_inputs.txt + heterogeneity_inputs.txt.
+              Net: post-calibration the canonical state lives in
+              the §StringVars, sidecars no longer compete.
+            * Calls app._on_pfaa_change() so v_ret_trans1..4
+              recompute from the (possibly new) porf + PFAA
+              species.
+            * Final app._refresh_calib_mids() so the Mid column
+              reflects the cleaned-up source cells.
+       - main.py — Save Optimal Model + Load Optimal Data already
+         handled in v72.  v73 is the missing piece — what to do
+         after a fresh calibration run so subsequent Save Optimal
+         captures the actual optimum.
+       - Button audit (all working):
+            • 1. Save Calibration Data            → generate_input
+                                                     _file + sidecar
+            • 2. Run Machine Based Calibration    → cali_1.run
+            • 3. See All Calibration Data         → opens
+                                                     run_history.csv
+            • 4. Load Optimal Data                → _load_optimal_
+                                                     model + push
+            • 5. Run Optimal Model                → run_model.run
+            • 6. Save Optimal Model               → optimal_model.txt
+                                                     v2
+            • Help                                → messagebox
+            • DefaultRanges (Enter Default…)      → mid × 0.5 / × 2
+            • Go Back to Main Interface           → scroll top-left
+       - Companion backup: _Backup/v73.py + _Backup/functions_v73/
+              cali_1.py.
+
+v74  Step 4 Mid refresh DEFERENTIAL (CURRENT)
+       - User screenshot showed only K Mid updated after calibration;
+         volfrac / difflen / ock(4) / czero(4,n) Mid cells stayed
+         BLACK BLANK and czero(2,n) showed "1" (the baseline) instead
+         of the optimum.
+       - ROOT CAUSE: _refresh_one_mid was OVERWRITING Mid blindly
+         from the source.  Rows without a writable §StringVar source
+         (multipliers, i, volfrac, difflen) had their callable
+         sources return hardcoded fallbacks ("1" / blank) — and the
+         post-calibration refresh wrote those fallbacks straight
+         over the just-pushed optimal values.  So:
+            cali_1 → mid[mult_idx] = 0.7      (optimum)
+            _push   → no source mapping for mult, OK
+            refresh → _src returns nothing → blind set "1"
+                      ↳ optimum LOST
+       - main.py _refresh_one_mid rewritten to be DEFERENTIAL:
+            * If src is None → never auto-overwrite (initial
+              baseline seeded once at build time below).
+            * If callable / StringVar src returns "" → leave Mid
+              alone.  Empty source means "no authoritative value"
+              — never blindly overwrite calibration results.
+            * Only writes Mid when source returns a real non-empty
+              string.  Live-tracking rows (year, K, porf, retard,
+              alphax) still update on user keystrokes because their
+              StringVar sources have content.
+       - main.py _src_K / _src_i / _src_volfrac / _src_difflen:
+            * No more hardcoded "1" / "" fallbacks.  When the
+              sidecar file or v_darcy is empty, return "" so the
+              refresh skips the row.
+       - main.py + restore_calibration.py + clear_for_restore.py —
+         BASELINE_MID dict seeds "1" for i + 4 multiplier rows once
+         at:
+            * App startup (end of _build_calibration_panel)
+            * Paste Example (restore_calibration.run, before
+              applying example ranges)
+            * Clear All Data (clear_for_restore.run)
+         These are the ONLY places the "1" defaults get written —
+         no auto-refresh ever touches them again, so calibration
+         optima stick.
+       - Net behaviour:
+            User runs calibration with K + i + czero(2,n) +
+            czero(1,n) checked → all four Mid cells now show the
+            actual optimal values (no longer clobbered).
+            Save Optimal Model captures the actual optimum.
+            Load Optimal Data restores it correctly.
+       - Companion backup: _Backup/v74.py + _Backup/functions_v74/{
+              restore_calibration, clear_for_restore}.py.
+
+v75  Calibration vd = K × i (joint) + persist sidecar (CURRENT)
+       - User: "to update the velocity in section 3 you need to
+         calculate it using the program behind the GW Velocity
+         Calculator button" — i.e. vd = K × i, not vd = K alone.
+       - functions/cali_1.py — restructured K + i handling:
+         (1) PARAM_MAP — replaced the K and i lambdas with sentinel
+             strings "K" and "i".  Direct setters were dangerous:
+             whichever fired last clobbered the other (both wrote
+             to v_darcy directly).
+         (2) _eval() now does TWO passes:
+                pass 1 — apply non-K/i setters (year, porf, alphax,
+                          multipliers).  Capture K_val + i_val
+                          into local floats.
+                pass 2 — if either was calibrated, compute
+                          vd = K × i and write to v_darcy via
+                          _set_vd.  Missing partner falls back to
+                          1 for i / current vd for K so the math
+                          stays sensible when only one is checked.
+         (3) On run finish, write gwvelocity_inputs.txt with the
+             optimal K (m/year) + i + computed vd.  Net effects:
+                • _refresh_calib_mids reads K/i from the sidecar
+                  → Mid column shows the actual calibrated values
+                  (not just K written via REVERSE_MAP, which lost i).
+                • The §3 GW Velocity Calculator pre-fills with the
+                  calibrated K + i + vd next time the user opens it.
+                • v_darcy is force-set to vd (= K × i) AFTER
+                  _push_calib_mids_to_inputs (which had earlier
+                  written K alone) — overrides the K-only push.
+       - Companion backup: _Backup/v75.py + _Backup/functions_v75/
+              cali_1.py.
+
+v76  Load Optimal vd = K × i + §7 wider/2-decimal (CURRENT)
+       - User: "v_darcy in §3 isn't updating after Load Optimal Data —
+         should be K × i (matches the GW Velocity Calculator).  Also
+         widen §7 cells and round values to 2 decimals."
+       - main.py REVERSE_MAP — removed
+         "Hydraulic Conductivity (k)" → v_darcy direct mapping.
+         Was overwriting v_darcy with K alone (ignoring i factor).
+       - main.py _push_calib_mids_to_inputs:
+            * Reads K from Mid[K_idx] and i from Mid[i_idx], computes
+              vd = K × i, writes to v_darcy.  Falls back to i = 1
+              if i Mid is blank.  4-decimal format with trailing
+              zeros stripped for cleaner display.
+            * Triggered after both calibration finish AND Load
+              Optimal Data dispatcher.
+       - main.py Load_Optimal_Data dispatcher:
+            * After _push, recreates gwvelocity_inputs.txt with the
+              loaded K + i + computed vd.  Net effects:
+                - §3 GW Velocity Calculator pre-fills with the loaded
+                  K + i next time the user opens it.
+                - _src_K / _src_i read the sidecar correctly,
+                  Mid column stays in sync.
+            * Messagebox text now reads "v_darcy = K × i (computed
+              jointly)" so the user knows what happened.
+       - §7 wider cells + 2-decimal rounding:
+            * make_entry width 10 → 14 for v_src_pfaa1/2 + v_src_pre1/2
+              cells.  Year column unchanged at 8.  Numbers like
+              "1,600.00" (5 visible chars + decimals) now fit
+              comfortably with margin.
+            * Default value "1,600.000" → "1,600.00" (3 → 2 decimals).
+            * functions/popups_source_remediation.py: the Apply
+              Remediation formatter changed from f"{:,.3f}" to
+              f"{:,.2f}".  Trickle-down: source values reduced
+              by §8 % now display as "1,584.00" not "1,584.000".
+            * main.py §8 → §7 trace formatter: same change ("{:,.3f}"
+              → "{:,.2f}").
+            * functions/inp_to_state.py: when loading source
+              concentrations from input.inp, format c1/c2/c3/c4
+              with comma grouping + 2 decimals via new _fmt_conc()
+              helper.  generate_input_file's _safe_float strips
+              commas so the round-trip stays clean.
+       - Companion backup: _Backup/v76.py + _Backup/functions_v76/{
+              inp_to_state, popups_source_remediation}.py.
+
+v77  Calib K-clobber fix (sidecar-before-push order) + §7 totals wider (CURRENT)
+       - User: "K from Load Optimal doesn't match run_history.csv".
+       - ROOT CAUSE — order of operations:
+            1. _load_optimal_model writes mid[K] = 5  (correct)
+            2. _push_calib_mids_to_inputs runs:
+               - vd = K × i = 0.25 → v_darcy
+               - trailing _refresh_all_mids fires
+                 → _src_K reads gwvelocity_inputs.txt (deleted earlier)
+                 → falls back to v_darcy = 0.25
+                 → mid[K] OVERWRITTEN to 0.25  (WRONG)
+            3. Dispatcher then writes gwvelocity_inputs.txt from
+               (now-clobbered) mid[K] = 0.25.  WRONG K stored.
+            4. Subsequent reads see 0.25 — totally inconsistent
+               with run_history.csv which has the original K=5.
+       - Fix — write the sidecar BEFORE _push runs.  When _push's
+         trailing refresh fires, _src_K reads K from the sidecar
+         (just written) instead of falling back to v_darcy.  Mid
+         stays correct.
+       - main.py Load_Optimal_Data dispatcher reordered:
+            (1) _load_optimal_model (restore mid + src snapshot)
+            (2) Write gwvelocity_inputs.txt from mid[K] / mid[i]
+            (3) _push_calib_mids_to_inputs (vd = K × i)
+            (4) _on_pfaa_change
+       - functions/cali_1.py _on_done reordered (same fix):
+            (1) Write best DDS values into v_calib_mid
+            (2) Write gwvelocity_inputs.txt from mid[K] / mid[i]
+            (3) Delete heterogeneity_inputs.txt
+            (4) _push_calib_mids_to_inputs
+            (5) _on_pfaa_change
+            (Removed the redundant trailing _refresh_calib_mids —
+            _push's internal refresh + sidecar-first ordering
+            already produces a consistent end state.)
+       - main.py §7 Total PFAS Mass Out of Source cells:
+            * Width 8 → 14 for all four totals labels
+              (v_total_mass / _p2 / _pre1 / _pre2).  Visually
+              aligns with the source-concentration column (also
+              width 14 from v76) so the totals row reads as a
+              proper bottom-row sum under each column.
+       - Companion backup: _Backup/v77.py + _Backup/functions_v77/
+              cali_1.py.
+
+v78  input.inp source 0s + multipliers not applied (CURRENT)
+       - User screenshot showed input.inp source zone with EVERY
+         czero value = 0:
+              0, 0, 0, 0, 0
+             10.0, 0, 0, 0, 0
+             ...
+         Two distinct bugs:
+         (A) §7 cells store comma-formatted values ("1,600.00")
+             since v76.  generate_input_file._safe_float used
+             plain float() which raises ValueError on the comma →
+             every conc returned the default 0.  Solver runs with
+             no PFAS at all, plumes are flat.
+         (B) Calibration Step 4 multipliers (czero(2,n), czero(1,n),
+             etc.) only acted during DDS in-memory evaluations.
+             At Run Optimal Model time, generate_input_file
+             rebuilt source columns from the §7 cells × 1
+             (no multiplier applied), so the calibration optimum
+             for those rows was effectively ignored.
+       - functions/generate_input_file.py:
+         (A) _safe_float / _safe_int now strip commas as a fallback
+             before retrying the parse.  "1,600.00" → 1600.0.
+             Round-trip stays clean: §7 displays comma-formatted,
+             solver reads numeric.
+         (B) After concs1/concs2/concs3/concs4 are read from §7,
+             reach into _app_ref to read the calibration Step 4
+             checkbox + Mid for each multiplier row.  If checked
+             AND mid != 1, multiply the corresponding source column
+             by that factor BEFORE writing input.inp.  No change
+             to §7 cells (user keeps seeing the baseline) — the
+             multiplier is "applied virtually" at run time.
+            Wrapped in try/except so missing _app_ref / unavailable
+            _CALIB_PARAMS doesn't break the run.
+       - Companion backup: _Backup/v78.py + _Backup/functions_v78/
+              generate_input_file.py.
+
+v79  Multipliers physically applied to §7 (CURRENT)
+       - User: "Multipliers aren't being applied to the optimal run.
+         Change §7 with the multipliers accordingly so we can run
+         the true optimal run."
+       - v78 applied multipliers VIRTUALLY inside generate_input_file
+         — input.inp had multiplied values but §7 cells stayed at
+         baseline, so the user couldn't see what was being run.
+       - main.py _build_calibration_panel — added
+         _apply_calib_multipliers_to_s7() helper bound to self:
+            * For each of the 4 czero(*,n) multiplier rows:
+              if checked AND mid != 1, multiply the corresponding
+              §7 column (v_src_pfaa1 / v_src_pfaa2 / v_src_pre1 /
+              v_src_pre2) by that factor in-place.  Each cell
+              re-formatted with comma + 2dp ("1,120.00").
+            * AFTER multiplying, resets mid to "1" so the next
+              calibration / Run Optimal doesn't compound (v×m×m).
+            * Does nothing if row is unchecked or mid is 1.
+       - functions/cali_1.py _on_done:
+            * Step 5 added — calls app._apply_calib_multipliers_to_s7
+              right after _push.  §7 cells now visibly reflect the
+              calibration optimum.
+       - main.py Load_Optimal_Data dispatcher:
+            * Calls _apply_calib_multipliers_to_s7 after _push so
+              loaded optimal multipliers also get baked into §7.
+       - functions/generate_input_file.py:
+            * Removed the v78 "virtual multiply" block.  §7 cells
+              now physically reflect the multiplier so generate_input
+              _file just reads them as-is.  Without this removal,
+              we'd double-apply (v×m once in §7, again in generate).
+       - End-to-end behavior:
+         (a) Paste Example → §7 PFAA-1 = 1,600 (baseline)
+         (b) Run calibration with multiplier checked → optimum 0.7
+         (c) After finish: §7 PFAA-1 = 1,120 (visibly multiplied)
+                          mid[multiplier] = 1 (reset, no compounding)
+                          v_darcy = K × i (joint product)
+         (d) Click Run Optimal Model → input.inp gets the multiplied
+             1,120 from §7 directly.  Solver runs the actual optimum.
+       - Companion backup: _Backup/v79.py + _Backup/functions_v79/{
+              cali_1, generate_input_file}.py.
+
+v80  optimal_model.txt v3 — multiplier visible + §7 restored verbatim (CURRENT)
+       - User: "After Load Optimal I see §7 has the new
+         concentrations but the multipliers in Step 4 show 1.  I
+         should see the actual multiplier coefficient there too."
+       - v79 reset multiplier Mid to 1 after applying to §7 to
+         prevent compounding on subsequent calls.  But that hid
+         the calibrated coefficient from the user's view.
+       - Architectural change — optimal_model.txt v3 now stores §7
+         source-zone values directly:
+              s7.pfaa1[0]=1,120.00
+              s7.pfaa1[1]=1,120.00
+              ...
+              s7.pre1[10]=...
+         44 lines total (4 columns × 11 time rows).  Load just
+         restores them verbatim — no multiplier re-apply needed,
+         so Mid is free to show the optimal coefficient.
+       - main.py changes:
+         (a) _apply_calib_multipliers_to_s7 no longer resets Mid to
+             1 after multiplying.  Mid stays at the optimal value
+             so the user can see it.  Compounding is prevented by
+             design: the helper is only called from cali_1._on_done
+             (post-DDS), never from Run Optimal Model or Load.
+         (b) Save_Optimal_Model writes "REMFluor-MD Optimal Model
+             snapshot v3" header + new "# §7 source zone (post-
+             multiplier values)" block.
+         (c) _load_optimal_model parses s7.<col>[<i>]=<value> lines
+             into a snapshot dict, then restores them after the
+             src_snapshot block.  Indexed by column name +
+             0-based row.
+         (d) Load_Optimal_Data dispatcher no longer calls
+             _apply_calib_multipliers_to_s7 — §7 already restored
+             directly by the loader.  Removing that call was the
+             second half of the compounding fix.
+       - End-to-end behavior:
+         Calibration finishes with multiplier optimum 0.7 →
+            §7 = 1,120 (= 1,600 × 0.7), Mid = 0.7 ✓
+         User clicks Save Optimal Model →
+            optimal_model.txt v3 stores §7 = 1,120 + Mid = 0.7
+         User pastes example, then Loads Optimal →
+            §7 restored to 1,120 (verbatim from file)
+            Mid restored to 0.7 (visible coefficient) ✓
+            No re-multiplication, no compounding
+         Run Optimal Model → uses §7 = 1,120 directly, correct
+       - Companion backup: _Backup/v80.py.
+
+# Companion files (live in _Python/tkinter/functions/)
+------------------------------------------------------
+popups_calibration.py
+   v17  ttk.Style rowheight=26 (Treeview rows visible)
+   v18  ttk.Style rowheight=36 + theme_use("clam") to defeat
+        Windows vista/xpnative theme that ignores rowheight
+
+state.py
+   v37  CELL_MAP extended with §5 precursor species, §5 transformation
+        rates / yield factors, §7 Detailed precursor source rows
+        (Z/AB cols), §9 Detailed PSB cells (a_3/4, kf_3/4, kf_unit,
+        mw_*, kf_conv2/3/4), §9 cells (AC82).  v_psb_yr corrected from
+        Y75 to AB28.  Total entries: 79 → 136.
+   v40  snapshot()/push() try scalar getattr(app, var_name) BEFORE the
+        list-element fallback, fixing 16 §5/§9 cells that were silently
+        dropped because their var_name ends with _N but the app holds
+        them as scalar StringVars (not a list).
+
+inp_to_state.py
+   v38  PSB block rewritten to write the UI-bound addresses (X74,
+        Y82, AA82, AC82) for psb_dist / psb_width / psb_loading /
+        psb_cells instead of the legacy XLSM addrs (AE25, AH27, AH28,
+        AH29).  Pins U24 = "(ug/kg)(ug/L)^(-a)" on restore so the
+        §9 Converted-Kf auto-formula stays consistent with the unit
+        basis the .inp stores.
+   v39  AA82 (PSB Loading) is now stored as a PERCENT (×100), matching
+        the §9 cell's "(%)" unit label.
+   v41  Added _fmt_kf() helper; V24/X24/Z24/AB24 are now stored as
+        comma-formatted strings ("1,227,951" instead of "1227951.0").
+
+generate_input_file.py
+   v39  PSBloading reader now prefers state["AA82"] (percent), strips
+        an optional "%", divides by 100; falls back to AH28 (legacy
+        fraction) only if AA82 is empty.  Round-trip confirmed against
+        Example/3_Detailed_2/input.inp.
+
+run_model.py
+   v81  generate_dashboard.py moved from REMFluorMD_v2.6/Source_Py/
+        into _Python/tkinter/functions/ for consistency with every
+        other ported module (cali_1, popups_*, generate_input_file,
+        etc.).  _dashboard_script() now resolves to its own sibling
+        via __file__ instead of walking up to a separate top-level
+        Source_Py/ folder.  Source_Py copy is kept in the repo as
+        historical reference but is no longer touched at runtime,
+        which means the standalone .exe build in Phase 3 only needs
+        functions/ + Figures/ + template.inp + remfluor_v8a.exe.
+
+
+# Update protocol
+-----------------
+1. After each backup, append a new "vN  <one-line summary>" entry above
+   plus 2-6 bullet points describing the change.
+2. Keep entries chronological (oldest first).
+3. Update the "Latest = vN" line at the top.
+4. If a backup is part of a multi-file change set (e.g. main.py +
+   popups_calibration.py), note it under the "Companion files" section.

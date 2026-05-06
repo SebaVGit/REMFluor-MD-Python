@@ -1,0 +1,2224 @@
+"""
+REMFluor-MD Model Input Dashboard — TKINTER variant.
+
+Sister build to the PySide6 version at  _Python/main.py .  Same Excel/PDF
+storyboard ground truth, same Figures/ folder, same VBA macro dispatch
+table.  Lives at  REMFluorMD_v2.6/_Python/tkinter/main.py  so BASE_DIR
+walks up two levels to reach the project root.
+
+Visual / behavioral spec:
+    - Top header bar:  dark teal  #074F69 with white italic title
+    - Bottom bar:      pure black #000000
+    - Body:            light gray #F2F2F2
+    - ESTCP logo:      loaded from BASE_DIR/Figures/ (PNG/GIF/JPG via PIL)
+    - Body font:       Calibri (Excel default)
+    - "?" help boxes:  squared, sit flush-adjacent to their entry cells
+    - Layout:          fixed proportions inside scrollable Canvas, both
+                       horizontal and vertical scrollbars when window is
+                       smaller than the canvas
+
+Buttons call Python scripts / open Quarto files using the same paths as
+the VBA macros.  Run with:
+    cd _Python/tkinter
+    python main.py
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import subprocess
+import os
+import sys
+import glob
+from datetime import datetime
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HIGH-DPI / RETINA SHARPNESS FIX  (must run BEFORE creating any Tk widgets)
+# ─────────────────────────────────────────────────────────────────────────────
+# Without this, Windows treats the app as a 96-DPI legacy app and bitmap-
+# stretches the entire window on scaled displays (125% / 150% / 175%), making
+# text and images look blurry. With it, Tk renders at the display's native
+# pixel resolution.
+def _enable_high_dpi_awareness():
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+        # Windows 8.1+: per-monitor DPI awareness (best)
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+            return
+        except (AttributeError, OSError):
+            pass
+        # Windows Vista/7/8: system DPI awareness (good enough)
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except (AttributeError, OSError):
+            pass
+    except Exception:
+        pass
+
+_enable_high_dpi_awareness()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COLOR CONSTANTS  (sampled directly from the PDF storyboard pixels)
+# ─────────────────────────────────────────────────────────────────────────────
+BG_HEADER_BAR  = "#074F69"   # top bar – DARK TEAL (sampled from PDF)
+BG_BOTTOM_BAR  = "#000000"   # bottom bar – PURE BLACK (sampled)
+BG_MAIN        = "#F2F2F2"   # body background – LIGHT GRAY (sampled)
+BG_WHITE       = "#FFFFFF"
+BG_LEGEND_BAR  = "#FFFFFF"
+BG_INPUT_BLUE  = "#FFFFFF"   # legend "Enter value directly"           – WHITE
+BG_FORMULA     = "#DAE9F8"   # legend "Cell with formula or default..." – light blue
+BG_PULLDOWN    = "#FBE2D5"   # legend "Pull Down Menu"                  – peach
+BG_LOCKED      = "#000000"   # legend "Calculated value..."             – BLACK
+FG_LOCKED      = "#FFFFFF"   # text color used inside black locked cells
+BG_SECTION_HDR = "#DAEEF3"
+BTN_FILL       = "#D9D9D9"   # standard gray button
+BTN_FILL_BLUE  = "#BDD7EE"   # Run Model buttons (light blue)
+BTN_FILL_GREEN = "#E6FFDC"   # Authors / Save Data button (light green)
+BTN_FILL_RED   = "#FFD7D7"   # red-tinted button background
+
+FG_TITLE       = "#FFFFFF"   # white title on dark teal
+FG_SECTION     = "#0070C0"   # blue section headers (sampled)
+FG_BTN_NAVY    = "#002060"
+FG_BTN_RED     = "#FF0000"
+FG_BTN_BLUE    = "#0070C0"
+FG_BTN_GREEN   = "#385723"
+FG_INPUT       = "#000000"
+FG_GREY        = "#7F7F7F"
+FG_YELLOW      = "#FFFF00"
+FG_HELP        = "#FF0000"   # red "?" help link text
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FONTS  (Calibri = Excel default; Tk falls back gracefully if unavailable)
+# ─────────────────────────────────────────────────────────────────────────────
+FG_TITLE_GREEN = "#DAF2D0"   # "REMFluor" portion of the title
+
+# ─── FONTS as Tk NAMED FONTS ────────────────────────────────────────────────
+# Storing fonts as named fonts (instead of tuples) lets us resize every widget
+# at runtime by just calling .config(size=...) on the named font.  The string
+# constants below are the names; the actual sizes are configured by
+# REMFluorApp._init_named_fonts() after the Tk root is created.
+FONT_TITLE     = "AppTitle"
+FONT_VERSION   = "AppVersion"
+FONT_SECTION   = "AppSection"
+FONT_LABEL     = "AppLabel"
+FONT_LABEL_B   = "AppLabelB"     # bold body label  (PFAA 1, etc.)
+FONT_LABEL_I   = "AppLabelI"     # italic body label
+FONT_LABEL_BI  = "AppLabelBI"    # bold italic
+FONT_LABEL_SM  = "AppLabelSm"
+FONT_LABEL_SMI = "AppLabelSmI"   # small italic
+FONT_LABEL_XS  = "AppLabelXs"
+FONT_INPUT     = "AppInput"
+FONT_BTN       = "AppBtn"
+FONT_BTN_SM    = "AppBtnSm"
+FONT_BTN_LG    = "AppBtnLg"
+FONT_BTN_CALIB = "AppBtnCalib"
+FONT_HELP      = "AppHelp"
+
+# Baseline (zoom = 1.0) sizes.  Title/version stay big as the user requested;
+# every other size is dialled down so the dashboard fits on small displays.
+# The user can press Ctrl++ / Ctrl+- / Ctrl+0 / Ctrl+wheel to zoom.
+_FONT_DEFS = {
+    # name              family            size  weight    slant
+    FONT_TITLE:        ("Arial Narrow",   28,   "normal", "roman"),
+    FONT_VERSION:      ("Arial Narrow",   26,   "normal", "roman"),
+    FONT_SECTION:      ("Calibri",        10,   "bold",   "roman"),
+    FONT_LABEL:        ("Calibri",         8,   "normal", "roman"),
+    FONT_LABEL_B:      ("Calibri",         8,   "bold",   "roman"),
+    FONT_LABEL_I:      ("Calibri",         8,   "normal", "italic"),
+    FONT_LABEL_BI:     ("Calibri",         8,   "bold",   "italic"),
+    FONT_LABEL_SM:     ("Calibri",         7,   "normal", "roman"),
+    FONT_LABEL_SMI:    ("Calibri",         7,   "normal", "italic"),
+    FONT_LABEL_XS:     ("Calibri",         7,   "normal", "roman"),
+    FONT_INPUT:        ("Calibri",         8,   "normal", "roman"),
+    FONT_BTN:          ("Calibri",         8,   "normal", "italic"),
+    FONT_BTN_SM:       ("Calibri",         7,   "normal", "italic"),
+    FONT_BTN_LG:       ("Calibri",        11,   "bold",   "italic"),
+    FONT_BTN_CALIB:    ("Calibri",         8,   "bold",   "roman"),
+    FONT_HELP:         ("Arial",           8,   "bold",   "italic"),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SCRIPT / FILE PATHS  (mirrored exactly from VBA macro targets)
+# ─────────────────────────────────────────────────────────────────────────────
+# This file lives at  REMFluorMD_v2.6/_Python/tkinter/main.py
+# BASE_DIR must point at REMFluorMD_v2.6 so Figures/, dist/, docs/, and
+# the .xlsm workbook resolve correctly.
+_HERE    = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(_HERE, "..", ".."))
+
+# When running as a PyInstaller --onefile build, sys._MEIPASS is the
+# temp folder that holds bundled data (e.g. the Figures/ folder added
+# via --add-data). We look there first, then fall back to BASE_DIR.
+def _resolve_figures_dir():
+    bundled = getattr(sys, "_MEIPASS", None)
+    if bundled and os.path.isdir(os.path.join(bundled, "Figures")):
+        return os.path.join(bundled, "Figures")
+    return os.path.join(BASE_DIR, "Figures")
+
+FIGURES_DIR = _resolve_figures_dir()
+
+def _exe(*parts):
+    return os.path.join(BASE_DIR, "dist", *parts)
+
+def _html(*parts):
+    return os.path.join(BASE_DIR, "docs", "_site", *parts)
+
+EXES = {
+    "GWVelocityCalculator": (
+        _exe("popups_GWvelocity", "popups_GWvelocity.exe"),
+        ["{workbook}", "{sheet}"]),
+    "HeterogeneityCalculator_Unconsolidated_Media": (
+        _exe("popups_heterogeneity", "popups_heterogeneity.exe"),
+        ["{workbook}", "{unitflag}", "Unconsolidated Media"]),
+    "HeterogeneityCalculator_Fractured_Rock": (
+        _exe("popups_heterogeneity", "popups_heterogeneity.exe"),
+        ["{workbook}", "{unitflag}", "Fractured Rock"]),
+    "CalculrateRetardationFactors": (
+        _exe("popups_retardation", "popups_retardation.exe"),
+        ["{workbook}", "{sheet}"]),
+    "ModelingTransformationLowK": (
+        _exe("popups_transformation", "popups_transformation.exe"),
+        ["{workbook}"]),
+    "SourceOption2": (
+        _exe("popups_mass_discharge_import", "popups_mass_discharge_import.exe"),
+        ["{workbook}", "{sheet}"]),
+    "SourceRemediation": (
+        _exe("popups_source_remediation", "popups_source_remediation.exe"),
+        ["{workbook}", "{sheet}"]),
+    "LongevityTool": (
+        _exe("popups_longevity", "popups_longevity.exe"),
+        ["{workbook}", "{sheet}"]),
+    "CalibrationDataLoader": (
+        _exe("popups_calibration", "popups_calibration.exe"),
+        ["{workbook}", "{sheet}"]),
+    "ChangeNumericalParameters": (
+        _exe("popups_numerical", "popups_numerical.exe"),
+        ["{workbook}", "{sheet}"]),
+    "OpenAppendix_2_1_Relative_EXE": (
+        _exe("popups_cellsize", "popups_cellsize.exe"),
+        ["{workbook}", "{sheet}"]),
+    "RunPythonScript": (
+        _exe("input_variables", "input_variables.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Save_Data": (
+        _exe("generate_input_file", "generate_input_file.exe"),
+        ["{workbook}", "{sheet}", "ask"]),
+    "Load_Data_Step1": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Load_Data_Step2": (
+        _exe("restore_from_saved_folder", "restore_from_saved_folder.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Paste_Example_Step1": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Paste_Example_Step2": (
+        _exe("restore_from_example_folder", "restore_from_example_folder.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Clear_Data": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Save_Data_Calibration_Step1": (
+        _exe("generate_input_file", "generate_input_file.exe"),
+        ["{workbook}", "{sheet}", "noask"]),
+    "Save_Data_Calibration_Step2": (
+        _exe("export_calibration_data", "export_calibration_data.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Run_Machine_Based_Calibration": (
+        _exe("cali_1", "cali_1.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Load_Optimal_Data": (
+        _exe("restore_from_optimal", "restore_from_optimal.exe"),
+        ["{workbook}", "{sheet}"]),
+}
+
+HTML_APPENDIX = {
+    "OpenAppendix_2_1_Relative": _html("appendix", "appendix_2_1.html"),
+    "OpenAppendix_2_2_Relative": _html("appendix", "appendix_2_2.html"),
+    "OpenAppendix_4_2_Relative": _html("appendix", "appendix_4_2.html"),
+    "OpenAppendix_6_1_Relative": _html("appendix", "appendix_6_1.html"),
+    "OpenAppendix_7_1_Relative": _html("appendix", "appendix_7_1.html"),
+    "OpenAppendix_8_1_Relative": _html("appendix", "appendix_8_1.html"),
+    "OpenAppendix_9_1_Relative": _html("appendix", "appendix_9_1.html"),
+}
+
+HTML_CHICKLETS = {
+    "OpenTable1":               ("Step1_SystemUnits.html", ""),
+    "OpenTable2_1_XDirection":  ("Step2_ModelConfiguration.html", "model-size-in-direction-of-groundwater-flow-x-direction"),
+    "OpenTable2_1_YDirection":  ("Step2_ModelConfiguration.html", "model-size-in-direction-of-groundwater-flow-y-direction"),
+    "OpenTable2_1_ZDirection":  ("Step2_ModelConfiguration.html", "model-size-in-direction-of-groundwater-flow-z-direction"),
+    "OpenTable2_2":             ("Step2_ModelConfiguration.html", "finite-difference-cell-size"),
+    "OpenTable2_3":             ("Step2_ModelConfiguration.html", "source-width"),
+    "OpenTable2_4":             ("Step2_ModelConfiguration.html", "thickness-of-source-below-water-table"),
+    "OpenTable2_5":             ("Step2_ModelConfiguration.html", "starting-year-of-simulation"),
+    "OpenTable2_6":             ("Step2_ModelConfiguration.html", "ending-year-of-simulation"),
+    "OpenTable3_1":             ("Step3_GroundwaterDarcyVelocity.html", "groundwater-darcy-velocity-vd"),
+    "OpenTable3_2":             ("Step3_GroundwaterDarcyVelocity.html", "transmissive-zone-effective-porosity"),
+    "OpenTable4_1":             ("Step4_HydrogeologicSettingAndMatrixDiffusion.html", "unconsolidated-aquifers---low-k-media-details"),
+    "OpenTable4_2":             ("Step4_HydrogeologicSettingAndMatrixDiffusion.html", "low-k-zone-total-porosity"),
+    "OpenTable4_3":             ("Step4_HydrogeologicSettingAndMatrixDiffusion.html", "low-k-zone-tortuosity"),
+    "OpenTable5_1":             ("Step5_PFASTransportProperties.html", "constituent"),
+    "OpenTable5_2":             ("Step5_PFASTransportProperties.html", "retardation-factor-calculations"),
+    "OpenTable5_3":             ("Step5_PFASTransportProperties.html", "retardation-factor-in-t-zone-transmissive-zone"),
+    "OpenTable5_4":             ("Step5_PFASTransportProperties.html", "retardation-factor-in-low-k-media"),
+    "OpenTable5_5":             ("Step5_PFASTransportProperties.html", "detailed-model-only-precursor-transformation-to-pfaas"),
+    "OpenTable5_6":             ("Step5_PFASTransportProperties.html", "microbial-yield-factor"),
+    "OpenTable5_7":             ("Step5_PFASTransportProperties.html", "molecular-diffusion-coefficient-in-free-water"),
+    "OpenTable6_1":             ("Step6_PlumeTransport.html", "longitudinal-dispersivity"),
+    "OpenTable6_2":             ("Step6_PlumeTransport.html", "transverse-dispersivity"),
+    "OpenTable6_3":             ("Step6_PlumeTransport.html", "vertical-dispersivity"),
+    "OpenTable7_1":             ("Step7_PFASSourceTerm.html", "initial-source-concentration"),
+    "OpenTable8_1":             ("Step8_SourceRemediation.html", "percent-source-mass-removed-by-remediation"),
+    "OpenTable8_2":             ("Step8_SourceRemediation.html", "remediation-started-in-year"),
+    "OpenTable8_3":             ("Step8_SourceRemediation.html", "remediation-ended-in-year"),
+    "OpenTable9_1":             ("Step9_PlumeRemediationPSB.html", "psb-freundlich-exponent-a"),
+    "OpenTable9_2":             ("Step9_PlumeRemediationPSB.html", "psb-freundlich-kf"),
+    "OpenTable9_3":             ("Step9_PlumeRemediationPSB.html", "year-psb-barrier-installed"),
+    "OpenTable9_4":             ("Step9_PlumeRemediationPSB.html", "total-width-of-psb-in-x-direction"),
+    "OpenTable9_5":             ("Step9_PlumeRemediationPSB.html", "psb-loading-fcac"),
+    "OpenTable10_1":            ("Step10_FieldDataToCalibrate.html", "sample-year"),
+    "OpenTable10_2":            ("Step10_FieldDataToCalibrate.html", "monitoring-well-name"),
+    "OpenTable10_3":            ("Step10_FieldDataToCalibrate.html", "concentration-measured"),
+    "OpenTable10_4":            ("Step10_FieldDataToCalibrate.html", "distance-from-source"),
+    "OpenTable11_1":            ("Step11_ModelingParameters.html", "see-results-every"),
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ACTION DISPATCHER
+# ─────────────────────────────────────────────────────────────────────────────
+XLSM_PATH = os.path.join(BASE_DIR,
+                         "REMFluor-MD Interface Storyboard v2.6.xlsm")
+
+def _open_html(path_or_url: str, wait: bool = False):
+    if sys.platform == "win32":
+        url = "file:///" + path_or_url.replace("\\", "/")
+        subprocess.Popen(["cmd", "/c", "start", "", url],
+                         shell=False, creationflags=subprocess.CREATE_NO_WINDOW
+                         if hasattr(subprocess, "CREATE_NO_WINDOW") else 0)
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", path_or_url])
+    else:
+        subprocess.Popen(["xdg-open", path_or_url])
+
+
+def _launch_exe(exe_path: str, args: list, wait: bool = True):
+    if not os.path.exists(exe_path):
+        messagebox.showwarning(
+            "Executable Not Found",
+            f"Expected executable not found:\n{exe_path}\n\n"
+            "Ensure the dist\\ folder is present next to this script."
+        )
+        return
+    cmd = [exe_path] + args
+    if wait:
+        subprocess.run(cmd)
+    else:
+        subprocess.Popen(cmd)
+
+
+def _resolve_args(template: list, sheet: str = "", unitflag: str = "2") -> list:
+    return [
+        a.replace("{workbook}", XLSM_PATH)
+         .replace("{sheet}", sheet)
+         .replace("{unitflag}", unitflag)
+        for a in template
+    ]
+
+
+def _current_sheet() -> str:
+    return getattr(_app_ref, "active_sheet", "Simple")
+
+
+def _unitflag() -> str:
+    return "1" if getattr(_app_ref, "v_units", None) and \
+           _app_ref.v_units.get() == "feet" else "2"
+
+
+_app_ref = None
+
+
+def run_script(macro_name, extra_args=None):
+    sheet     = _current_sheet()
+    unitflag  = _unitflag()
+
+    if macro_name == "Load_Data":
+        exe1, t1 = EXES["Load_Data_Step1"]
+        exe2, t2 = EXES["Load_Data_Step2"]
+        _launch_exe(exe1, _resolve_args(t1, sheet, unitflag), wait=True)
+        _launch_exe(exe2, _resolve_args(t2, sheet, unitflag), wait=True)
+        return
+
+    if macro_name == "Paste_Example":
+        exe1, t1 = EXES["Paste_Example_Step1"]
+        exe2, t2 = EXES["Paste_Example_Step2"]
+        _launch_exe(exe1, _resolve_args(t1, sheet, unitflag), wait=True)
+        _launch_exe(exe2, _resolve_args(t2, sheet, unitflag), wait=True)
+        return
+
+    if macro_name == "Save_Data_Calibration":
+        exe1, t1 = EXES["Save_Data_Calibration_Step1"]
+        exe2, t2 = EXES["Save_Data_Calibration_Step2"]
+        _launch_exe(exe1, _resolve_args(t1, sheet, unitflag), wait=True)
+        _launch_exe(exe2, _resolve_args(t2, sheet, unitflag), wait=True)
+        return
+
+    if macro_name == "OpenAppendix_2_1_Relative":
+        html_path = HTML_APPENDIX[macro_name]
+        _open_html(html_path)
+        exe, tmpl = EXES["OpenAppendix_2_1_Relative_EXE"]
+        _launch_exe(exe, _resolve_args(tmpl, sheet, unitflag), wait=True)
+        return
+
+    if macro_name in HTML_APPENDIX:
+        _open_html(HTML_APPENDIX[macro_name])
+        return
+
+    if macro_name in HTML_CHICKLETS:
+        html_file, anchor = HTML_CHICKLETS[macro_name]
+        url = _html("data_chicklets", html_file)
+        if anchor:
+            url = url + "#" + anchor
+        _open_html(url)
+        return
+
+    if macro_name == "Show_Visualization":
+        if _app_ref:
+            _app_ref.show_calibration_panel()
+        return
+
+    if macro_name == "Show_MainInterface":
+        if _app_ref:
+            _app_ref.show_main_panel()
+        return
+
+    if macro_name == "SourceOption1":
+        if _app_ref:
+            first1 = _app_ref.v_src_pfaa1[0].get()
+            first2 = _app_ref.v_src_pfaa2[0].get()
+            for v in _app_ref.v_src_pfaa1[1:]:
+                v.set(first1)
+            for v in _app_ref.v_src_pfaa2[1:]:
+                v.set(first2)
+        return
+
+    if macro_name == "See_Calibration_Data":
+        csv_path = os.path.join(BASE_DIR, "run_history.csv")
+        if os.path.exists(csv_path):
+            _open_html(csv_path)
+        else:
+            messagebox.showinfo("Not Found",
+                                f"run_history.csv not found in:\n{BASE_DIR}")
+        return
+
+    if macro_name == "Authors":
+        messagebox.showinfo(
+            "REMFluor-MD Authors",
+            "REMFluor-MD v2.6\n\n"
+            "Singh et al. (2025)\n"
+            "Falta et al. (2025)\n\n"
+            "ESTCP – Environmental Security Technology Certification Program"
+        )
+        return
+
+    if macro_name in EXES:
+        exe_path, tmpl = EXES[macro_name]
+        wait = macro_name != "RunPythonScript"
+        _launch_exe(exe_path, _resolve_args(tmpl, sheet, unitflag), wait=wait)
+        return
+
+    messagebox.showinfo(
+        "Not Mapped",
+        f"No action mapped for macro '{macro_name}'.\n"
+        "Add it to EXES or HTML_CHICKLETS."
+    )
+
+
+def open_quarto(macro_name):
+    run_script(macro_name)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPER WIDGETS
+# ─────────────────────────────────────────────────────────────────────────────
+def make_btn(parent, text, macro, quarto=False, fg=FG_BTN_NAVY,
+             font=FONT_BTN, width=None, padx=4, pady=2, bg=BTN_FILL, anchor="center"):
+    cmd = (lambda m=macro: open_quarto(m)) if quarto else (lambda m=macro: run_script(m))
+    kw = dict(text=text, command=cmd, relief="raised", cursor="hand2",
+              bg=bg, fg=fg, font=font, padx=padx, pady=pady, anchor=anchor,
+              activebackground="#C0C0C0", activeforeground=fg, bd=1,
+              highlightthickness=0)
+    if width:
+        kw["width"] = width
+    return tk.Button(parent, **kw)
+
+
+def make_entry(parent, var, width=10, bg=BG_INPUT_BLUE, justify="right"):
+    # Auto-pick readable text color: white on dark backgrounds, black on light.
+    fg = "#FFFFFF" if bg.lower() in ("#000000", "#000", "black") else FG_INPUT
+    return tk.Entry(parent, textvariable=var, width=width, font=FONT_INPUT,
+                    bg=bg, fg=fg, relief="solid", bd=1, justify=justify,
+                    insertbackground=fg)
+
+
+def make_label(parent, text, font=FONT_LABEL, fg=FG_INPUT, bg=BG_MAIN,
+               anchor="w", wraplength=0):
+    kw = dict(text=text, font=font, fg=fg, bg=bg, anchor=anchor)
+    if wraplength:
+        kw["wraplength"] = wraplength
+    return tk.Label(parent, **kw)
+
+
+def help_link(parent, macro, bg=BG_MAIN):
+    """
+    Red '?' help link inside a TRUE square box, sized to match the
+    height of an adjacent tk.Entry so the box appears flush-adjacent
+    to its input cell (the tkinter equivalent of the PySide6
+    HelpLink button).  Win9x raised look: white top/left, gray
+    bottom/right.
+
+    Tk Labels are sized in characters x lines, which gives a tall
+    rectangle for a single character.  To force a square we wrap the
+    '?' Label inside a Frame with explicit pixel width=height and
+    pack_propagate / grid_propagate disabled so the children can't
+    push the Frame out of square.
+    """
+    # Compute the square side from FONT_HELP linespace so the box
+    # scales with the chosen font size (and zoom). Use a slightly
+    # smaller multiplier so the box hugs the entry instead of
+    # towering above it.
+    try:
+        import tkinter.font as _tkFont
+        ls = _tkFont.nametofont(FONT_HELP).metrics("linespace")
+        side = max(13, int(ls * 1.05))
+    except Exception:
+        side = 14
+
+    # "raised" relief on tk.Frame draws a Win9x-style bevel — white
+    # top/left, dark bottom/right — which mirrors the PySide6 HelpLink
+    # styling.
+    box = tk.Frame(parent, bg=BTN_FILL, width=side, height=side,
+                   bd=1, relief="raised", highlightthickness=0)
+    box.pack_propagate(False)
+    box.grid_propagate(False)
+
+    lbl = tk.Label(
+        box, text="?",
+        font=FONT_HELP,
+        fg=FG_HELP,                 # red
+        bg=BTN_FILL,                # match raised box bg
+        cursor="hand2",
+        bd=0, padx=0, pady=0,
+        relief="flat",
+        takefocus=0,
+        highlightthickness=0,
+    )
+    lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+    handler = lambda e, m=macro: run_script(m)
+    box.bind("<Button-1>", handler)
+    lbl.bind("<Button-1>", handler)
+    return box
+
+
+def section_header(parent, num, text, bg=BG_MAIN):
+    return tk.Label(parent, text=f"{num}.  {text}",
+                    font=FONT_SECTION, fg=FG_SECTION, bg=bg, anchor="w")
+
+
+def dropdown(parent, var, choices, width=10, bg=None):
+    cb = ttk.Combobox(parent, textvariable=var, values=choices, width=width,
+                      font=FONT_INPUT, state="readonly")
+    cb.set(var.get())
+    if bg:
+        # ttk widgets ignore plain `bg=`; build a per-color style instead.
+        # A readonly Combobox displays its current value using the
+        # SELECTION colors, so we have to override those too — otherwise
+        # the field stays the OS default.
+        style_name = f"C{bg.replace('#','').upper()}.TCombobox"
+        s = ttk.Style()
+        s.configure(style_name,
+                    fieldbackground=bg, background=bg,
+                    foreground=FG_INPUT, arrowcolor=FG_INPUT,
+                    selectbackground=bg, selectforeground=FG_INPUT)
+        s.map(style_name,
+              fieldbackground=[("readonly", bg), ("active", bg),
+                               ("focus", bg), ("!focus", bg)],
+              background=[("readonly", bg), ("active", bg)],
+              foreground=[("readonly", FG_INPUT)],
+              selectbackground=[("readonly", bg), ("focus", bg),
+                                ("!focus", bg)],
+              selectforeground=[("readonly", FG_INPUT),
+                                ("focus", FG_INPUT),
+                                ("!focus", FG_INPUT)])
+        cb.configure(style=style_name)
+    return cb
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOGO LOADER  (looks in BASE_DIR/Figures/ for the ESTCP image)
+# ─────────────────────────────────────────────────────────────────────────────
+def _load_figure(filename: str, target_height: int = None, target_width: int = None):
+    """
+    Load BASE_DIR/Figures/<filename> and return a Tk PhotoImage (or None
+    if the file isn't found / can't be decoded).
+
+    If only one of target_height/target_width is given, the other is
+    computed to preserve aspect ratio.  Prefers Pillow for resizing
+    quality; falls back to native tk.PhotoImage if Pillow is missing.
+    """
+    if not filename:
+        return None
+    path = os.path.join(FIGURES_DIR, filename)
+    if not os.path.isfile(path):
+        return None
+    # Pillow path (preferred)
+    try:
+        from PIL import Image, ImageTk
+        img = Image.open(path)
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGBA")
+        w, h = img.size
+        if target_height and not target_width:
+            target_width = max(1, int(w * target_height / h))
+        elif target_width and not target_height:
+            target_height = max(1, int(h * target_width / w))
+        if target_height and target_width:
+            try:
+                resample = Image.Resampling.LANCZOS
+            except AttributeError:
+                resample = Image.LANCZOS
+            img = img.resize((target_width, target_height), resample)
+        return ImageTk.PhotoImage(img)
+    except Exception:
+        pass
+    # Fallback: native Tk PhotoImage (PNG / GIF only, no smooth resize)
+    try:
+        return tk.PhotoImage(file=path)
+    except Exception:
+        return None
+
+
+def _load_logo_image(target_height: int = 50):
+    """
+    Returns a Tk-compatible image object (PhotoImage / ImageTk.PhotoImage)
+    or None if no suitable image can be found.
+
+    Search order:
+      1) Files in Figures/ whose name contains "estcp" (PNG/GIF/JPG/BMP)
+      2) Files in Figures/ whose name contains "logo"
+      3) Any image file in Figures/
+    Prefers PIL (Pillow) for resampling/JPG support; falls back to native
+    Tk PhotoImage with subsample() if PIL is unavailable.
+    """
+    if not os.path.isdir(FIGURES_DIR):
+        return None
+
+    exts = (".png", ".gif", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
+    all_files = [f for f in os.listdir(FIGURES_DIR) if f.lower().endswith(exts)]
+
+    def score(name):
+        low = name.lower()
+        s = 0
+        if "estcp" in low: s += 100
+        if "logo"  in low: s += 50
+        if low.endswith(".png"): s += 5  # prefer PNG
+        return s
+
+    candidates = sorted(all_files, key=score, reverse=True)
+
+    for fname in candidates:
+        path = os.path.join(FIGURES_DIR, fname)
+        # Try Pillow first (handles all formats + smooth resize)
+        try:
+            from PIL import Image, ImageTk
+            pil_img = Image.open(path)
+            if pil_img.mode not in ("RGB", "RGBA"):
+                pil_img = pil_img.convert("RGBA")
+            w, h = pil_img.size
+            if h <= 0:
+                continue
+            new_w = max(1, int(w * target_height / h))
+            try:
+                resample = Image.Resampling.LANCZOS
+            except AttributeError:
+                resample = Image.LANCZOS
+            pil_img = pil_img.resize((new_w, target_height), resample)
+            return ImageTk.PhotoImage(pil_img)
+        except Exception:
+            pass
+        # Fallback: native Tk PhotoImage (PNG / GIF only)
+        try:
+            img = tk.PhotoImage(file=path)
+            h = img.height()
+            if h > target_height:
+                factor = max(1, h // target_height)
+                img = img.subsample(factor, factor)
+            return img
+        except Exception:
+            continue
+
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MAIN APPLICATION
+# ─────────────────────────────────────────────────────────────────────────────
+class REMFluorApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("REMFluor-MD Model Input Screen  v2.6")
+        self.configure(bg=BG_MAIN)
+        self.resizable(True, True)
+
+        # Match Tk's internal scaling to the actual display DPI so fonts/widgets
+        # render at their intended physical size. Without this, the high-DPI
+        # awareness call shrinks every widget to ~50-66% of its expected size.
+        self._apply_tk_dpi_scaling()
+
+        # ttk's default Windows theme ('vista') draws Combobox fields with the
+        # native OS colors and ignores `fieldbackground` style settings.
+        # Switching to 'clam' makes ttk honor our color customizations so the
+        # PFAA / Clay dropdowns can actually appear in Pull-Down peach.
+        try:
+            s = ttk.Style()
+            if "clam" in s.theme_names():
+                s.theme_use("clam")
+        except Exception:
+            pass
+
+        # Create the Tk named fonts (lets us zoom in/out at runtime).
+        self._init_named_fonts()
+
+        # Bind zoom shortcuts: Ctrl++ / Ctrl+- / Ctrl+0 / Ctrl+wheel
+        self.bind_all("<Control-plus>",        self._zoom_in)
+        self.bind_all("<Control-equal>",       self._zoom_in)   # plus w/o shift
+        self.bind_all("<Control-KP_Add>",      self._zoom_in)
+        self.bind_all("<Control-minus>",       self._zoom_out)
+        self.bind_all("<Control-KP_Subtract>", self._zoom_out)
+        self.bind_all("<Control-0>",           self._zoom_reset)
+        self.bind_all("<Control-MouseWheel>",  self._zoom_wheel)
+
+        self.active_sheet = "Simple"
+        global _app_ref
+        _app_ref = self
+
+        self._build_vars()
+
+        outer = tk.Frame(self, bg=BG_MAIN)
+        outer.pack(fill="both", expand=True)
+
+        self.canvas = tk.Canvas(outer, bg=BG_MAIN, bd=0, highlightthickness=0)
+        vsb = ttk.Scrollbar(outer, orient="vertical", command=self.canvas.yview)
+        hsb = ttk.Scrollbar(outer, orient="horizontal", command=self.canvas.xview)
+        self.canvas.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+
+        vsb.pack(side="right", fill="y")
+        hsb.pack(side="bottom", fill="x")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.inner = tk.Frame(self.canvas, bg=BG_MAIN)
+        # Use natural height (inner expands to fit all content); width is
+        # synced to the visible canvas in _on_canvas_configure so the
+        # vertical scrollbar shows up when content overflows the window.
+        self.canvas_win = self.canvas.create_window(
+            (0, 0), window=self.inner, anchor="nw")
+
+        self.inner.bind("<Configure>", self._on_frame_configure)
+        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+        self._build_ui()
+        # Scale the initial window with DPI so it isn't a tiny postage stamp
+        # on a 4K display. _dpi_scale is 1.0 at 96 DPI, 1.5 at 144 DPI, etc.
+        scale = getattr(self, "_dpi_scale", 1.0)
+        # Open at a comfortable size; the surrounding canvas exposes
+        # vertical and horizontal scrollbars when content overflows.
+        scr_w = self.winfo_screenwidth()
+        scr_h = self.winfo_screenheight()
+        win_w = min(int(1500 * scale), scr_w - 60)
+        win_h = min(int(950  * scale), scr_h - 100)
+        self.geometry(f"{win_w}x{win_h}")
+
+    # ── Named fonts + zoom ───────────────────────────────────────────────
+    def _init_named_fonts(self):
+        """Create the Tk named fonts described by _FONT_DEFS."""
+        import tkinter.font as tkFont
+        self._tk_fonts = {}
+        self._base_font_sizes = {}
+        self._zoom = 1.0
+        for name, (family, size, weight, slant) in _FONT_DEFS.items():
+            try:
+                fnt = tkFont.nametofont(name)
+                fnt.config(family=family, size=size, weight=weight, slant=slant)
+            except tk.TclError:
+                fnt = tkFont.Font(name=name, family=family, size=size,
+                                  weight=weight, slant=slant)
+            self._tk_fonts[name] = fnt
+            self._base_font_sizes[name] = size
+
+    def _apply_zoom(self, factor):
+        """Resize every named font to (base_size * factor)."""
+        self._zoom = max(0.5, min(3.5, factor))
+        for name, base in self._base_font_sizes.items():
+            try:
+                self._tk_fonts[name].config(
+                    size=max(4, int(round(base * self._zoom))))
+            except Exception:
+                pass
+
+    def _zoom_in(self,    _=None): self._apply_zoom(self._zoom * 1.10)
+    def _zoom_out(self,   _=None): self._apply_zoom(self._zoom / 1.10)
+    def _zoom_reset(self, _=None): self._apply_zoom(1.0)
+
+    def _zoom_wheel(self, event):
+        if event.delta > 0:
+            self._zoom_in()
+        else:
+            self._zoom_out()
+        return "break"
+
+    # ── Section divider helper ───────────────────────────────────────────
+    def _hsep(self, parent, color="#000000", thickness=1, pady=3):
+        """Thin horizontal black line, used between sections in a column."""
+        sep = tk.Frame(parent, bg=color, height=thickness)
+        sep.pack(fill="x", padx=2, pady=pady)
+        return sep
+
+    # ── DPI / scaling ─────────────────────────────────────────────────────
+    def _apply_tk_dpi_scaling(self):
+        """
+        Scale Tk's font/widget sizes to match the display DPI.
+
+        Tk's default 'scaling' assumes 72 DPI; on a real Windows monitor
+        that's typically 96 DPI (= scaling 1.333). On a 125% scaled display
+        the OS reports 120 DPI (scaling 1.667); 150% reports 144 DPI
+        (scaling 2.0); 175% reports 168 DPI (scaling 2.333). We compute the
+        ratio from winfo_fpixels('1i') and apply it.
+        """
+        try:
+            dpi = self.winfo_fpixels("1i")  # pixels per inch on the display
+            if dpi and dpi > 0:
+                self.tk.call("tk", "scaling", dpi / 72.0)
+                # Cache the scale factor so geometry calls can use it too
+                self._dpi_scale = max(1.0, dpi / 96.0)
+            else:
+                self._dpi_scale = 1.0
+        except Exception:
+            self._dpi_scale = 1.0
+
+    # ── Layout helpers ────────────────────────────────────────────────────
+    def _on_frame_configure(self, _):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _on_canvas_configure(self, event):
+        # Stretch inner frame to canvas width so the content fills the
+        # visible area. Height stays at the inner frame's natural size,
+        # and the vertical scrollbar handles overflow.
+        self.canvas.itemconfig(self.canvas_win, width=event.width)
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def show_calibration_panel(self):
+        run_script("RunPythonScript")  # Auto-cal: just run model (Simple version)
+
+    def show_main_panel(self):
+        self.canvas.yview_moveto(0.0)
+
+    def _on_model_version_change(self, *_):
+        val = self.v_model_version.get()
+        self.active_sheet = "Simple" if val == "Simple Version" else "Detailed_2"
+
+    # ── Variable initialisation ───────────────────────────────────────────
+    def _build_vars(self):
+        self.v_model_version = tk.StringVar(value="Detailed Version")
+        self.v_model_version.trace_add('write', self._on_model_version_change)
+        self.v_units         = tk.StringVar(value="meters")
+        self.v_site          = tk.StringVar(value="Test Case 1")
+        self.v_date          = tk.StringVar(value=datetime.now().strftime("%b-%y"))
+
+        # Section 2
+        self.v_x_size   = tk.StringVar(value="500")
+        self.v_y_size   = tk.StringVar(value="50")
+        self.v_z_size   = tk.StringVar(value="10")
+        self.v_sw_width = tk.StringVar(value="60")
+        self.v_sw_thick = tk.StringVar(value="5")
+        self.v_yr_start = tk.StringVar(value="1977")
+        self.v_yr_end   = tk.StringVar(value="2077")
+        self.v_run_time = tk.StringVar(value="0.0")
+
+        # Section 3
+        self.v_darcy   = tk.StringVar(value="10.00")
+        self.v_porf    = tk.StringVar(value="0.2")
+
+        # Section 4
+        self.v_lowk_media = tk.StringVar(value="Clay")
+        self.v_lowk_por   = tk.StringVar(value="0.48")
+        self.v_lowk_tort  = tk.StringVar(value="0.56")
+
+        # Section 5
+        self.v_pfaa1      = tk.StringVar(value="PFOS")
+        self.v_pfaa2      = tk.StringVar(value="None")
+        self.v_ret_trans1 = tk.StringVar(value="2.9")
+        self.v_ret_lowk1  = tk.StringVar(value="2.6")
+        # PFAA-2 retardation factors (matching PFAA-1 columns)
+        self.v_ret_trans2 = tk.StringVar(value="")
+        self.v_ret_lowk2  = tk.StringVar(value="")
+        self.v_mol_diff   = tk.StringVar(value="3.5E-10")
+
+        # Section 6 – Dispersivity (top header)
+        self.v_het     = tk.StringVar(value="Medium")
+        self.v_alpha_l = tk.StringVar(value="3.200")
+        self.v_alpha_t = tk.StringVar(value="0.040")
+        self.v_alpha_v = tk.StringVar(value="0.004")
+
+        # Section 7
+        self.v_src_years = [tk.StringVar(value=str(1977 + i*10)) for i in range(11)]
+        self.v_src_pfaa1 = [tk.StringVar(value="1,600.000") for _ in range(11)]
+        self.v_src_pfaa2 = [tk.StringVar(value="0") for _ in range(11)]
+        self.v_total_mass = tk.StringVar(value="#VALUE!")
+
+        # Section 8
+        self.v_src_rem_yr   = tk.StringVar(value="")
+        self.v_src_conc_red = tk.StringVar(value="")
+
+        # Section 9
+        self.v_model_psb   = tk.BooleanVar(value=False)
+        self.v_psb_a_1     = tk.StringVar(value="")
+        self.v_psb_kf_1    = tk.StringVar(value="")
+        self.v_psb_kf_conv = tk.StringVar(value="")
+        self.v_psb_yr      = tk.StringVar(value="")
+        self.v_psb_width   = tk.StringVar(value="4")
+        self.v_psb_load    = tk.StringVar(value="")
+        self.v_psb_dist    = tk.StringVar(value="")
+        self.v_psb_cells   = tk.StringVar(value="")
+
+        # Section 10
+        self.v_sample_yr = tk.StringVar(value="2025")
+        self.v_mw_names  = [tk.StringVar(value=n) for n in
+                            ["MW-504","FS-MW504","FS-MW505","FS-MW506",
+                             "FS-MW507","FS-MW508","FS-MW509"]]
+        self.v_mw_conc   = [tk.StringVar(value=str(c)) for c in
+                            [2000, 1950, 1900, 1700, 1300, 750, 200]]
+        self.v_mw_dist   = [tk.StringVar(value=str(d)) for d in
+                            [10, 50, 100, 200, 300, 400, 500]]
+        self.v_mw_conc2  = [tk.StringVar(value="") for _ in range(7)]
+
+        # Section 11
+        self.v_see_every = tk.StringVar(value="100")
+
+        # Image cache (Tk PhotoImage refs must be held to avoid GC)
+        self._figures = {}
+
+    # ── UI builder ───────────────────────────────────────────────────────
+    def _build_ui(self):
+        p = self.inner
+
+        self._build_top_bar(p)          # 1. Dark teal banner with logo
+        self._build_header_strip(p)     # 2. Site/ID + Date
+
+        # 3. Two-column body with a thick black vertical bar between them.
+        body = tk.Frame(p, bg=BG_MAIN)
+        body.pack(fill="both", expand=True, padx=8, pady=4)
+
+        left    = tk.Frame(body, bg=BG_MAIN)
+        # 0.05" thick black vertical divider between the two halves.
+        try:
+            divider_w = max(2, int(self.winfo_pixels("0.05i")))
+        except Exception:
+            divider_w = 5
+        divider = tk.Frame(body, bg="#000000", width=divider_w)
+        right   = tk.Frame(body, bg=BG_MAIN)
+
+        left.grid(   row=0, column=0, sticky="new",  padx=(0, 8))
+        divider.grid(row=0, column=1, sticky="ns")
+        right.grid(  row=0, column=2, sticky="new",  padx=(8, 0))
+        body.columnconfigure(0, weight=1, uniform="halves")
+        body.columnconfigure(1, minsize=divider_w)
+        body.columnconfigure(2, weight=1, uniform="halves")
+
+        # ── LEFT HALF ──────────────────────────────────────────────────
+        # Section 1 (left edge) + Legend (pushed to right edge of half)
+        s1_legend = tk.Frame(left, bg=BG_MAIN)
+        s1_legend.pack(fill="x", anchor="nw", pady=(0, 4))
+
+        s1_col = tk.Frame(s1_legend, bg=BG_MAIN)
+        s1_col.pack(side="left", anchor="nw", padx=(0, 16))
+        self._build_s1_starting(s1_col)
+
+        legend_col = tk.Frame(s1_legend, bg=BG_MAIN)
+        legend_col.pack(side="right", anchor="ne")
+        self._build_legend(legend_col)
+
+        # Horizontal separator between the (Section 1 + Legend) row and
+        # Sections 2-5 stacked beneath, each filling the full half-width.
+        self._hsep(left)
+        self._build_s2_model_config(left)
+        self._hsep(left)
+        self._build_s3_gw_velocity(left)
+        self._hsep(left)
+        self._build_s4_hydrogeologic(left)
+        self._hsep(left)
+        self._build_s5_transport(left)
+        self._hsep(left)   # closing line at the end of Section 5
+
+        # ── RIGHT HALF ─────────────────────────────────────────────────
+        # Section 6 (Heterogeneity) spans the top of the right half
+        self._build_s6_heterogeneity(right)
+        self._hsep(right)   # between Section 6 and Section 7/8
+
+        # Section 7 + thick black vertical divider + Section 8
+        s78 = tk.Frame(right, bg=BG_MAIN)
+        s78.pack(fill="x", anchor="nw", pady=(0, 4))
+
+        s7_col = tk.Frame(s78, bg=BG_MAIN)
+        s7_col.grid(row=0, column=0, sticky="nw", padx=(0, 8))
+        self._build_s7_source(s7_col)
+
+        # Vertical bar between Section 7 and Section 8 (same thickness
+        # as the body's half-divider).
+        divider78 = tk.Frame(s78, bg="#000000", width=divider_w)
+        divider78.grid(row=0, column=1, sticky="ns")
+
+        s8_col = tk.Frame(s78, bg=BG_MAIN)
+        s8_col.grid(row=0, column=2, sticky="nw", padx=(8, 0))
+        self._build_s8_source_rem(s8_col)
+
+        s78.columnconfigure(1, minsize=divider_w)
+        s78.columnconfigure(2, weight=1)
+
+        # Sections 9-11 stacked beneath, each filling the full half-width.
+        self._hsep(right)   # between Section 7/8 row and Section 9
+        self._build_s9_psb(right)
+        self._build_s10_field_data(right)
+        self._hsep(right)   # between Section 10 and Section 11
+        self._build_s11_output(right)
+
+        # The Run / Authors / Load / Save / Help / Clear / Paste cluster
+        # lives INSIDE the right column (per PDF storyboard), NOT at the
+        # global bottom of the page.
+        self._build_action_row(right)
+
+        # ── Mid horizontal black bar ─────────────────────────────────
+        midbar = tk.Frame(p, bg="#000000", height=6)
+        midbar.pack(fill="x", padx=0, pady=(2, 2))
+
+        # ── Bottom-body 2-col: empty | calibration panel ─────────────
+        bot = tk.Frame(p, bg=BG_MAIN)
+        bot.pack(fill="both", expand=True, padx=8, pady=4)
+
+        bot_left  = tk.Frame(bot, bg=BG_MAIN)
+        bot_div   = tk.Frame(bot, bg="#000000", width=divider_w)
+        bot_right = tk.Frame(bot, bg=BG_MAIN)
+
+        bot_left .grid(row=0, column=0, sticky="new",  padx=(0, 8))
+        bot_div  .grid(row=0, column=1, sticky="ns")
+        bot_right.grid(row=0, column=2, sticky="new",  padx=(8, 0))
+        bot.columnconfigure(0, weight=1, uniform="halves")
+        bot.columnconfigure(1, minsize=divider_w)
+        bot.columnconfigure(2, weight=1, uniform="halves")
+
+        self._build_calibration_panel(bot_right)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # 1.  TOP DARK-TEAL BANNER  (#074F69)
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_top_bar(self, parent):
+        bar = tk.Frame(parent, bg=BG_HEADER_BAR, pady=6)
+        bar.pack(fill="x")
+
+        # Two-color title: "REMFluor" in light green, rest in white
+        title_fr = tk.Frame(bar, bg=BG_HEADER_BAR)
+        title_fr.pack(side="left", padx=18)
+        tk.Label(title_fr, text="REMFluor",
+                 font=FONT_TITLE, fg=FG_TITLE_GREEN, bg=BG_HEADER_BAR
+                 ).pack(side="left")
+        tk.Label(title_fr, text="-MD Model Input Screen",
+                 font=FONT_TITLE, fg=FG_TITLE, bg=BG_HEADER_BAR
+                 ).pack(side="left")
+
+        tk.Label(bar, text="Vers. 2.6",
+                 font=FONT_VERSION, fg=FG_TITLE, bg=BG_HEADER_BAR
+                 ).pack(side="left", padx=10)
+
+        # ── Zoom hint + buttons (between version and logo) ─────────────
+        zoom_fr = tk.Frame(bar, bg=BG_HEADER_BAR)
+        zoom_fr.pack(side="right", padx=12)
+        tk.Label(zoom_fr, text="Zoom:",
+                 font=FONT_LABEL_SM, fg=FG_TITLE, bg=BG_HEADER_BAR
+                 ).pack(side="left", padx=(0, 4))
+        for txt, cmd in [("−", self._zoom_out),
+                         ("⟲", self._zoom_reset),
+                         ("+", self._zoom_in)]:
+            tk.Button(zoom_fr, text=txt, command=cmd,
+                      font=FONT_BTN_CALIB, fg=FG_BTN_NAVY, bg=BTN_FILL,
+                      width=2, padx=2, pady=0, bd=1,
+                      relief="raised", cursor="hand2"
+                      ).pack(side="left", padx=1)
+        tk.Label(zoom_fr, text="(Ctrl±wheel)",
+                 font=FONT_LABEL_XS, fg=FG_TITLE_GREEN, bg=BG_HEADER_BAR
+                 ).pack(side="left", padx=(4, 0))
+
+        # ── ESTCP logo from Figures/ ───────────────────────────────────
+        # Render at the display's native pixel resolution so the logo stays
+        # crisp on high-DPI screens. target_height is in pixels, not points.
+        scale = getattr(self, "_dpi_scale", 1.0)
+        self._logo_img = _load_logo_image(target_height=int(54 * scale))
+        if self._logo_img is not None:
+            tk.Label(bar, image=self._logo_img,
+                     bg=BG_HEADER_BAR, bd=0).pack(side="right", padx=18)
+        else:
+            # Fallback "ESTCP" text badge if no image was found
+            badge = tk.Label(bar, text="  ESTCP  ",
+                             font=("Arial Black", 14), fg="#0F8B4C",
+                             bg="#FFFFFF", padx=10, pady=2,
+                             bd=2, relief="raised")
+            badge.pack(side="right", padx=18)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # 2.  HEADER STRIP – Site/ID + Date  (Legend & Heterogeneity moved into
+    #                                    the body columns)
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_header_strip(self, parent):
+        strip = tk.Frame(parent, bg=BG_MAIN, pady=6)
+        strip.pack(fill="x", padx=8, pady=(4, 6))
+
+        tk.Label(strip, text="Site Location and ID:",
+                 font=FONT_LABEL, bg=BG_MAIN).grid(row=0, column=0, sticky="w")
+        tk.Label(strip, text="Date:", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=0, column=1, sticky="w", padx=(14, 0))
+
+        make_entry(strip, self.v_site, width=22, justify="left").grid(
+            row=1, column=0, sticky="w", pady=2)
+        make_entry(strip, self.v_date, width=10, justify="left").grid(
+            row=1, column=1, sticky="w", padx=(14, 0), pady=2)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # LEGEND BLOCK  (sits next to Section 1 in the left column)
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_legend(self, parent):
+        mid = tk.Frame(parent, bg=BG_LEGEND_BAR, bd=1, relief="solid",
+                       padx=6, pady=3)
+        mid.pack(anchor="nw")
+
+        tk.Label(mid, text="Legend",
+                 font=FONT_LABEL_BI,
+                 bg=BG_LEGEND_BAR).grid(row=0, column=0, columnspan=2, sticky="w")
+
+        legend_items = [
+            (BG_INPUT_BLUE, "Enter value directly",       ""),
+            (BG_FORMULA,    "Cell with formula or default,", " but ok to overwrite**"),
+            (BG_PULLDOWN,   "Pull Down",                   " Pull Down Menu"),
+            (BG_LOCKED,     "Can't change",                " Calculated value or taken from other cell."),
+        ]
+        for i, (color, swatch_text, descr) in enumerate(legend_items):
+            swatch_fg = "#FFFFFF" if color == "#000000" else FG_INPUT
+            sw = tk.Label(mid, text=" " + swatch_text + " ",
+                          font=FONT_LABEL_SM, bg=color, fg=swatch_fg,
+                          bd=1, relief="solid", width=18, anchor="w")
+            sw.grid(row=i+1, column=0, sticky="w", padx=2, pady=1)
+            tk.Label(mid, text=descr, font=FONT_LABEL_SMI,
+                     bg=BG_LEGEND_BAR, fg=FG_INPUT, anchor="w"
+                     ).grid(row=i+1, column=1, sticky="w", padx=2)
+
+        tk.Label(mid, text="☐ Check Box", font=FONT_LABEL_SMI,
+                 bg=BG_LEGEND_BAR).grid(row=1, column=2, sticky="w", padx=(12, 4))
+        tk.Label(mid, text=" Button ", font=FONT_LABEL_SMI,
+                 bg=BTN_FILL, bd=1, relief="raised", padx=4
+                 ).grid(row=2, column=2, sticky="w", padx=(12, 4), pady=1)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 6 – GEOLOGIC HETEROGENEITY  (right column, top)
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s6_heterogeneity(self, parent):
+        section_header(parent, "6",
+                       "PLUME TRANSPORT – DISPERSIVITY"
+                       ).pack(anchor="w", pady=(2, 1))
+
+        # All controls live in a single grid:
+        #   row 0  – heterogeneity radios + "Enter Your Own Value Below"
+        #   row 1  – column titles (Longitudinal / Transverse / Vertical)
+        #   row 2  – "Values:" label + the three cells
+        #
+        # Column layout:
+        #   col 0   – row labels  ("Geologic Heterogeneity is:" / "Values:")
+        #   col 1-3 – content (radios on row 0, titles on row 1, cells on row 2)
+        #   col 4   – "Enter Your Own Value Below" hint  (row 0 only)
+        #   col 5   – How to Decide?  (rowspan=3 → vertically centered)
+        #   col 6   – Section5_1.png  (rowspan=3 → vertically centered)
+        form = tk.Frame(parent, bg=BG_MAIN)
+        form.pack(fill="x", pady=(0, 4))
+
+        # ── Row 0 – Heterogeneity radios ───────────────────────────
+        tk.Label(form, text="Geologic Heterogeneity is:",
+                 font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=0, column=0, sticky="e", padx=(0, 4))
+
+        het_fr = tk.Frame(form, bg=BG_MAIN)
+        het_fr.grid(row=0, column=1, columnspan=3, sticky="w")
+        for val in ["High", "Medium", "Weak"]:
+            tk.Radiobutton(het_fr, text=val, variable=self.v_het, value=val,
+                           font=FONT_LABEL, bg=BG_MAIN,
+                           activebackground=BG_MAIN
+                           ).pack(side="left", padx=4)
+
+        tk.Label(form, text="Enter Your Own Value Below",
+                 font=FONT_LABEL_SMI, bg=BG_MAIN, fg=FG_GREY
+                 ).grid(row=0, column=4, sticky="w", padx=(8, 0))
+
+        # ── Row 1 – Titles ABOVE each cell ─────────────────────────
+        titles = ["Longitudinal (m)", "Transverse (m)", "Vertical (m)"]
+        for i, lbl in enumerate(titles):
+            tk.Label(form, text=lbl, font=FONT_LABEL_SM, bg=BG_MAIN
+                     ).grid(row=1, column=1+i, sticky="w", padx=(8, 4))
+
+        # ── Row 2 – Values label + entry cells (start at same X as
+        #             the heterogeneity radios — both in column 1). ──
+        tk.Label(form, text="Values:", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=2, column=0, sticky="e", padx=(0, 4))
+        for i, var in enumerate([self.v_alpha_l,
+                                  self.v_alpha_t,
+                                  self.v_alpha_v]):
+            make_entry(form, var, width=8, bg=BG_FORMULA
+                       ).grid(row=2, column=1+i, sticky="w", padx=(8, 4))
+
+        # ── How to Decide? button — vertically centered between
+        #     heterogeneity row and values row (rowspan=3 with no
+        #     sticky lets the grid auto-center it). ──────────────
+        make_btn(form, "How to Decide?",
+                 "OpenAppendix_6_1_Relative", quarto=True,
+                 font=FONT_BTN_SM, width=14, bg=BTN_FILL
+                 ).grid(row=0, column=5, rowspan=3, padx=(12, 0))
+
+        # ── Section5_1.png next to the How to Decide button ───────
+        scale = getattr(self, "_dpi_scale", 1.0)
+        img = _load_figure("Section5_1.png", target_height=int(80 * scale))
+        if img is None:
+            # Fallback: previous filename in case the file is still
+            # named Section6_1.png in the Figures/ folder.
+            img = _load_figure("Section6_1.png",
+                               target_height=int(80 * scale))
+        self._figures["s5_1"] = img
+        if img is not None:
+            tk.Label(form, image=img, bg=BG_MAIN, bd=0
+                     ).grid(row=0, column=6, rowspan=3, padx=(8, 0))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 1 – STARTING INFORMATION
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s1_starting(self, parent):
+        # One grid frame holds everything so the "Units" title can sit on
+        # row 0 — the same vertical line as "STARTING INFORMATION".
+        #
+        # Column map:
+        #   0 : "STARTING INFORMATION" header
+        #   1 : 1-inch spacer (forced via columnconfigure minsize)
+        #   2 : Simple / Detailed radios          (rows 1-2)
+        #   3 : '?' for versions  (rowspan=2  -> vertically centered)
+        #   4 : 2-inch spacer (forced via columnconfigure minsize)
+        #   5 : "Units" title  (row 0)  +  feet / meters  (rows 1-2)
+        #   6 : '?' for Units    (rowspan=2  -> vertically centered)
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(2, 4))
+
+        # Force the spacer columns to be exactly 0.5" / 0.5" wide.
+        f.columnconfigure(1, minsize="0.5i")
+        f.columnconfigure(4, minsize="0.5i")
+
+        # Row 0 – titles on the same horizontal line
+        tk.Label(f, text="1.  STARTING INFORMATION",
+                 font=FONT_SECTION, fg=FG_SECTION, bg=BG_MAIN, anchor="w"
+                 ).grid(row=0, column=0, sticky="w")
+        tk.Label(f, text="Units", font=FONT_LABEL_BI, bg=BG_MAIN
+                 ).grid(row=0, column=5, sticky="w")
+
+        # Rows 1-2 – Simple / Detailed radios in col 2
+        tk.Radiobutton(f, text="Simple Version",
+                       variable=self.v_model_version, value="Simple Version",
+                       font=FONT_LABEL, bg=BG_MAIN,
+                       activebackground=BG_MAIN
+                       ).grid(row=1, column=2, sticky="w")
+        tk.Radiobutton(f, text="Detailed Version",
+                       variable=self.v_model_version, value="Detailed Version",
+                       font=FONT_LABEL, bg=BG_MAIN,
+                       activebackground=BG_MAIN
+                       ).grid(row=2, column=2, sticky="w")
+
+        # '?' for versions – col 3, rowspan covers feet/meters rows
+        help_link(f, "OpenTable1").grid(
+            row=1, column=3, rowspan=2, padx=(2, 0))
+
+        # Rows 1-2 – feet / meters in col 5 (same column as the Units title)
+        tk.Radiobutton(f, text="feet", variable=self.v_units, value="feet",
+                       font=FONT_LABEL, bg=BG_MAIN,
+                       activebackground=BG_MAIN
+                       ).grid(row=1, column=5, sticky="w")
+        tk.Radiobutton(f, text="meters", variable=self.v_units, value="meters",
+                       font=FONT_LABEL, bg=BG_MAIN,
+                       activebackground=BG_MAIN
+                       ).grid(row=2, column=5, sticky="w")
+
+        # '?' for Units – col 6, rowspan covers feet/meters rows
+        help_link(f, "OpenTable1").grid(
+            row=1, column=6, rowspan=2, padx=(2, 0))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 2 – MODEL CONFIGURATION
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s2_model_config(self, parent):
+        section_header(parent, "2", "MODEL CONFIGURATION").pack(
+            anchor="w", pady=(4, 1))
+
+        container = tk.Frame(parent, bg=BG_MAIN)
+        container.pack(fill="x", pady=(0, 4))
+
+        # ── LEFT: just the form. Labels on a SINGLE line (no wraplength)
+        #         so the form takes its natural full width and pushes the
+        #         images further to the right. ─────────────────────────
+        left_col = tk.Frame(container, bg=BG_MAIN)
+        left_col.pack(side="left", anchor="n")
+
+        f = tk.Frame(left_col, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        # "Model Size" sub-label sits on row 0, in the column where the
+        # value cells live (column 1) — so it labels the input column.
+        tk.Label(f, text="Model Size", font=FONT_LABEL_I,
+                 bg=BG_MAIN, fg=FG_GREY
+                 ).grid(row=0, column=1, sticky="w", padx=2)
+
+        rows = [
+            ("Model Size in Direction of Groundwater Flow (X Direction)", self.v_x_size, "(m)",        "OpenTable2_1_XDirection"),
+            ("Model Width Perpendicular to Flow (Y Direction)",           self.v_y_size, "(m)",        "OpenTable2_1_YDirection"),
+            ("Model Depth Below Water Table (Z Direction)",               self.v_z_size, "(m)",        "OpenTable2_1_ZDirection"),
+            ("Source Width (REMChlor-MD will round to nearest whole cell)", self.v_sw_width, "(m)",    "OpenTable2_3"),
+            ("Thickness of Source Below Water Table",                     self.v_sw_thick, "(m)",      "OpenTable2_4"),
+            ("Starting Year of Simulation (year the source started)",     self.v_yr_start, "(YYYY year)", "OpenTable2_5"),
+            ("Ending Year of Simulation",                                 self.v_yr_end,   "(YYYY year)", "OpenTable2_6"),
+        ]
+        for i, (lbl, var, unit, helpm) in enumerate(rows):
+            # Extra top-padding (~3× previous) to visually separate the
+            # three logical groups (model dims | source | sim years):
+            #   i = 3 → above "Source Width"   (after Model Depth)
+            #   i = 5 → above "Starting Year"  (after Thickness)
+            pady_top = 30 if i in (3, 5) else 1
+            pady     = (pady_top, 1)
+
+            # Right-align the descriptive label so all entries line up.
+            tk.Label(f, text=lbl, font=FONT_LABEL, bg=BG_MAIN, anchor="e"
+                     ).grid(row=i+1, column=0, sticky="e",
+                            pady=pady, padx=(0, 4))
+            make_entry(f, var, width=8).grid(
+                row=i+1, column=1, sticky="w", pady=pady)
+            tk.Label(f, text=unit, font=FONT_LABEL_SM, bg=BG_MAIN
+                     ).grid(row=i+1, column=2, sticky="w",
+                            padx=2, pady=pady)
+            help_link(f, helpm).grid(row=i+1, column=3, sticky="w",
+                                      pady=pady)
+
+        # ── RIGHT: image area + controls, all positioned with place()
+        #          so each control can sit RIGHT of the image it
+        #          relates to (Optional next to Section2_1, run-time +
+        #          Estimating next to Section2_2). Because Section2_2
+        #          is narrower than Section2_1, run-time / Estimating
+        #          start further LEFT than Optional. ────────────────
+        right_area = tk.Frame(container, bg=BG_MAIN)
+        right_area.pack(side="left", anchor="n", padx=(14, 0))
+
+        scale = getattr(self, "_dpi_scale", 1.0)
+        img_h = int(110 * scale)
+        try:
+            overlap_px = int(self.winfo_pixels("0.5i"))
+            gap_px     = int(self.winfo_pixels("0.15i"))
+            shift_px   = int(self.winfo_pixels("0.2i"))   # vertical nudge
+        except Exception:
+            overlap_px = int(48 * scale)
+            gap_px     = int(14 * scale)
+            shift_px   = int(19 * scale)
+
+        self._figures["s2_1"] = _load_figure("Section2_1.png", target_height=img_h)
+        self._figures["s2_2"] = _load_figure("Section2_2.png", target_height=img_h)
+
+        img1 = self._figures.get("s2_1")
+        img2 = self._figures.get("s2_2")
+        w1 = img1.width()  if img1 else 200
+        h1 = img1.height() if img1 else img_h
+        w2 = img2.width()  if img2 else 150
+        h2 = img2.height() if img2 else img_h
+
+        # Container needs explicit width / height for place() to work.
+        # Reserve ~280 px on the right of the wider image for buttons.
+        ctrl_w = 280
+        box_w  = max(w1, w2) + gap_px + ctrl_w
+        box_h  = h1 + h2 - overlap_px          # vertical overlap of 0.5"
+
+        img_box = tk.Frame(right_area, bg=BG_MAIN, width=box_w, height=box_h)
+        img_box.pack(anchor="nw")
+        img_box.pack_propagate(False)
+
+        # Section2_1 at top-left
+        if img1 is not None:
+            tk.Label(img_box, image=img1, bg=BG_MAIN, bd=0
+                     ).place(x=0, y=0)
+
+        # Section2_2 below Section2_1, overlapping by 0.5", drawn on top
+        if img2 is not None:
+            lbl2 = tk.Label(img_box, image=img2, bg=BG_MAIN, bd=0)
+            lbl2.place(x=0, y=h1 - overlap_px)
+            lbl2.lift()
+
+        # ── Optional button: top-right, next to Section2_1 ───────────
+        # Starts at x = w1 + gap (right edge of Section2_1 + gap).
+        opt_btn = make_btn(img_box,
+                           "Optional: Enter user defined\nsize of grid cells",
+                           "OpenAppendix_2_1_Relative", quarto=True,
+                           font=FONT_BTN_SM, width=24, bg=BTN_FILL)
+        opt_btn.place(x=w1 + gap_px, y=8 + shift_px)   # 0.2" lower
+
+        # ── approx run time: next to Section2_2.  Because Section2_2
+        #    is narrower, this starts further LEFT than the Optional
+        #    button does (x = w2 + gap). ──────────────────────────
+        rt = tk.Frame(img_box, bg=BG_MAIN)
+        tk.Label(rt, text="approx. run time:", font=FONT_LABEL, bg=BG_MAIN,
+                 fg=FG_GREY).pack(side="left")
+        tk.Label(rt, textvariable=self.v_run_time, font=FONT_LABEL,
+                 bg=BG_LOCKED, fg=FG_LOCKED, width=6, relief="solid", bd=1
+                 ).pack(side="left", padx=4)
+        tk.Label(rt, text="minutes", font=FONT_LABEL_SM, bg=BG_MAIN,
+                 fg=FG_GREY).pack(side="left")
+        # 0.2" lower than its previous position
+        rt_y = h1 - overlap_px + 4 + shift_px
+        rt.place(x=w2 + gap_px, y=rt_y)
+
+        # ── Estimating the Source Start Time: under run-time, also at
+        #    x = w2 + gap (next to Section2_2). Single line, no wrap.
+        #    0.2" gap between the run-time label and this button.
+        est_btn = make_btn(img_box, "Estimating the Source Start Time",
+                           "OpenAppendix_2_2_Relative", quarto=True,
+                           font=FONT_BTN_SM, width=30, bg=BTN_FILL)
+        est_btn.place(x=w2 + gap_px, y=rt_y + 22 + shift_px)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 3 – GW DARCY VELOCITY
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s3_gw_velocity(self, parent):
+        section_header(parent, "3", "GROUNDWATER DARCY VELOCITY (Vd) (m/yr)").pack(
+            anchor="w", pady=(6, 1))
+
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        # ── Row 0: short titles ON TOP of the cells, with '?' next ──
+        # Col 0: empty (long Vd description sits here on row 1)
+        tk.Label(f, text="Vd (m/yr)",
+                 font=FONT_LABEL, bg=BG_MAIN, anchor="w"
+                 ).grid(row=0, column=1, sticky="w")
+        help_link(f, "OpenTable3_1").grid(row=0, column=2,
+                                          sticky="w", padx=(2, 0))
+
+        tk.Label(f, text="Trans. Effective Porosity (-)",
+                 font=FONT_LABEL, bg=BG_MAIN, anchor="w"
+                 ).grid(row=0, column=4, sticky="w", padx=(20, 0))
+        help_link(f, "OpenTable3_2").grid(row=0, column=5,
+                                          sticky="w", padx=(2, 0))
+
+        # ── Row 1: long Vd description (LEFT of cell), Vd cell,
+        #          Trans cell, OR, Calculator button ───────────────
+        tk.Label(f, text="Bulk Groundwater Darcy Velocity (Vd)  (Vd = K·dh/dx)",
+                 font=FONT_LABEL, bg=BG_MAIN, anchor="e"
+                 ).grid(row=1, column=0, sticky="e", padx=(0, 6),
+                        pady=(2, 0))
+
+        # Vd cell sized to roughly match the "Vd (m/yr)" title above it
+        make_entry(f, self.v_darcy, width=12).grid(
+            row=1, column=1, columnspan=2, sticky="w", pady=(2, 0))
+
+        # Trans. Effective Porosity cell — doubled width
+        make_entry(f, self.v_porf, width=20).grid(
+            row=1, column=4, columnspan=2, sticky="w",
+            padx=(20, 0), pady=(2, 0))
+
+        # OR between Trans. Effective Porosity cell and Calculator button
+        tk.Label(f, text="OR", font=FONT_LABEL_BI,
+                 bg=BG_MAIN, fg=FG_GREY
+                 ).grid(row=1, column=6, padx=8, pady=(2, 0))
+
+        # Groundwater Velocity Calculator button (right of OR)
+        make_btn(f, "Groundwater Velocity Calculator",
+                 "GWVelocityCalculator", font=FONT_BTN_SM, width=30,
+                 bg=BTN_FILL).grid(row=1, column=7, padx=(0, 0),
+                                    pady=(2, 0))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 4 – HYDROGEOLOGIC / MATRIX DIFFUSION
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s4_hydrogeologic(self, parent):
+        # Whole section indented 0.25" from the left edge.
+        s4 = tk.Frame(parent, bg=BG_MAIN)
+        s4.pack(fill="x", padx=("0.25i", 0), pady=(0, 4))
+
+        section_header(s4, "4",
+                       "HYDROGEOLOGIC SETTING AND MATRIX DIFFUSION"
+                       ).pack(anchor="w", pady=(2, 1))
+
+        f = tk.Frame(s4, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        # ── LEFT: heterogeneity calculator buttons, vertically
+        #          centered against the image's height. The two
+        #          weight=1 spacer rows (above & below the buttons)
+        #          push the button pair to the middle of bcol. ────
+        bcol = tk.Frame(f, bg=BG_MAIN)
+        bcol.grid(row=0, column=0, sticky="ns")
+        bcol.rowconfigure(0, weight=1)   # top spacer
+        bcol.rowconfigure(3, weight=1)   # bottom spacer
+
+        make_btn(bcol, "Use Unconsolidated Media\nHeterogeneity Calculator",
+                 "HeterogeneityCalculator_Unconsolidated_Media",
+                 font=FONT_BTN_SM, width=30, bg=BTN_FILL, padx=4, pady=4
+                 ).grid(row=1, column=0, sticky="w")
+        # 0.1" gap between the two "Use" buttons
+        make_btn(bcol, "Use Fractured Rock\nHeterogeneity Calculator",
+                 "HeterogeneityCalculator_Fractured_Rock",
+                 font=FONT_BTN_SM, width=30, bg=BTN_FILL, padx=4, pady=4
+                 ).grid(row=2, column=0, sticky="w", pady=("0.1i", 0))
+
+        # ── MIDDLE: Section4_1.png with 1.5" gaps on either side
+        #            (6× the previous 0.25" — separating it from the
+        #            buttons on the left and the Low-k Media block on
+        #            the right). ──────────────────────────────────
+        mcol = tk.Frame(f, bg=BG_MAIN)
+        mcol.grid(row=0, column=1, sticky="n",
+                  padx=("1.5i", "1.5i"))
+
+        scale = getattr(self, "_dpi_scale", 1.0)
+        self._figures["s4_1"] = _load_figure("Section4_1.png",
+                                             target_height=int(140 * scale))
+        if self._figures["s4_1"] is not None:
+            tk.Label(mcol, image=self._figures["s4_1"],
+                     bg=BG_MAIN, bd=0).pack(anchor="n")
+
+        # ── RIGHT: Low-k Media Details + "What is a Low-k" button ──
+        rcol = tk.Frame(f, bg=BG_MAIN)
+        rcol.grid(row=0, column=2, sticky="nw")
+
+        tk.Label(rcol, text="Low-k Media Details",
+                 font=FONT_LABEL_BI,
+                 bg=BG_SECTION_HDR, anchor="w", padx=4
+                 ).grid(row=0, column=0, columnspan=4, sticky="ew", pady=(0, 2))
+
+        rows = [
+            ("Low-k Zone Media",          self.v_lowk_media, None,  "OpenTable4_1"),
+            ("Low-k Zone Total Porosity", self.v_lowk_por,   "(-)", "OpenTable4_2"),
+            ("Low-k Zone Pore Tortuosity",self.v_lowk_tort,  "(-)", "OpenTable4_3"),
+        ]
+        for i, (lbl, var, unit, helpm) in enumerate(rows):
+            tk.Label(rcol, text=lbl, font=FONT_LABEL, bg=BG_MAIN
+                     ).grid(row=i+1, column=0, sticky="w", pady=1)
+            if i == 0:
+                # Clay dropdown – Pull-Down legend color
+                dropdown(rcol, var,
+                         ["Clay", "Silt", "Fine Sand", "Fractured Rock"],
+                         width=10, bg=BG_PULLDOWN
+                         ).grid(row=i+1, column=1, padx=4, sticky="w")
+            else:
+                # Total Porosity / Pore Tortuosity – Formula legend color
+                make_entry(rcol, var, width=8, bg=BG_FORMULA
+                           ).grid(row=i+1, column=1, padx=4, sticky="w")
+            if unit:
+                tk.Label(rcol, text=unit, font=FONT_LABEL_SM, bg=BG_MAIN
+                         ).grid(row=i+1, column=2, sticky="w")
+            help_link(rcol, helpm).grid(row=i+1, column=3, sticky="w", padx=2)
+
+        # 0.1" gap between Low-k Zone Pore Tortuosity (row 3) and the
+        # "What is a Low-k Geologic Unit?" button (row 4).
+        make_btn(rcol, 'What is a "Low-k" Geologic Unit?',
+                 "OpenAppendix_4_2_Relative", quarto=True,
+                 font=FONT_BTN_SM, width=32, bg=BTN_FILL).grid(
+            row=4, column=0, columnspan=4, sticky="w", pady=("0.1i", 0))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 5 – PFAS TRANSPORT PROPERTIES
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s5_transport(self, parent):
+        section_header(parent, "5", "PFAS TRANSPORT PROPERTIES").pack(
+            anchor="w", pady=(4, 1))
+
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        PFAA_CHOICES = ["PFOS", "PFOA", "PFHxS", "PFNA", "GenX", "None"]
+
+        tk.Label(f, text="", bg=BG_MAIN).grid(row=0, column=0)
+        tk.Label(f, text="PFAA 1", font=FONT_LABEL_B,
+                 bg=BG_MAIN).grid(row=0, column=1, padx=4)
+        tk.Label(f, text="PFAA 2", font=FONT_LABEL_B,
+                 bg=BG_MAIN).grid(row=0, column=2, padx=4)
+
+        tk.Label(f, text="PFAA (use dropdown menu)",
+                 font=FONT_LABEL, bg=BG_MAIN).grid(row=1, column=0, sticky="w")
+        # PFAA dropdowns – Pull-Down legend color
+        dropdown(f, self.v_pfaa1, PFAA_CHOICES, width=8, bg=BG_PULLDOWN
+                 ).grid(row=1, column=1, padx=4)
+        dropdown(f, self.v_pfaa2, PFAA_CHOICES, width=8, bg=BG_PULLDOWN
+                 ).grid(row=1, column=2, padx=4)
+        help_link(f, "OpenTable5_1").grid(row=1, column=4)
+
+        rows = [
+            ("Retardation Factor for Transmissive Zones",
+             self.v_ret_trans1, self.v_ret_trans2, "(-)", "OpenTable5_3"),
+            ("Retardation Factor for Low-k Units",
+             self.v_ret_lowk1, self.v_ret_lowk2,  "(-)", "OpenTable5_4"),
+        ]
+        for i, (lbl, var1, var2, unit, helpm) in enumerate(rows):
+            tk.Label(f, text=lbl, font=FONT_LABEL, bg=BG_MAIN
+                     ).grid(row=2+i, column=0, sticky="w", pady=1)
+            # PFAA-1 cell (col 1)
+            make_entry(f, var1, width=8, bg=BG_FORMULA).grid(
+                row=2+i, column=1, padx=4)
+            # PFAA-2 cell (col 2)  – matches PFAA1 layout
+            make_entry(f, var2, width=8, bg=BG_FORMULA).grid(
+                row=2+i, column=2, padx=4)
+            tk.Label(f, text=unit, font=FONT_LABEL_SM, bg=BG_MAIN
+                     ).grid(row=2+i, column=3, sticky="w")
+            help_link(f, helpm).grid(row=2+i, column=4, padx=2)
+
+        # General Molecular Diffusion Coefficient on its own row
+        df = tk.Frame(parent, bg=BG_MAIN)
+        df.pack(fill="x", pady=(2, 4))
+        tk.Label(df, text="General molecular Diffusion Coefficient for all Constituents",
+                 font=FONT_LABEL, bg=BG_MAIN).grid(row=0, column=0, sticky="w")
+        make_entry(df, self.v_mol_diff, width=10, bg=BG_FORMULA).grid(
+            row=0, column=1, padx=4)
+        tk.Label(df, text="(m²/sec)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=0, column=2, sticky="w")
+        help_link(df, "OpenTable5_7").grid(row=0, column=3)
+
+        # "Calculate Retardation Factors" button moved BELOW all the cells
+        # (i.e. below the Diffusion Coefficient row).
+        make_btn(parent, "Calculate Retardation Factors",
+                 "CalculrateRetardationFactors",
+                 font=FONT_BTN_SM, width=30, bg=BTN_FILL
+                 ).pack(anchor="w", pady=(4, 4))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 7 – PFAS SOURCE TERM (middle column)
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s7_source(self, parent):
+        section_header(parent, "7", "PFAS SOURCE TERM").pack(
+            anchor="w", pady=(2, 1))
+
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        PFAA_CHOICES = ["PFOS", "PFOA", "PFHxS", "PFNA", "GenX", "None"]
+
+        # Column map (every left-side control sits in col 0):
+        #   col 0 – row 1: "How to Get Source Concentration?" button
+        #           row 2: "Option 1:" label
+        #           rows 3-13: "Assume Constant Source" button (rowspan=11)
+        #   col 1 – year cells (1977 … 2077)
+        #   col 2 – PFAA 1 dropdown / values
+        #   col 3 – PFAA 2 dropdown / values
+        #   col 4 – '?' (PFAA-2 row) / "(ug/L)" (year rows)
+
+        # Row 0: column headers
+        tk.Label(f, text="PFAA 1", font=FONT_LABEL_B, bg=BG_MAIN
+                 ).grid(row=0, column=2, padx=4)
+        tk.Label(f, text="PFAA 2", font=FONT_LABEL_B, bg=BG_MAIN
+                 ).grid(row=0, column=3, padx=4)
+
+        # Row 1: "How to Get Source Concentration?" LEFT of PFAA 1 +
+        #        the two PFAA dropdowns + '?' next to PFAA 2
+        make_btn(f, "How to Get Source Concentration?",
+                 "OpenAppendix_7_1_Relative", quarto=True,
+                 font=FONT_BTN_SM, width=28, bg=BTN_FILL
+                 ).grid(row=1, column=0, sticky="w",
+                        padx=(0, 8), pady=(0, 4))
+        dropdown(f, self.v_pfaa1, PFAA_CHOICES, width=8, bg=BG_PULLDOWN
+                 ).grid(row=1, column=2, padx=4)
+        dropdown(f, self.v_pfaa2, PFAA_CHOICES, width=8, bg=BG_PULLDOWN
+                 ).grid(row=1, column=3, padx=4)
+        help_link(f, "OpenTable5_1").grid(row=1, column=4, padx=(2, 0))
+
+        # Row 2: "Option 1:" label LEFT of the year column
+        tk.Label(f, text="Option 1:", font=FONT_LABEL_I, bg=BG_MAIN
+                 ).grid(row=2, column=0, sticky="w", pady=(2, 2))
+
+        # Rows 3-13: "Assume Constant Source" button (rowspan=11) LEFT
+        # of the year cells.
+        make_btn(f, "Assume Constant Source\n(populates same values\nfrom the first row)",
+                 "SourceOption1", font=FONT_BTN_SM, width=24, bg=BTN_FILL,
+                 padx=4, pady=2
+                 ).grid(row=3, column=0, rowspan=11,
+                        padx=(0, 8), sticky="n")
+
+        for i in range(11):
+            make_entry(f, self.v_src_years[i], width=6, bg=BG_LOCKED,
+                       justify="right"
+                       ).grid(row=3+i, column=1, padx=2, pady=1)
+            make_entry(f, self.v_src_pfaa1[i], width=10
+                       ).grid(row=3+i, column=2, padx=2, pady=1)
+            make_entry(f, self.v_src_pfaa2[i], width=10
+                       ).grid(row=3+i, column=3, padx=2, pady=1)
+            tk.Label(f, text="(ug/L)", font=FONT_LABEL_SM,
+                     bg=BG_MAIN, fg=FG_GREY
+                     ).grid(row=3+i, column=4, sticky="w", padx=2)
+
+        total_fr = tk.Frame(f, bg=BG_MAIN)
+        total_fr.grid(row=14, column=0, columnspan=5, sticky="w",
+                      pady=(6, 0))
+        tk.Label(total_fr, text="Total PFAS Mass Out of Source:",
+                 font=FONT_LABEL, bg=BG_MAIN, fg=FG_BTN_NAVY).pack(side="left")
+        tk.Label(total_fr, textvariable=self.v_total_mass, font=FONT_LABEL,
+                 bg=BG_LOCKED, fg=FG_LOCKED, width=8, relief="solid", bd=1
+                 ).pack(side="left", padx=4)
+        tk.Label(total_fr, text="0.0", font=FONT_LABEL,
+                 bg=BG_LOCKED, fg=FG_LOCKED, width=6, relief="solid", bd=1
+                 ).pack(side="left", padx=2)
+        tk.Label(total_fr, text="(kg)", font=FONT_LABEL_SM, bg=BG_MAIN, fg=FG_GREY
+                 ).pack(side="left", padx=2)
+
+        make_btn(parent, "Enter PFAA Source Concentrations",
+                 "SourceOption2", font=FONT_BTN_SM, width=34, bg=BTN_FILL
+                 ).pack(anchor="w", pady=(4, 4))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 8 – SOURCE REMEDIATION
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s8_source_rem(self, parent):
+        section_header(parent, "8", "SOURCE REMEDIATION").pack(
+            anchor="w", pady=(2, 1))
+
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        tk.Label(f, text="Source Treatment Start Year",
+                 font=FONT_LABEL, bg=BG_MAIN).grid(row=0, column=0, sticky="w")
+        make_entry(f, self.v_src_rem_yr, width=8).grid(row=0, column=1, padx=4)
+        tk.Label(f, text="(YYYY)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=0, column=2, sticky="w")
+        help_link(f, "OpenTable8_2").grid(row=0, column=3)
+
+        tk.Label(f, text="Source Concentration Reduction",
+                 font=FONT_LABEL, bg=BG_MAIN).grid(row=1, column=0, sticky="w", pady=2)
+        make_entry(f, self.v_src_conc_red, width=8).grid(row=1, column=1, padx=4)
+        tk.Label(f, text="(%)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=1, column=2, sticky="w")
+        help_link(f, "OpenTable8_1").grid(row=1, column=3)
+
+        bf = tk.Frame(parent, bg=BG_MAIN)
+        bf.pack(fill="x", pady=(2, 4))
+        make_btn(bf, "Apply Remediation", "SourceRemediation",
+                 font=FONT_BTN_SM, width=18, bg=BTN_FILL).pack(side="left", padx=(0, 4))
+        make_btn(bf, "HELP", "OpenAppendix_8_1_Relative", quarto=True,
+                 font=FONT_BTN_SM, width=8, bg=BTN_FILL).pack(side="left")
+
+        # ── Section8_1.png below the buttons ─────────────────────────
+        scale = getattr(self, "_dpi_scale", 1.0)
+        self._figures["s8_1"] = _load_figure("Section8_1.png",
+                                             target_height=int(120 * scale))
+        if self._figures["s8_1"] is not None:
+            tk.Label(parent, image=self._figures["s8_1"],
+                     bg=BG_MAIN, bd=0).pack(anchor="w", pady=(2, 4))
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 9 – PSB
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s9_psb(self, parent):
+        section_header(parent, "9",
+                       "PLUME REMEDIATION: INSTALL PERMEABLE SORPTION BARRIER (PSB)"
+                       ).pack(anchor="w", pady=(4, 1))
+
+        # Top block: Freundlich rows + Year/Dist on the LEFT,
+        #            Section9_1.png on the RIGHT spanning all those rows.
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        # Row 0 — Model PSB? + column headers
+        tk.Checkbutton(f, text="Model PSB?", variable=self.v_model_psb,
+                       font=FONT_LABEL, bg=BG_MAIN, activebackground=BG_MAIN
+                       ).grid(row=0, column=0, sticky="w")
+        tk.Label(f, text="Unit", font=FONT_LABEL_B,
+                 bg=BG_MAIN).grid(row=0, column=2, padx=4)
+        tk.Label(f, text="PFOS", font=FONT_LABEL_B,
+                 bg=BG_MAIN).grid(row=0, column=3, padx=4)
+        tk.Label(f, text="None", font=FONT_LABEL_B,
+                 bg=BG_MAIN).grid(row=0, column=4, padx=4)
+
+        # Row 1 — Freundlich "a"
+        tk.Label(f, text="PSB's Freundlich \"a\"", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=1, column=0, sticky="w", pady=1)
+        tk.Label(f, text="-", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=1, column=2, padx=4)
+        make_entry(f, self.v_psb_a_1, width=8).grid(row=1, column=3, padx=2)
+        make_entry(f, tk.StringVar(value=""), width=8).grid(row=1, column=4, padx=2)
+        help_link(f, "OpenTable9_1").grid(row=1, column=5)
+
+        # Row 2 — Freundlich Kf
+        tk.Label(f, text="PSB's Freundlich Kf", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=2, column=0, sticky="w", pady=1)
+        tk.Label(f, text="(mg/kg)(mg/L)^(-a)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=2, column=2, padx=4)
+        make_entry(f, self.v_psb_kf_1, width=8).grid(row=2, column=3, padx=2)
+        make_entry(f, tk.StringVar(value=""), width=8).grid(row=2, column=4, padx=2)
+        help_link(f, "OpenTable9_2").grid(row=2, column=5)
+
+        # Row 3 — Converted Freundlich
+        tk.Label(f, text="Converted PSB's Freundlich",
+                 font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=3, column=0, sticky="w", pady=1)
+        tk.Label(f, text="(ug/kg)(ug/L)^(-a)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=3, column=2, padx=4)
+        make_entry(f, self.v_psb_kf_conv, width=8, bg=BG_LOCKED
+                   ).grid(row=3, column=3, padx=2)
+        make_entry(f, tk.StringVar(value=""), width=8, bg=BG_LOCKED
+                   ).grid(row=3, column=4, padx=2)
+
+        # Row 4 — Year PSB Installed (LEFT of image)
+        tk.Label(f, text="Year PSB Installed", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=4, column=0, sticky="w", pady=(4, 1))
+        make_entry(f, self.v_psb_yr, width=8
+                   ).grid(row=4, column=3, padx=2, sticky="w")
+        help_link(f, "OpenTable9_3").grid(row=4, column=5)
+
+        # Row 5 — PSB Dist. from Source (LEFT of image)
+        tk.Label(f, text="PSB Dist. from Source", font=FONT_LABEL, bg=BG_MAIN
+                 ).grid(row=5, column=0, sticky="w", pady=(2, 1))
+        make_entry(f, self.v_psb_dist, width=8
+                   ).grid(row=5, column=3, padx=2, sticky="w")
+        tk.Label(f, text="(m)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=5, column=4, sticky="w")
+
+        # Section9_1.png — same rows as Freundlich + Year + Dist (rowspan).
+        # Target height reduced 25% (140 → 105 px baseline).
+        scale = getattr(self, "_dpi_scale", 1.0)
+        self._figures["s9_1"] = _load_figure("Section9_1.png",
+                                             target_height=int(50 * scale))
+        if self._figures["s9_1"] is not None:
+            tk.Label(f, image=self._figures["s9_1"], bg=BG_MAIN, bd=0
+                     ).grid(row=0, column=6, rowspan=6,
+                            padx=(16, 0), sticky="n")
+
+        # Buttons row
+        bf = tk.Frame(parent, bg=BG_MAIN)
+        bf.pack(fill="x", pady=(2, 2))
+        make_btn(bf, "Where to Get Freundlich Parameters",
+                 "OpenAppendix_9_1_Relative", quarto=True,
+                 font=FONT_BTN_SM, width=30, bg=BTN_FILL
+                 ).pack(side="left", padx=(0, 4))
+        make_btn(bf, "Simple CAC Barrier Longevity Tool",
+                 "LongevityTool", font=FONT_BTN_SM, width=30, bg=BTN_FILL
+                 ).pack(side="left")
+
+        # Bottom — Total Width / PSB Loading / # of cells
+        bot = tk.Frame(parent, bg=BG_MAIN)
+        bot.pack(fill="x", pady=(2, 4))
+        for i, (lbl, var, unit, helpm) in enumerate([
+            ("Total Width of PSB in X-Direction", self.v_psb_width, "(m) (Typical 4)", "OpenTable9_4"),
+            ("PSB Loading 'fcac'",                self.v_psb_load,  "%",                "OpenTable9_5"),
+            ("# of cells in PSB in x direction",  self.v_psb_cells, "(-)",              ""),
+        ]):
+            tk.Label(bot, text=lbl, font=FONT_LABEL, bg=BG_MAIN
+                     ).grid(row=i, column=0, sticky="w", pady=1)
+            make_entry(bot, var, width=8).grid(row=i, column=1, padx=4)
+            tk.Label(bot, text=unit, font=FONT_LABEL_SM, bg=BG_MAIN
+                     ).grid(row=i, column=2, sticky="w")
+            if helpm:
+                help_link(bot, helpm).grid(row=i, column=3)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # SECTION 10 – FIELD DATA TO CALIBRATE
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_s10_field_data(self, parent):
+        section_header(parent, "10", "FIELD DATA TO CALIBRATE").pack(
+            anchor="w", pady=(4, 1))
+
+        # Sample Year on its OWN row above the table.
+        sy = tk.Frame(parent, bg=BG_MAIN)
+        sy.pack(fill="x", anchor="w", pady=(2, 4))
+        tk.Label(sy, text="Sample Year (XXXX)", font=FONT_LABEL_I,
+                 bg=BG_MAIN).pack(side="left")
+        make_entry(sy, self.v_sample_yr, width=6).pack(side="left", padx=4)
+        help_link(sy, "OpenTable10_1").pack(side="left", padx=(2, 0))
+
+        # Table — column titles on top, cells beneath.
+        # Column map:
+        #   col 0 – Monitoring Well Name
+        #   col 1 – PFOS  (Concentration Data, ug/L)
+        #   col 2 – None  (Concentration Data, ug/L)
+        #   col 3 – Distance from Source (m)
+        #   col 4 – descriptive note (right-side hint)
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        # Row 0 — group titles
+        tk.Label(f, text="Monitoring Well Name", font=FONT_LABEL_BI,
+                 bg=BG_MAIN).grid(row=0, column=0, padx=4)
+        tk.Label(f, text="Concentration Data (ug/L)", font=FONT_LABEL_BI,
+                 bg=BG_MAIN).grid(row=0, column=1, columnspan=2, padx=4)
+        tk.Label(f, text="Distance from Source (m)", font=FONT_LABEL_BI,
+                 bg=BG_MAIN).grid(row=0, column=3, padx=4)
+
+        # Row 1 — PFOS / None sub-headers under "Concentration Data"
+        tk.Label(f, text="Event", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=1, column=0, padx=4)
+        tk.Label(f, text="PFOS", font=FONT_LABEL_B, bg=BG_MAIN
+                 ).grid(row=1, column=1, padx=4)
+        tk.Label(f, text="None", font=FONT_LABEL_B, bg=BG_MAIN
+                 ).grid(row=1, column=2, padx=4)
+
+        # Row 2 — Help links next to each column
+        help_link(f, "OpenTable10_2").grid(row=2, column=0, sticky="n")
+        help_link(f, "OpenTable10_3").grid(row=2, column=1, sticky="n",
+                                            columnspan=2)
+        help_link(f, "OpenTable10_4").grid(row=2, column=3, sticky="n")
+
+        descr = [
+            "For simple model use only",
+            "monitoring wells on or",
+            "near the top of the  plume",
+            "",
+            "and on the",
+            "centerline of the plume",
+            "",
+        ]
+        # Rows 3-9 — 7 monitoring well rows.  Cells under both PFOS and
+        # None columns (PFAA-2 cells were missing before).
+        for i in range(7):
+            make_entry(f, self.v_mw_names[i], width=10, bg=BG_LOCKED,
+                       justify="left"
+                       ).grid(row=3+i, column=0, padx=2, pady=1)
+            make_entry(f, self.v_mw_conc[i],  width=8
+                       ).grid(row=3+i, column=1, padx=2)
+            make_entry(f, self.v_mw_conc2[i], width=8
+                       ).grid(row=3+i, column=2, padx=2)
+            make_entry(f, self.v_mw_dist[i],  width=6
+                       ).grid(row=3+i, column=3, padx=2)
+            tk.Label(f, text=descr[i], font=FONT_LABEL_SMI,
+                     bg=BG_MAIN, fg=FG_GREY
+                     ).grid(row=3+i, column=4, sticky="w", padx=4)
+
+    # SECTION 11
+    def _build_s11_output(self, parent):
+        section_header(parent, "11",
+                       "MODEL OUTPUT AND NUMERICAL PARAMETERS").pack(
+            anchor="w", pady=(4, 1))
+
+        f = tk.Frame(parent, bg=BG_MAIN)
+        f.pack(fill="x", pady=(0, 4))
+
+        tk.Label(f, text="See Results\nEvery:", font=FONT_LABEL, bg=BG_MAIN,
+                 justify="left").grid(row=0, column=0, sticky="w")
+        make_entry(f, self.v_see_every, width=6).grid(row=0, column=1, padx=4)
+        tk.Label(f, text="(years)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=0, column=2, sticky="w")
+        help_link(f, "OpenTable11_1").grid(row=0, column=3)
+
+        tk.Label(f, text="Go to Section 2 to Change Years",
+                 font=FONT_LABEL_SMI,
+                 bg=BG_MAIN, fg=FG_GREY).grid(
+            row=1, column=0, columnspan=4, sticky="w", pady=(2, 4))
+
+        make_btn(parent, "Change Numerical Parameters",
+                 "ChangeNumericalParameters",
+                 font=FONT_BTN_SM, width=30, bg=BTN_FILL).pack(anchor="w", pady=(2, 4))
+
+    # BOTTOM BAR
+    # ─────────────────────────────────────────────────────────────────────
+    # ACTION ROW — Run / Authors / Load / Save / Help / Clear / Paste.
+    # Lives inside the right column of the top body (per PDF storyboard).
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_action_row(self, parent):
+        bar = tk.Frame(parent, bg=BG_MAIN, pady=4)
+        bar.pack(fill="x", anchor="ne", pady=(8, 0))
+
+        # Two big blue Run buttons
+        make_btn(bar, "Run Model", "RunPythonScript",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_LG, padx=10, pady=4,
+                 bg=BTN_FILL_BLUE, width=12).pack(side="left", padx=4)
+        make_btn(bar, "Run Model with\nAuto-Calibration",
+                 "Show_Visualization",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_LG, padx=10, pady=4,
+                 bg=BTN_FILL_BLUE, width=18).pack(side="left", padx=4)
+
+        # 3x2 action grid on the right
+        actfr = tk.Frame(bar, bg=BG_MAIN)
+        actfr.pack(side="right", padx=4)
+        cells = [
+            (0, 0, "Authors",        "Authors",       BTN_FILL_GREEN, FG_BTN_GREEN),
+            (0, 1, "Load Data",      "Load_Data",     BTN_FILL,       FG_BTN_NAVY),
+            (0, 2, "Save Data",      "Save_Data",     BTN_FILL_GREEN, FG_BTN_GREEN),
+            (1, 0, "Help",           "Help",          BTN_FILL,       FG_BTN_NAVY),
+            (1, 1, "Clear All Data", "Clear_Data",    BTN_FILL,       FG_BTN_NAVY),
+            (1, 2, "Paste Example",  "Paste_Example", BTN_FILL,       FG_BTN_NAVY),
+        ]
+        for r, c, txt, macro, bg, fg in cells:
+            make_btn(actfr, txt, macro,
+                     fg=fg, font=FONT_BTN, padx=8, pady=3,
+                     bg=bg, width=12).grid(
+                row=r, column=c, padx=3, pady=2, sticky="ew")
+
+    # ─────────────────────────────────────────────────────────────────────
+    # CALIBRATION PANEL — bottom-right quadrant per the PDF storyboard.
+    # Step 2 (PFAA checkboxes) | Step 3 (weighting grid) | Iterations / Run.
+    # Action rows: 1.Save Cal / 2.Run Cal / Go Back -- 3.See / 4.Load / 5.Run / Help -- 6.Save Opt
+    # ─────────────────────────────────────────────────────────────────────
+    def _build_calibration_panel(self, parent):
+        outer = tk.Frame(parent, bg=BG_MAIN)
+        outer.pack(fill="both", expand=True, padx=4, pady=4)
+
+        tk.Label(outer,
+                 text="REMFluor-MD MACHINE-CALIBRATION (Singh et al., 2025)",
+                 font=FONT_LABEL_B, bg=BG_MAIN, fg=FG_INPUT, anchor="w"
+                 ).pack(anchor="w")
+
+        intro = tk.Label(outer,
+            text="This allows you to let the computer perform a simple "
+                 "calibration of your REMFluor-MD model by:",
+            font=FONT_LABEL, bg=BG_MAIN, fg=FG_INPUT, anchor="w",
+            wraplength=600, justify="left")
+        intro.pack(anchor="w", pady=(2, 0))
+        for txt in [
+            "Step 1) Entering monitoring well data in Section 9.",
+            "Step 2) Select which parameters to calibrate against.",
+            "Step 3) Enter calibration options:  decide if you want to "
+            "weight any monitoring data more or less during calibration.",
+            "Step 4) Enter calibration data, the likely minimum and "
+            "maximum values for the selected parameters below.",
+            'Step 5) Hitting the "Run Machine-Based Calibration" button '
+            "to the right.",
+        ]:
+            tk.Label(outer, text=txt, font=FONT_LABEL, bg=BG_MAIN,
+                     fg=FG_HELP, anchor="w", wraplength=600,
+                     justify="left").pack(anchor="w")
+
+        # ── Three-column block: Step 2 | Step 3 | numbers/run ─────────
+        body = tk.Frame(outer, bg=BG_MAIN)
+        body.pack(fill="x", expand=True, pady=(6, 0))
+
+        # Step 2 — calibrate against PFAA checkboxes
+        s2 = tk.Frame(body, bg=BG_MAIN, bd=1, relief="solid",
+                      padx=6, pady=4)
+        s2.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+        tk.Label(s2, text="Step 2:  Calibrate using:",
+                 font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
+                 ).pack(anchor="w")
+        rowf = tk.Frame(s2, bg=BG_MAIN)
+        rowf.pack(pady=4)
+        self.v_calib_pfoa = tk.BooleanVar(value=True)
+        self.v_calib_none = tk.BooleanVar(value=False)
+        tk.Checkbutton(rowf, text="PFOA", variable=self.v_calib_pfoa,
+                       font=FONT_LABEL, bg=BG_MAIN
+                       ).pack(side="left", padx=8)
+        tk.Checkbutton(rowf, text="None", variable=self.v_calib_none,
+                       font=FONT_LABEL, bg=BG_MAIN
+                       ).pack(side="left", padx=8)
+
+        # Step 3 — weighting factors per monitoring point
+        s3 = tk.Frame(body, bg=BG_MAIN, bd=1, relief="solid",
+                      padx=6, pady=4)
+        s3.grid(row=0, column=1, sticky="nsew", padx=(0, 6))
+        tk.Label(s3, text="Step 3:  Calibration Options - "
+                          "enter any weighting factors.",
+                 font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
+                 ).pack(anchor="w")
+        s3g = tk.Frame(s3, bg=BG_MAIN); s3g.pack(pady=2)
+        for j, h in enumerate(["Monitoring\nPoint Name",
+                                "Distance\nfrom Source (m)",
+                                "Weighting\nFactor for Calb:",
+                                "Source:"]):
+            tk.Label(s3g, text=h, font=FONT_LABEL_BI, bg=BG_MAIN
+                     ).grid(row=0, column=j, sticky="w", padx=2)
+        self.v_calib_w = []
+        names = ["MW-504","FS-MW504","FS-MW505","FS-MW506",
+                 "FS-MW507","FS-MW508","FS-MW509"]
+        dists = [10, 50, 100, 200, 300, 400, 500]
+        defaults = ["1.0"]*6 + ["2.0"]
+        for i, (nm, d, w) in enumerate(zip(names, dists, defaults)):
+            tk.Entry(s3g, width=10, font=FONT_INPUT, bg=BG_LOCKED,
+                     fg=FG_LOCKED, relief="solid", bd=1,
+                     justify="left").grid(row=i+1, column=0, sticky="w", padx=1)
+            tk.Entry(s3g, width=8, font=FONT_INPUT, bg=BG_LOCKED,
+                     fg=FG_LOCKED, relief="solid", bd=1,
+                     justify="right").grid(row=i+1, column=1, sticky="w", padx=1)
+            wv = tk.StringVar(value=w); self.v_calib_w.append(wv)
+            tk.Entry(s3g, textvariable=wv, width=8, font=FONT_INPUT,
+                     bg=BG_FORMULA, fg=FG_INPUT, relief="solid", bd=1,
+                     justify="right").grid(row=i+1, column=2, sticky="w", padx=1)
+            tk.Label(s3g, text="Section 10", font=FONT_LABEL_I,
+                     bg=BG_MAIN).grid(row=i+1, column=3, sticky="w", padx=2)
+
+        # Numbers + run-time + LEGEND mini box
+        s_run = tk.Frame(body, bg=BG_MAIN); s_run.grid(row=0, column=2, sticky="new")
+        nf = tk.Frame(s_run, bg=BG_MAIN); nf.pack(anchor="w")
+        tk.Label(nf, text="Number of iteration", font=FONT_LABEL,
+                 bg=BG_MAIN).pack(side="left")
+        self.v_n_iter = tk.StringVar(value="50")
+        tk.Entry(nf, textvariable=self.v_n_iter, width=6,
+                 font=FONT_INPUT, bg=BG_INPUT_BLUE, fg=FG_INPUT,
+                 relief="solid", bd=1, justify="right"
+                 ).pack(side="left", padx=4)
+        tf = tk.Frame(s_run, bg=BG_MAIN); tf.pack(anchor="w", pady=(2,0))
+        tk.Label(tf, text="Estim.Time Remaining", font=FONT_LABEL,
+                 bg=BG_MAIN).pack(side="left")
+        self.v_t_remain = tk.StringVar(value="2")
+        tk.Entry(tf, textvariable=self.v_t_remain, width=6,
+                 font=FONT_INPUT, bg=BG_LOCKED, fg=FG_LOCKED,
+                 relief="solid", bd=1, justify="right"
+                 ).pack(side="left", padx=4)
+        tk.Label(tf, text="(minutes)", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).pack(side="left")
+        tk.Label(s_run, text="(add explainer text here about\npossible run times)",
+                 font=FONT_LABEL_SMI, fg=FG_GREY, bg=BG_MAIN, justify="left"
+                 ).pack(anchor="w", pady=(4,0))
+
+        # body grid weights so columns share width nicely
+        body.columnconfigure(0, weight=1, uniform="cal")
+        body.columnconfigure(1, weight=2, uniform="cal")
+        body.columnconfigure(2, weight=1, uniform="cal")
+
+        # ── Step 4 — calibration ranges table ─────────────────────────
+        tk.Label(outer, text="Step 4:  Enter Calibration Ranges:",
+                 font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
+                 ).pack(anchor="w", pady=(8, 0))
+        make_btn(outer,
+                 "Enter Default Low-High Ranges from Literature, "
+                 "Experience (default +/- x2)",
+                 "DefaultRanges",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_SM, padx=8, pady=2,
+                 bg=BTN_FILL).pack(anchor="w", pady=2)
+
+        tbl = tk.Frame(outer, bg=BG_MAIN); tbl.pack(anchor="w", pady=2)
+        for j, h in enumerate(["", "Use this\nParameter?",
+                                "Lowest\nLikely Value",
+                                "Mid-Range Values",
+                                "Highest\nLikely Value", ""]):
+            bg = "#FFFF00" if h == "Mid-Range Values" else BG_MAIN
+            tk.Label(tbl, text=h, font=FONT_LABEL_BI, bg=bg, fg=FG_INPUT
+                     ).grid(row=0, column=j, padx=2, sticky="w")
+        rows = [
+            ("Source Start Year (nt)",                        "1965",   "1980"),
+            ("Hydraulic Conductivity (k)",                    "0.31536","31.536"),
+            ("Hydraulic Gradient (i)",                        "0.0004", "0.0380"),
+            ("Effective Porosity (porf)",                     "0.16",   "0.24"),
+            ("Transmissive Fraction of Model (volfrac)",      "0.6",    "0.85"),
+            ("Average Diffusion Length (difflen)",            "1.5",    "6.0"),
+            ("Retardation Factor of PFAA-1 (ock(2))",         "1.6",    "6.4"),
+            ("Retardation Factor of PFAA-2 (ock(4))",         "1.0",    "4.0"),
+            ("Longitudinal Dispersivity (alphax)",            "1.0",    "1.5"),
+            ("Multiplier to PFAA-1 Source Concentration",     "0.5",    "2.0"),
+            ("Multiplier to PFAA-2 Source Concentration",     "0.5",    "2.0"),
+        ]
+        self.v_calib_chk  = []
+        self.v_calib_low  = []
+        self.v_calib_mid  = []
+        self.v_calib_high = []
+        for i, (lbl, lo, hi) in enumerate(rows, start=1):
+            tk.Label(tbl, text=lbl, font=FONT_LABEL, bg=BG_MAIN, anchor="e"
+                     ).grid(row=i, column=0, sticky="e", padx=2)
+            cv = tk.BooleanVar(); self.v_calib_chk.append(cv)
+            tk.Checkbutton(tbl, variable=cv, bg=BG_MAIN
+                           ).grid(row=i, column=1)
+            for col, vlist, val in [
+                (2, self.v_calib_low,  lo),
+                (3, self.v_calib_mid,  ""),
+                (4, self.v_calib_high, hi),
+            ]:
+                vv = tk.StringVar(value=val); vlist.append(vv)
+                tk.Entry(tbl, textvariable=vv, width=10, font=FONT_INPUT,
+                         bg=BG_FORMULA, fg=FG_INPUT, relief="solid", bd=1,
+                         justify="right").grid(row=i, column=col, padx=1)
+            tk.Label(tbl, text="Section 2 / 3 / 4 / 5 / 6 / 7",
+                     font=FONT_LABEL_I, bg=BG_MAIN
+                     ).grid(row=i, column=5, sticky="w", padx=2)
+
+        # ── Action rows (Save Cal / Run Cal / Go Back ; See / Load / Run / Help ; Save Opt) ──
+        actrow1 = tk.Frame(outer, bg=BG_MAIN); actrow1.pack(fill="x", pady=(8,2))
+        make_btn(actrow1, "1. Save Calibration Data",
+                 "Save_Data_Calibration",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=22).pack(side="left", padx=2)
+        make_btn(actrow1, "2. Run Machine Based Calibration",
+                 "Run_Machine_Based_Calibration",
+                 fg=FG_BTN_RED, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=28).pack(side="left", padx=2)
+        make_btn(actrow1, "Go Back to Main\nInterface",
+                 "Show_MainInterface",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=18).pack(side="right", padx=2)
+
+        actrow2 = tk.Frame(outer, bg=BG_MAIN); actrow2.pack(fill="x", pady=2)
+        make_btn(actrow2, "3. See All Calibration Data",
+                 "See_Calibration_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=22).pack(side="left", padx=2)
+        make_btn(actrow2, "4. Load Optimal\nData",
+                 "Load_Optimal_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=14).pack(side="left", padx=2)
+        make_btn(actrow2, "5. Run Optimal\nModel",
+                 "RunPythonScript",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=14).pack(side="left", padx=2)
+        make_btn(actrow2, "Help",
+                 "Help",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=14).pack(side="right", padx=2)
+
+        actrow3 = tk.Frame(outer, bg=BG_MAIN); actrow3.pack(fill="x", pady=2)
+        make_btn(actrow3, "6. Save Optimal Model",
+                 "Save_Optimal_Model",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB, padx=10, pady=4,
+                 bg=BTN_FILL, width=22).pack(side="left", padx=2)
+
+    def _build_bottom_bar(self, parent):
+        bar = tk.Frame(parent, bg=BG_BOTTOM_BAR, pady=12)
+        bar.pack(fill="x", side="bottom")
+
+        runfr = tk.Frame(bar, bg=BG_BOTTOM_BAR)
+        runfr.pack(side="left", padx=24)
+
+        make_btn(runfr, "Run Model", "RunPythonScript",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_LG,
+                 padx=20, pady=10, bg=BTN_FILL_BLUE).pack(side="left", padx=6)
+
+        make_btn(runfr, "Run Model with\nAuto-Calibration",
+                 "Show_Visualization",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_LG,
+                 padx=20, pady=4, bg=BTN_FILL_BLUE).pack(side="left", padx=6)
+
+        actfr = tk.Frame(bar, bg=BG_BOTTOM_BAR)
+        actfr.pack(side="right", padx=24)
+
+        make_btn(actfr, "Authors", "Authors",
+                 fg=FG_BTN_GREEN, font=FONT_BTN, padx=10, pady=4,
+                 bg=BTN_FILL_GREEN, width=12).grid(
+            row=0, column=0, padx=3, pady=2, sticky="ew")
+        make_btn(actfr, "Load Data", "Load_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN, padx=10, pady=4,
+                 bg=BTN_FILL, width=12).grid(
+            row=0, column=1, padx=3, pady=2, sticky="ew")
+        make_btn(actfr, "Save Data", "Save_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN, padx=10, pady=4,
+                 bg=BTN_FILL, width=12).grid(
+            row=0, column=2, padx=3, pady=2, sticky="ew")
+
+        tk.Label(actfr, text="", bg=BG_BOTTOM_BAR, width=12).grid(
+            row=1, column=0, padx=3)
+        make_btn(actfr, "Clear All Data", "Clear_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN, padx=10, pady=4,
+                 bg=BTN_FILL, width=12).grid(
+            row=1, column=1, padx=3, pady=2, sticky="ew")
+        make_btn(actfr, "Paste Example", "Paste_Example",
+                 fg=FG_BTN_NAVY, font=FONT_BTN, padx=10, pady=4,
+                 bg=BTN_FILL, width=12).grid(
+            row=1, column=2, padx=3, pady=2, sticky="ew")
+
+
+# ENTRY POINT
+if __name__ == "__main__":
+    app = REMFluorApp()
+    app.mainloop()
