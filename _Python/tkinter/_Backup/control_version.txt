@@ -4,7 +4,7 @@ File:   _Python/tkinter/main.py
 Backup: _Python/tkinter/_Backup/v{N}.py
 Always update this file when a new backup is added.
 
-Latest = v81
+Latest = v87
 
 
 # Pre-session backups (colleague iterative port)
@@ -2003,6 +2003,165 @@ run_model.py
         historical reference but is no longer touched at runtime,
         which means the standalone .exe build in Phase 3 only needs
         functions/ + Figures/ + template.inp + remfluor_v8a.exe.
+
+generate_dashboard.py
+   v82  Decoupled from the .xlsm Storyboard workbook entirely.  The
+        dashboard previously called load_workbook(input_excel) +
+        win32com.Dispatch("Excel.Application") to read ~14 cells and
+        ~8 ranges of state at runtime — which broke in any folder
+        layout where the .xlsm wasn't sitting next to the .out files
+        (e.g. a relocated `test/` folder), and forced pywin32 +
+        openpyxl + a real Excel install on every machine.  Now:
+        - run_model._dump_dashboard_state(app, project) writes a
+          JSON snapshot (dashboard_state.json) of every cell and
+          range the dashboard needs, into the project dir alongside
+          input.inp, before the Fortran solver is launched.
+        - generate_dashboard.main() loads dashboard_state.json into
+          a module-level _STATE dict and uses backwards-compat
+          helpers get_cell_value(ws, "A8") / get_range_values(ws,
+          "V34:V40") that read from _STATE instead of an openpyxl
+          worksheet.  All ~25 legacy call sites in the dashboard
+          continue to work unchanged.
+        - The win32com.client / pythoncom / xlwings / openpyxl
+          (top-level) imports are removed.  read_model_data_sheet()
+          for the user's CALIBRATION xlsx (Model Data sheet) is
+          ported to openpyxl with a deferred optional import — its
+          absence just disables observed time-series plots.
+        - run_model._check_dashboard_imports() no longer gates on
+          pywin32 / openpyxl, only on pandas/numpy/plotly/dash.
+        Effect: the standalone .exe needs zero Excel runtime, and
+        running the project from a relocated folder ("test/")
+        works without a copy of the .xlsm.
+
+generate_dashboard.py
+   v83  Defensive defaults for scalars used in arithmetic.  Symptom:
+        "TypeError: unsupported operand type(s) for -: 'NoneType'
+        and 'float'" inside pandas roperator.rsub when state cells
+        E13 (Total Depth), E15/E16/E22 (Source Width/Thick/Vel),
+        E18 (Start Year), or E19 (End Year) were empty in the
+        StringVars and got dumped as None in dashboard_state.json.
+        Added a tiny _scalar(addr, default, name) helper that logs
+        a "missing/non-numeric, using default" line for each cell
+        and returns 0.0 / 2025 / StartY+100 fallbacks.  SL_Time list
+        is also filtered for None entries before np.diff so a single
+        bad source-loading row doesn't blow up the whole dashboard.
+        Trade-off: with defaults of 0, source-loading mass curves
+        render as zero — safer than crashing the whole UI.
+
+generate_dashboard.py
+   v84  Pad MW_names list to match obs_well*.out file count.  Symptom:
+        "IndexError: list index out of range" at line 445
+        (`df['well_file'] = MW_names[idx]`) when state's §10 monitoring
+        well column (U34:U40) was empty but the Fortran solver still
+        wrote N obs_well*.out files.  Pre-v82 the .xlsm cached default
+        names ("MW-1", "MW-2", ...) which masked this; the JSON dump
+        from a fresh tkinter session has all None.  Fix: pad with
+        placeholder names ("Well 1", "Well 2", ...) up to the file
+        count.  Also wrap pd.concat(dfs) in `if dfs else
+        pd.DataFrame()` so an empty obs_well_files list doesn't crash
+        the concat.
+
+generate_dashboard.py + run_model.py
+   v85  REVERT v82 / v83 / v84 dashboard changes.  The JSON-state
+        decoupling + None-tolerant defaults + MW_names padding kept
+        producing new edge-case crashes when the user's tkinter
+        form was blank, so the right call was to roll back to the
+        original openpyxl/win32com workbook-reading dashboard that
+        was tested and stable.  generate_dashboard.py is now a byte-
+        identical copy of Source_Py/generate_dashboard.py (the
+        pristine pre-v82 source), kept at the v81 location
+        (_Python/tkinter/functions/) so the move-to-functions
+        consolidation survives.  run_model.py: removed
+        _dump_dashboard_state(), removed `import json`, removed the
+        Step-1b dump call, restored _check_dashboard_imports to
+        gate on pywin32 + openpyxl as before.
+
+        REQUIREMENTS for the dashboard to launch (same as the
+        original setup):
+          1. The file `REMFluor-MD Interface Storyboard v2.6.xlsm`
+             must sit in REMFluorMD_v2.6/ (project root).
+          2. The user's Python env must have pandas, numpy, plotly,
+             dash, openpyxl, pywin32 installed.
+          3. Click Paste Example before Run Model on a fresh launch
+             so the workbook cells the dashboard reads are seeded.
+
+        The Phase 3 .exe build will need to bundle the .xlsm via
+        --add-data — that's the trade-off for going back to the
+        working version.
+
+generate_dashboard.py + run_model.py
+   v86  Full standalone — no .xlsm dependency, no openpyxl/win32com
+        for the workbook, doesn't crash with empty form state.
+
+        Key insight from the v82-v85 cycle: the right place for
+        defaults is the DUMP, not the dashboard.  Earlier attempts
+        passed raw state (None for unfilled fields) and tried to
+        cope on the read side, which whack-a-mole'd through three
+        versions of crashes (TypeError on arithmetic, IndexError
+        on MW_names indexing, etc.).  Now run_model._dump_dashboard_state
+        bakes hard-coded fallback defaults at write time:
+          - A8=1, AD1=1, V47=5, E18=2025, E19=E18+100
+          - E13=10, E15=10, E16=5, E22=1
+          - U8:U18 -> [0,1,...,10] if blank
+          - V/X/Z/AB 8:18 -> [0]*11 if blank
+          - U34:U40 -> ["Well 1", "Well 2", ...] if blank
+          - PFAA names -> "PFAA-1" / "" reasonable defaults
+        The dashboard then reads the JSON and trusts every value.
+
+        Dashboard side (generate_dashboard.py):
+          - load_workbook(input_excel) and the Excel COM Dispatch
+            blocks are gone.  get_cell_value(ws, "A8") and
+            get_range_values(ws, "V8:V18") now look up _STATE dict
+            (loaded from dashboard_state.json) instead of an
+            openpyxl ws.  All ~25 legacy call sites unchanged.
+          - read_model_data_sheet ported to openpyxl with deferred
+            optional import (calibration .xlsx still supported but
+            its absence just disables observed-data overlays).
+          - MW_names padded to obs_well_files count after glob, so
+            an empty §10 column never causes IndexError.
+          - _scalar(addr, default) helper applied to StartY,
+            Total_Depth, Source_Width, Source_Thick, Velocity,
+            EndYear with sensible fallbacks for absolute paranoia.
+
+        run_model side:
+          - _check_dashboard_imports gates only on pandas/numpy/
+            plotly/dash.  pywin32 + openpyxl no longer required to
+            launch the dashboard.
+
+        Effect: dashboard launches and renders successfully even
+        if the user clicks Run Model on a fresh app with no Paste
+        Example clicked, no .xlsm in the project tree, and no
+        pywin32 installed.  The Phase 3 .exe build no longer needs
+        to bundle the .xlsm via --add-data.
+
+main.py + run_model.py (dashboard year dropdown)
+   v87  Symptom: after Run Model, the year dropdown showed only one
+        option (the end year, e.g. 2077) and the time-axis felt
+        disconnected from §11 "See Results Every".
+
+        Root cause #1: form default v_see_every="100" combined with
+        v_yr_start="1977" / v_yr_end="2077" gave a 100-year sim with
+        output every 100 years → exactly ONE output point at t=100
+        (year 2077).  generate_input_file computes
+        npt = see_every / dt = 100 / 0.1 = 1000 = nt, so the Fortran
+        solver only writes one output frame.  Fix: v_see_every
+        default lowered to "10" so a default-config run produces 11
+        dropdown years (1977→2077 in 10-yr steps).
+
+        Root cause #2: _dump_dashboard_state's hard-coded fallbacks
+        for E18/E19/E15/V47 didn't match the form's StringVar
+        defaults (form: 1977/2077/60/100; dump: 2025/2125/10/5).
+        When state was somehow blank, the dashboard would label
+        years 2025→2125 even though the form would have shown
+        1977→2077.  Fix: dump fallbacks now match the form
+        (E18=1977, E19=2077, E15=60, V47=10).  These only kick in
+        if state is blank — normally state.snapshot pulls the
+        StringVar values, and the user's form values are used
+        end-to-end.
+
+        Side effect: the "Approximate Run Time" cell in §2 now
+        recomputes against see_every=10 instead of 100; should be
+        a tiny adjustment, not a regression.
 
 
 # Update protocol
