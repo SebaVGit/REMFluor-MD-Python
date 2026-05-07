@@ -1,8 +1,43 @@
-# Ignore exe
-*.exe
-# Ignore
-*.txt
-*.out
-*.inp
+# ============================================================
+# .gitignore for REMFluor-MD_Python
+# ============================================================
+ 
+# --- Folders to exclude entirely from version control ---
+docs/
+env/
+Example/
+Figures/
+ 
+# --- Python compiled / cache files inside _Python (and anywhere else) ---
+# Ignore all .pyc files but keep .py files tracked
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+_Python/**/__pycache__/
+_Python/**/*.pyc
+ 
+# --- Common Python virtual environment folders (safety net) ---
+venv/
+.venv/
+ENV/
+ 
+# --- Editor / OS junk ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ 
+# --- Logs and simulation output files (generated at runtime) ---
 *.log
-*.json
+*.out
+ 
+# If you DO want to keep specific output files tracked, un-ignore them:
+# !template.inp
+# !input.inp
+ 
+# --- Build / distribution artifacts ---
+build/
+dist/
+*.egg-info/
+ 
