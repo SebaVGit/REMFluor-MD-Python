@@ -1,0 +1,11 @@
+include-in-header:
+  - text: |
+      <style>
+      /*
+          Custom CSS
+      */
+      .navbar {
+        border-bottom: 1px solid #eb7c32 !important;
+        box-shadow: 0 2px 5px #eb7c32 !important;
+      }
+      </style>

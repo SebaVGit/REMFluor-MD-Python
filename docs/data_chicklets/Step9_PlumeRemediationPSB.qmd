@@ -1,0 +1,130 @@
+---
+title: "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)"
+---
+
+See these Appendices for more info:
+
+- **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_**
+
+- **_Appendix 10.1 PFAS Longevity Paper_**
+
+## PSB Freundlich Exponent "a"
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PSB FREUNDLICH EXPONENT "a"** |
+| --- | --- |
+| Description | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in Permeable Sorption Barrier (PSB):<br><br>q = K<sub>f</sub> c<sup>a</sup><br><br>Here, q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), K<sub>f</sub> is the Freundlich capacity parameter, and a is the Freundlich exponent. |
+| Units | (-) |
+| Typical Values | Typical values of "a" for long-chained PFAS range from 0.2 to 0.5.<br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. for these three PFAAs:<br><span class="bullet-item">• PFOS "a" = 0.33</span><span class="bullet-item">• PFOA "a" = 0.25</span><span class="bullet-item">• PFHxS "a" = 0.24</span><span class="bullet-item">• 6:2 FtS "a" = 0.28</span><br>More detailed methods to estimate the Freundlich "a" for these and other PFAS are presented in **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_** |
+| Source of Data | Users can either use these default estimates or use values of "a" they derived themselves. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## PSB Freundlich "K<sub>f</sub>"
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PSB FREUNDLICH "K<sub>f</sub>"** |
+| --- | --- |
+| Description | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in Permeable Sorption Barrier (PSB):<br><br>q = K<sub>f</sub> c<sup>a</sup><br><br>Here, q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), K<sub>f</sub> is the Freundlich capacity parameter, and a is the Freundlich exponent. |
+| Units | (-) |
+| Typical Values | Typical values of "K<sub>f</sub>" for long-chained PFAS range from 0.2 to 0.5.<br><br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. (2022) for these three PFAAs:<span class="bullet-item">• PFOS "K<sub>f</sub>" = 12,000 (mg/kg) / (mg/L)</span><span class="bullet-item">• PFOA "K<sub>f</sub>" = 580 (mg/kg) / (mg/L)</span><span class="bullet-item">• PFHxS "K<sub>f</sub>" = 1,240 (mg/kg) / (mg/L)</span><span class="bullet-item">• 6:2 FtS "K<sub>f</sub>" = 3,900 (mg/kg) / (mg/L)</span><br>More detailed methods to estimate the Freundlich "K<sub>f</sub>" for these and other PFAS are presented in **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_** |
+| Source of Data | Users can either use these default estimates or use values of "a" they derived themselves. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## Year PSB Barrier Installed
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **YEAR PSB BARRIER INSTALLED** |
+| --- | --- |
+| Description | This is the year that a PSB was installed to control a PFAS plume. |
+| Units | (-) |
+| Typical Values | The first PSB for PFAS was installed in mid 2010s. REMFluor-MD can be used to evaluate PSB installed any time in the future. |
+| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## Total Width of PSB in X-Direction
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **TOTAL WIDTH OF PSB IN X-DIRECTION** |
+| --- | --- |
+| Description | This is defined here as the width of a PSB in the direction of groundwater flow (see figure below for PSB terminology used with REMFluor-MD). |
+| Units | (-) |
+| Typical Values | Newell et al. (2025) reports barrier widths for PSB's constructed using Colloidal Activated Carbon (CAC) 17 PSBs, proving these ranges:<span class="bullet-item">• Minimum: 1.9 meters</span><span class="bullet-item">• Median: 4 meters</span><span class="bullet-item">• Maximum: 10 meters</span><img src="Step9_1.png" alt="PSB terminology" style="max-width: 100%; margin: 10px 0;"><br>See **_Appendix 10.1 PFAS Longevity Paper_** for more info. |
+| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## PSB Loading "f<sub>cac</sub>"
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PSB LOADING "f<sub>cac</sub>"** |
+| --- | --- |
+| Description | This is defined here carbon‐to‐soil ratio also known as the fraction of Colloidal Activated Carbon CAC in soil (f<sub>CAC</sub>), expressed as dry weight in percent. An f<sub>cac</sub> value of 0.24% means that about 2.4 pounds of CAC have been injected per 1,000 pounds of dry soil in the injection zone. This is also equivalent to 1 pound of CAC being injected into about 420 pounds of dry soil.<br><br>(Note dry soil is used in the definition even though the PSB injection zone is in groundwater). |
+| Units | (-) |
+| Typical Values | Newell et al. (2025) reports f<sub>cac</sub>'s for PSB's constructed using Colloidal Activated Carbon (CAC) 17 PSBs, proving these ranges:<span class="bullet-item">• Minimum f<sub>cac</sub>: 0.06 (%)</span><span class="bullet-item">• Median f<sub>cac</sub>: 0.24 (%)</span><span class="bullet-item">• Maximum f<sub>cac</sub>: 0.50 (%)</span><br>See **_Appendix 10.1 PFAS Longevity Paper_** for more info. |
+| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+<style>
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: #d3d3d3;
+  border: 1px solid #000;
+  padding: 8px;
+  font-weight: bold;
+}
+
+table td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+
+table tr:nth-child(1) th {
+  background-color: #d3d3d3;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 25%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 75%;
+}
+
+/* Indent bullet points and their continuation lines */
+.bullet-item {
+  display: block;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin: 0;
+}
+
+/* Indent paragraphs that follow bullet lists */
+.indented-paragraph {
+  display: block;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+</style>
+
+

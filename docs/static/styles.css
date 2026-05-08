@@ -1,0 +1,15 @@
+@media (min-width: 1020px) {
+  .navbar-brand-container {
+    margin-right: 1em;
+  }
+}
+
+.navbar-brand > img {
+  max-height: 36px;
+}
+
+html.dark .dt-container .dt-search input,
+html.dark .dt-container .dt-length select {
+  border: 1px solid rgb(200, 200, 200) !important;
+  background-color: transparent !important;
+}

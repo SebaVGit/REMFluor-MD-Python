@@ -1,0 +1,111 @@
+---
+title: "APPENDIX 7.1 REMFLUOR-MD SOURCE CONCENTRATIONS"
+---
+
+**HOW TO ENTER GROUNDWATER SOURCE CONCENTRATIONS IN THE MODEL**
+
+The REMFluor-MD user interface and FORTRAN code handling the source term will be significantly upgraded to give the user more flexibility in how the source is handled.  The single-concentration, vertical plane source from REMChlor models is retained, but the user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.
+
+There are likely no sites where the initial PFAS source concentration to concentration (e.g., back in the 1970s or 1980s) was measured. Therefore, some kind of analysis to “go back in time” is required to run the model.  Because of the way REMFluor-MD is structured, you cannot enter in current plume concentrations and the current source concentration and model future concentrations.  All model runs need to start when the PFAS first entered groundwater, which is decades ago for almost all PFAS sites.
+
+With regard to accounting for how the source concentration may change over time, the mass-based, gamma-function type source decay methodology in the REMChlor-MD model has now been superseded by three general options for modeling a PFAS source in groundwater in units of ng/L or ug/L **over time:**
+
+1. A simple constant source term (this is the only selection for the (“Simple Version”).
+
+2. A flexible source term where users enter their own concentration vs. time  (“Detailed Version”).
+
+3. A tool to upload concentration data from models such as PFAS-leach (“Detailed Version”).
+
+The manner in which the groundwater source term is represented strongly influences predicted plume longevity, downgradient concentrations, and rebound following remediation, because conservative steady-source assumptions increase mass loading to the aquifer and accentuate the effects of sorption, matrix diffusion, and back-diffusion in low-permeability units.
+
+**Defining the Source Concentration in REMFluor-MD’s Vertical Plane Source**
+<div style="display: flex; flex-wrap: wrap; margin-bottom: 2em; align-items: flex-start;">
+
+<div style="flex: 1 1 60%; min-width: 250px;">
+In REMFluor-MD, the groundwater source term is represented as a <b>vertical planar source</b> that extends downward from the source area through the saturated zone. This source plane is assigned a <b>uniform concentration</b> for each modeled constituent. As a result, the model requires a <b>single representative source concentration</b> that reflects average conditions along the vertical plane supplying mass to downgradient groundwater flow. Low-concentration fringe areas of the plume are not explicitly modeled; instead, the source term is intended to represent the <b>high-concentration core of the plume</b>, which dominates mass loading to the aquifer.  See <b>Appendix 8.1</b> regarding where to locate the vertical plane source when modeling source zones undergoing precursor transformation.
+</div>
+
+<div style="flex: 0 0 200px; padding-left: 1em;">
+<img src="./Figure_Appdx_7.1_1.png" alt="Vertical Plane Source Example" style="max-width: 180px; border: 1px solid #ccc;">
+</div>
+</div>
+
+
+One practical approach for selecting the representative source concentration is to evaluate **plume maps with concentration contours** and identify a modeled source-plane width that appears to capture **approximately 75% or more of the high-concentration zone** leaving the source area. Once this effective source width is defined, concentrations at the lateral boundaries of the modeled plane can be estimated from plume contours, and these values can be combined with the maximum observed concentration in the source area to approximate the average concentration along the vertical plane.  
+
+For example, if plume maps indicate that the PFOS concentration along the left and right edges of the modeled source width are approximately **10 µg/L** and **9 µg/L**, respectively, and the maximum PFOS concentration observed in a source-area monitoring well is **20 µg/L**, a representative source concentration can be estimated by averaging these three values:
+
+$$
+C_{\text{source}} = \frac{10 + 9 + 20}{3} = \frac{39}{3} \approx 13~\mu\text{g/L}
+$$
+
+
+This value represents the **current groundwater source concentration** for PFOS (PFAA-1) and provides the basis for defining the source concentration history over time in the REMFluor-MD interface.
+
+As an alternative, a more conservative approach is to assign the **maximum observed source concentration** directly as the model source term. In the example above, this would correspond to using **20 µg/L PFOS** as the PFAA-1 source concentration. This approach intentionally neglects spatial averaging and results in higher predicted downgradient concentrations.
+
+The same procedure should then be applied to a second PFAA (e.g., **PFOA**, designated as PFAA-2), using plume maps and source-area monitoring data specific to that compound. If precursor transformation is included in the simulation, representative source concentrations must also be selected for the corresponding **PFAA-1-able** and **PFAA-2-able precursor groups**, using analogous assumptions.
+
+Once representative source concentrations are selected for PFAA-1, PFAA-2, and any precursor groups, the user may then apply one of the **three source-term implementation options described below** to define how these concentrations vary over the entire simulation period in REMFluor-MD.
+
+**ESTIMATING SOURCE CONCENTRATIONS OVER TIME**
+
+**Option 1:  Assume a Constant Source Over Time (Until Remediation)**
+
+In the groundwater contaminant transport modeling field, it is common practice to assume a constant groundwater source concentration (units of ng/L or ug/L or ug/L for PFAS modeling) or flux (grams PFAS per area per time flowing out of a source) over time when the true source history is uncertain, especially for screening-level or bounding analyses when the actual concentration history is unknown or when a simple modeling analysis is being performed. Many analytical and numerical formulations use constant-concentration or constant-flux boundary conditions to solve the advection–dispersion equation, effectively representing a long-term or non-depleting source that neglects source depletion and therefore tends to overpredict concentrations and mass loading at downgradient receptors (e.g., Bear, 1979; Zheng & Bennett, 2002). 
+
+However, some regulatory fate-and-transport guidance document general encourage that predictive simulations be conservative representations when parameter and when the source-term uncertainty is high, model source inputs should be chosen so that simulations yield an upper level possible contaminant concentrations at points of compliance (Georgia EPD, 2017; Alaska DEC, 2017).
+
+Therefore, within risk-based corrective action frameworks such as ASTM RBCA, default and screening-level implementations likewise rely on simplified groundwater models that often approximate the source as steady over the exposure period, which is conceptually equivalent to a constant source term (ASTM, 2019; USEPA, 1996; Connor et al., 1997). This steady or quasi–steady-state treatment of the source is intentionally conservative for regulatory decision-making, because it neglects source depletion and tends to overpredict groundwater concentrations over the evaluation period (EPA, 1996). At higher tiers, the RBCA framework allows more detailed site-specific modeling, including time-varying or decaying source terms, provided these are adequately justified and remain protective of receptors (ASTM, 2019; EPA, 1996). In practice, constant or long-lived source assumptions are widely used for Tier 1 and often Tier 2 assessments for conservatism and simplicity, with more realistic source histories introduced only when additional data and a higher level of modeling effort are warranted (Alaska DEC, 2017; Georgia EPD, 2017). 
+
+In summary, for REMFluor-MD use Option 1 when doing screening-level type modeling runs or when estimates of the source concentration history are not readily available.   
+
+**Option 2:  Run PFAS Vadose Zone Transport Model to determine Groundwater Source Concentrations vs. Time**
+
+These models primarily estimate PFAS mass discharge to groundwater, which REMFluor-MD then converts to an equivalent groundwater source concentration using user-defined mixing assumptions.  Vadose zone PFAS transport models are designed to take soil concentrations in the vadose zone (units ng/kg) or vadose zone porewater concentrations (units ng/L or ug/L) and the recharge rate to groundwater to construct the mass discharge of PFAS moving vertically downward through the vadose and into groundwater over time. If the groundwater Darcy velocity is known, and a mixing zone is defined, some models can then translate this into a groundwater source concentration over time in units of ng/L or ug/L for key PFAS.  
+
+Key modeling projects include those being developed in** PFAS-LEACH** (ESTCP, 2025), supported by Guo et al. (2020), Zeng et al. (2021), Brusseau and Guo (2023), and Guo et al. (2022) (Figure 1).  SERDP Project ER18-1389 investigated the use of the existing HYDRUS model for modeling PFAS source zones (Silva et al., 2020).  A key point regarding the REMFluor-MD source term **is that the interface is specially designed to take PFAS-LEACH data** and then use these values to enter directly in the Section 7 PFAS Source Term interface.
+
+![](./Figure_Appdx_7.1_2.png){fig-alt="Three Tiers of PFAS" width=750px}
+
+*Figure 1. Three Tiers of PFAS Leaching Models being developed by ESTCP Project ER21-5041 (ESTCP, 2023) (M. Brusseau and B. Guo).  In PFAS-LEACH Tier 3 model is a simpler screening level model than the more complex Tier 1 model.*
+
+**Option 3:  Entering Variable Source Concentrations vs. Time**
+
+If users have empirical methods to estimating variable source concentrations (for their selected PFAAs (PFAA-1 and PFAA-2) and their selected precursors (PFAA-1-able and PFAA-2-able precursors)) over time, they can enter them directly into REMFluor-MD.  You could assume a slow linear decrease, or assume some type of bell-curve type function that indicates some fast but weak initial breakthrough of PFAAs through the vadose zone followed by stronger but slower discharge to groundwater from the vadose zone. 
+
+Users will now be able to directly see the source concentrations for their selected PFAAs (PFAA-1 and PFAA-2) and their selected precursors (PFAA-1-able and PFAA-12-able precursors) over time and the total mass of each of the five PFAA’s leaving the source over the entire modeling period.  
+
+**REFERENCES**
+
+Alaska Department of Environmental Conservation. (2017). Fate and transport modeling guidance. Alaska Department of Environmental Conservation, Contaminated Sites Program.
+
+ASTM. (2019). Standard guide for risk-based corrective action applied at petroleum release sites (ASTM E1739-95(2019)e1). ASTM International.
+
+Backe, W. J., Day, T. C., & Field, J. A., 2013. Zwitterionic, Cationic, and Anionic Fluorinated Chemicals in Aqueous Film Forming Foam Formulations and Groundwater from U.S. Military Bases by Nonaqueous Large-Volume Injection HPLC-MS/MS. Environmental Science & Technology, 47(10), 5226–5234. 
+
+Bear, J. (1979). Hydraulics of groundwater. McGraw-Hill.
+
+Brusseau, M. L., & Guo, B. (2023). Revising the EPA dilution-attenuation soil screening model for PFAS. Journal of Hazardous Materials Letters, 4, 100077. 
+
+Connor, J. A., Bowers, R. L., Paquette, S. M., & Newell, C. J. (1997). Soil Attenuation Model for Derivation of Risk-Based Soil Remediation Standards. *Petroleum Hydrocarbons and Organic Chemicals in Groundwater Conference*, *July*, 1–34.
+
+Darwin, R. (2004, August). *Estimated Quantities Of Aqueous Film Forming Foam (AFFF) In The United States; Prepared for the Fire Fighting Foam Coalition, Arlington, VA*.
+
+ESTCP. (2025). A Comprehensive Decision Support Platform for Predicting PFAS Leaching in Source Zones.  Environmental Security and Technology Certification Program Project ER21-5041. Accessed 2 July 2023.    
+
+Georgia Environmental Protection Division. (2017). Groundwater contaminant fate and transport modeling guidance. Georgia Environmental Protection Division, Land Protection Branch.
+
+Guo, B., Zeng, J., & Brusseau, M. L. (2020). A Mathematical Model for the Release, Transport, and Retention of Per- and Polyfluoroalkyl Substances (PFAS) in the Vadose Zone. Water Resources Research, 56(2), e2019WR026667.  
+
+Guo, B., Zeng, J., Brusseau, M. L., & Zhang, Y. (2022). A screening model for quantifying PFAS leaching in the vadose zone and mass discharge to groundwater. Advances in Water Resources, 160, 104102.  
+
+Houtz, E. F., Higgins, C. P., Field, J. A., & Sedlak, D. L., 2013. Persistence of Perfluoroalkyl Acid Precursors in AFFF-Impacted Groundwater and Soil. Environmental Science & Technology, 47(15), 8187–8195. 
+
+Silva, J. A. K., Šimůnek, J., & McCray, J. E. (2020). A Modified HYDRUS Model for Simulating PFAS Transport in the Vadose Zone. Water, 12(10). https://doi.org/10.3390/w12102758
+
+USEPA. (1996). RBCA fate and transport models: Compendium and selection guidance (EPA 530-R-96-021). U.S. Environmental Protection Agency, Office of Solid Waste.
+
+Zeng, J., Brusseau, M. L., & Guo, B. (2021). Model validation and analyses of parameter sensitivity and uncertainty for modeling long-term retention and leaching of PFAS in the vadose zone. Journal of Hydrology, 603, 127172. 
+
+Zheng, C., & Bennett, G. D. (2002). Applied contaminant transport modeling (2nd ed.). John Wiley & Sons.

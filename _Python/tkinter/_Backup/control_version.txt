@@ -4,7 +4,7 @@ File:   _Python/tkinter/main.py
 Backup: _Python/tkinter/_Backup/v{N}.py
 Always update this file when a new backup is added.
 
-Latest = v87
+Latest = v100
 
 
 # Pre-session backups (colleague iterative port)
@@ -2162,6 +2162,453 @@ main.py + run_model.py (dashboard year dropdown)
         Side effect: the "Approximate Run Time" cell in §2 now
         recomputes against see_every=10 instead of 100; should be
         a tiny adjustment, not a regression.
+
+main.py + functions/cali_1.py (calibration row filter)
+   v88  Symptom: user runs calibration on a PFAA-only config (no
+        precursors enabled, or in Simple version), then clicks
+        "3. See All Calibration Data" → run_history.csv contains a
+        Precursor-1 multiplier column even though no precursor was
+        ever configured.
+
+        Root causes:
+        (a) main.py _build_calibration_panel had
+            "Multiplier to Precursor-1 Source Concentration in #7
+            (czero(1,n))" hard-coded in the `preselected` set →
+            checkbox started ticked even on fresh app launches.
+        (b) cali_1.run gathered checked rows without validating
+            them against the current model configuration (Simple
+            vs Detailed, ipre, ncomp).
+
+        Fixes:
+        (a) Removed the precursor multiplier from `preselected`.
+            Users now opt-in by clicking the checkbox themselves.
+        (b) cali_1.run now introspects active_sheet, v_pfaa1,
+            v_pfaa2, v_pfaa3 (K38), v_pfaa4 (M38) and filters
+            checked rows that don't apply:
+              • Simple version  → all precursor rows skipped
+              • v_pfaa3="None"  → Precursor-1 rows skipped
+                (decayf(1), ock(1), czero(1,n))
+              • v_pfaa4="None"  → Precursor-2 rows skipped
+                (decayf(3), ock(3), czero(3,n))
+              • v_pfaa2="None"  → PFAA-2 rows skipped
+                (czero(4,n), ock(4))
+            A messagebox.showwarning lists which rows were
+            skipped so the user knows why their checked
+            parameters disappeared from run_history.csv.
+
+run_model.py + generate_dashboard.py (dashboard correctness)
+   v89  Critical bug — every cell in dashboard_state.json was
+        coming back as a hard-coded default, not the user's actual
+        form values.  Symptom: well names showed "Well 1, Well 2,..."
+        instead of "MW-504, FS-MW504,...", PFAA name was always
+        "PFAA-1" instead of "PFOS", source loading was [0,1,2,...]
+        instead of the form's year list, and observed concentrations
+        from §10 never appeared on plots.
+
+        Root cause: _dump_dashboard_state used
+            state = getattr(app, "state", None)
+        but the App class has no `state` attribute — the state
+        singleton lives in functions/state.py and must be obtained
+        via `from .state import get_state; state = get_state()`.
+        So `state` was always None and every _raw() call returned
+        None, causing every cell to fall through to its hardcoded
+        default.
+
+        Fix: use get_state() from .state inside
+        _dump_dashboard_state.  generate_input_file.run() above it
+        already snapshotted the form into the state singleton, so
+        the values are populated by the time we read them.
+
+        Plus dashboard improvements:
+        (a) §10 observed concentrations (V34:V40 / X34:X40) are now
+            read for BOTH Simple and Detailed versions — previously
+            gated behind `if version_flag == 1`.  Sample year comes
+            from R36 (Simple) or Y74 (Detailed).
+        (b) Pre-compute an overall RMSLE from §10 observed vs
+            simulated at the sample year.  Display it as a subtitle
+            under "REMFluor-MD Output" (e.g. "PFOS: RMSLE = 0.42
+            (n=7) • PFOA: RMSLE = 0.18 (n=5)").  Falls back to
+            "RMSLE: no observed/simulated overlap at sample year"
+            when no observed data is provided.
+
+generate_dashboard.py + cali_1.py + main.py
+   v90  Multi-fix release.
+
+        Dashboard:
+        - Removed v89's RMSLE subtitle under the title.  Per-analyte
+          RMSLE still shows in the Observation Wells analysis tab.
+        - calibration_inputs.txt is now read for BOTH Simple and
+          Detailed versions.  The legacy code gated the §10 button's
+          calibration .xlsx behind `if version_flag != 1`, so Simple
+          users got no observation overlay even after using the
+          import button.
+        - Observation markers from df_model_data are plotted for
+          BOTH versions.  The v89 fix moved V34:V40 / X34:X40 read
+          out of the version_flag gate; v90 also moves the
+          time-series marker plot (df_model_data) out of
+          `if version_flag == 2`.
+
+        Calibration / Save Optimal:
+        - cali_1.py writes `best_calib.json` after the optimizer
+          finishes — explicit {labels, best_x, best_rmsle, n_evals}
+          payload from the iteration with the LOWEST RMSLE.
+        - Save_Optimal_Model now reads best_calib.json
+          preferentially over v_calib_mid for each calibration row.
+          v_calib_mid can drift after the post-cal callbacks (push
+          to source cells, apply multipliers, trace refreshes);
+          best_calib.json is the canonical record of the best
+          iteration and can't be clobbered.
+        - optimal_model.txt header now includes `Best RMSLE: X.XXX`
+          when best_calib.json exists.
+        - state.INPUT_TXT_FILES extended with best_calib.json,
+          run_history.csv, dashboard_state.json so Clear All Data /
+          Paste Example wipe stale calibration artifacts.
+
+functions/cali_1.py + state.py
+   v91  Symptom: user runs calibration, opens "3. See All
+        Calibration Data", and many rows show RMSLE = 1,000,000,000.
+
+        Root cause: cali_1._eval returned -1e9 for any failed
+        evaluation (build_inp_data crash, missing template, solver
+        crash, no obs_well files written, no observed data
+        matching).  run_history.csv writes -f_row, so failures
+        showed up as 1e9 in the CSV.  Multiple failures = multiple
+        1e9 entries.
+
+        Fixes:
+        (a) Replaced -1e9 with FAIL_PENALTY = -100 (so CSV shows
+            100, still strongly penalising vs. typical good fits
+            of 0.1-1.0, but readable).
+        (b) Every failure path now writes a line to cali_debug.log
+            with the reason — build_inp_data error, template
+            missing, solver returncode + stderr tail, no obs_well
+            files, no observations matched.  The log is truncated
+            at the start of each run.
+        (c) Added pre-flight check at run() top: if §10 v_mw_conc
+            and v_mw_conc2 are both empty, refuse to start with a
+            clear messagebox.  Prevents the all-FAIL_PENALTY
+            scenario.
+        (d) Source Start Year proposals are clamped to
+            ≤ min(U8:U18) so DDS can't push startT past the
+            earliest source-loading year (which produced negative
+            input.inp source times that crashed the solver).
+        (e) state.INPUT_TXT_FILES extended with cali_debug.log so
+            Clear All Data / Paste Example wipe it.
+
+popups_calibration.py + main.py
+   v92  Symptom: in Detailed mode the §10 "Enter Monitoring Well
+        Data" button and the §calibration "1. Save Calibration Data"
+        button were disconnected — they both wrote to
+        calibration_inputs.txt with completely different formats
+        (Excel File Path line vs ranges/weights blocks), each
+        clobbering the other.  And after picking a calibration .xlsx
+        the dashboard's Observation Wells tab still showed "Well 1,
+        Well 2, ..." because the popup never imported well names
+        into the §10 StringVars (it only saved a path).
+
+        Fixes:
+        (a) popups_calibration._save_path now PRESERVES existing
+            calibration_inputs.txt content.  Strips any prior
+            "Excel File Path:" line, writes the new one, then
+            re-appends every other line.
+        (b) main._save_calibration_inputs now preserves any
+            existing "Excel File Path:" line at the top of the
+            file before writing the ranges/weights block.
+            Reciprocal of (a).
+        (c) New helper popups_calibration._import_xlsx_into_app
+            parses the chosen .xlsx and pushes data into §10:
+              - "Model Location" sheet → v_mw_names + v_mw_dist by
+                matching headers containing "Location Name" /
+                "Distance".
+              - "Model Data" sheet → for each (well, analyte),
+                takes the LATEST concentration and writes it to
+                v_mw_conc (when analyte matches v_pfaa1) or
+                v_mw_conc2 (when it matches v_pfaa2).
+            Best-effort: any parse failure is reported in the
+            messagebox status line but the path is still saved.
+        (d) The dashboard now sees the real well names through the
+            standard state.snapshot → dashboard_state.json → JSON
+            read pipeline (no special path needed) — fixing the
+            "Well 1, Well 2, ..." regression.
+
+popups_calibration.py
+   v93  Symptom: user clicks §10 "Enter Monitoring Well Data",
+        previews the .xlsx (looks correct), clicks OK, gets
+        "0 wells loaded".  v92's importer was too strict about
+        sheet names ("model location" exact match) and header
+        text ("Location Name" exact match), so any deviation —
+        e.g. a sheet called "Locations" or a header column
+        labelled "Well Name" — produced 0 imports.
+
+        Fixes:
+        (a) Sheet detection now matches any sheet whose name
+            contains "location" / "well" / "data" / "concentration"
+            (case-insensitive).
+        (b) Header detection accepts "Location Name", "Well Name",
+            "Site Name", "ID", or just "Name" for the well column;
+            "Distance", "X", "From Source", "X (m)", etc. for the
+            distance column.
+        (c) When no recognisable header row is found, falls back
+            to "column A = names, column B = distances" so files
+            with no headers still import.
+        (d) When no Location sheet exists at all but a Data sheet
+            does, derives unique well names from the Data sheet's
+            well column.
+        (e) Writes calibration_import.log next to the .xlsx
+            documenting every parser decision (sheets found,
+            header row, name/dist columns, key counts) so users
+            can see WHY 0 imported when something is unusual.
+        (f) Status messagebox now points users to the log when
+            n_names == 0.
+
+popups_calibration.py + state.py
+   v94  Symptom: user has 14 concentrations in their .xlsx (7 wells
+        × 2 analytes — PFOS + a precursor) but the importer only
+        loaded ~6.  Two reasons:
+        (1) Match was strict-equal: app's PFAS-1 species name had to
+            match the analyte string exactly (case-insensitive).
+            "PFOS" vs "Perfluorooctanesulfonate" → no match.
+        (2) §10 form only has 2 conc columns (v_mw_conc PFAA-1 and
+            v_mw_conc2 PFAA-2).  Precursor observations had nowhere
+            to live and were silently dropped.
+
+        Fixes:
+        (a) Match now also tries v_pfaa3 (Precursor-1) and v_pfaa4
+            (Precursor-2) against analyte strings.
+        (b) Fuzzy match — exact equality, then substring either
+            direction, then a normalised form (strip "perfluoro",
+            "-", spaces).  "PFOS" now finds
+            "Perfluorooctanesulfonate" / "PFOS-acid" / etc.
+        (c) Per-row HIT/MISS log so users can see which (well,
+            species) lookups succeeded vs failed.
+        (d) Writes mw_observations.json to project root with
+            ALL matched (well, species, analyte, concentration)
+            tuples regardless of §10's 2-column limit.  Future
+            cali_1 / dashboard reads will use this for full obs
+            coverage.
+        (e) §10 form columns still mirror PFAA-1 / PFAA-2 hits as
+            before (so the user sees them).
+        (f) Status messagebox now reports BOTH §10 fills and total
+            observations: "Imported 7 well names, 7 value(s) into
+            §10, 14 total observation(s) → mw_observations.json".
+        (g) state.INPUT_TXT_FILES extended with
+            mw_observations.json so Clear All Data wipes it.
+
+popups_calibration.py
+   v95  Symptom: user has 7 wells × 2 analytes = 14 observations
+        in the .xlsx, but messagebox reported "7 well names, 6
+        value(s) into §10, 12 total observation(s)".  Off-by-one
+        wells × 2 species = off-by-two observations.
+
+        Root cause: when no Location sheet is present, the v94
+        fallback iterated the Data sheet starting from a HARD-CODED
+        row 2 to derive well names.  But the Data sheet's header
+        ("Date | Monitoring Well Name | Analyte | ...") sits ON
+        row 1, so row 2 IS the first data row → fine for that file.
+        But if a file had its header on row 2 (with row 1 being
+        a title or blank), row 2 would be the header text
+        "Monitoring Well Name" being mistaken for a real well —
+        crowding out the last actual well from the 7-slot list.
+
+        Fixes:
+        (a) Detect the Data sheet's header row UP-FRONT (scan for
+            cells matching "date"/"time" + "analyte"/"compound")
+            and reuse it for both the fallback name-derivation and
+            the observation-parsing pass.
+        (b) Expanded the rejection list of bogus "names" to include
+            "monitoring well", "monitoring well name", "well name",
+            "well id", "site name", "id", "location name".
+        (c) Log the full ordered list of wells extracted from the
+            Data sheet so the user can verify in calibration_import.log.
+
+main.py
+   v96  Three §5/§7 fixes:
+
+        (a) §7 "Assume Constant Source Concentration" button only
+            propagated the value down v_src_pfaa1 / v_src_pfaa2.
+            Precursor columns (v_src_pre1 / v_src_pre2) were left
+            unchanged.  Now all four columns get the constant
+            treatment.
+
+        (b) §5 black cells stayed empty when v_pfaa3 / v_pfaa4 was
+            set to "PFAA 1-able" / "PFAA 2-able" because the
+            PFAA_KOC lookup table only had real PFAS names (PFOS,
+            PFOA, ...).  _on_pfaa_change now substitutes
+            v_pfaa1.get() (or v_pfaa2.get()) when the species is
+            the "X-able" placeholder, so precursors inherit
+            Koc + diffusion from the sibling PFAA they convert to.
+
+        (c) PFOS molecular diffusion was 3.52e-6 in PFAA_KOC; the
+            correct value at the unit the form + Fortran solver
+            expect (m²/s) is 3.52e-10.  All other species' diffusion
+            values shifted by the same 10000× factor to keep their
+            relative magnitudes consistent.  Form default
+            (v_mol_diff="3.5E-10") was already correct.
+
+        Paste Example: input.inp's diff field is in m²/yr
+        (0.0110376 for PFOS), which inp_to_state divides by
+        seconds-per-year → 3.5e-10 m²/s.  After v96, _on_pfaa_change
+        also resolves to 3.52e-10, so both paths agree.  No special
+        change to restore_from_example needed.
+
+popups_calibration.py
+   v97  Symptom: STILL "7 well names, 6 value(s) into §10, 12 total
+        observation(s)" after v95 was supposed to fix the off-by-one.
+
+        Root cause: v95 only fixed the Data-sheet FALLBACK path
+        (used when no Location sheet exists).  But the user's file
+        has a Location sheet whose header is "Monitoring Well Name".
+        The Location sheet parser's header detection only matched
+        "Location Name" / a few short keywords — "Monitoring Well
+        Name" didn't qualify, so header_row stayed None, fell
+        through to "header_row=0; name_col=1", and started the
+        well-extraction loop at row 1 (the header row).  Then row 1
+        cell A1 = "Monitoring Well Name" was treated as a real
+        well name (idx 0), pushing the actual 7th well off the
+        7-slot list.
+
+        Fix:
+        (a) Shared BAD_NAMES set used by BOTH the Location loop
+            AND the Data fallback.  Includes "monitoring well",
+            "monitoring well name", "well name", "well id", "site
+            name", "location name", "wells", "locations", etc.
+        (b) Location sheet header detection now matches ANY column
+            header containing "name" (substring) — "Monitoring Well
+            Name", "Well Name", "Site Name", "Location Name" all
+            qualify.  Same loosening for distance: any "distance" /
+            "from source" / "x".
+        (c) Location loop's per-row check now consults BAD_NAMES,
+            so any header-text echo on a data row is filtered out.
+        (d) Logged the full ordered list of wells extracted from
+            the Location sheet too (parallel to v95's Data fallback
+            log line) — you can confirm in calibration_import.log.
+
+generate_dashboard.py
+   v98  Symptom: dashboard's Observation Wells plot showed two
+        PFOS observation markers (one diamond + one orange square)
+        and the legend had a "MW-504 - PFAA 1-able (obs)" entry
+        but no actual marker on the chart.
+
+        Root cause: TWO independent observation-marker plotting
+        blocks were both firing.
+          • Block A (single-point markers from §10 V34:V40 / X34:X40)
+            handled C2well/PFAA-1 (diamond) and C4well/PFAA-2
+            (square) — but NOT C1well/C3well precursors.
+          • Block B (time-series markers from df_model_data) added
+            its own square markers for ALL analytes including
+            precursors.
+          Both running together produced duplicate PFAA-1 markers
+          plus a "PFAA 1-able (obs)" legend entry that lived only
+          in Block B's add_trace — visually buried because Block A
+          drew over it with a different style.
+
+        Fixes:
+        (a) Block A is skipped entirely when df_model_data is
+            available — df_model_data has full time-series and
+            covers all four analytes (including precursors).
+            Block A only runs as a fallback when no calibration
+            .xlsx was provided.
+        (b) Block B now uses distinct marker symbols per
+            concentration column:
+              C1well (Precursor-1) → circle
+              C2well (PFAA-1)      → diamond
+              C3well (Precursor-2) → triangle-up
+              C4well (PFAA-2)      → square
+            so the four analytes are visually distinguishable on
+            the same well's plot.
+
+main.py + functions/run_model.py
+   v99  PyInstaller multi-mode dispatcher (BUILD.md "Option A").
+
+        Problem: in a frozen .exe, `sys.executable` IS the .exe
+        itself.  run_model.py's
+        `subprocess.Popen([sys.executable, "-u", script, ...])`
+        re-launches the .exe with extra argv and re-runs main()
+        — completely broken.
+
+        Fix: a small dispatcher at the top of main.py intercepts
+        argv[1] == "--mode=dashboard" BEFORE any heavy imports
+        and routes into generate_dashboard.main().  run_model.py
+        switches to that flag when sys.frozen is True.
+
+        Both patches are no-ops in dev mode:
+        - main.py dispatcher: `if len(sys.argv) >= 2 and
+          sys.argv[1] == "--mode=dashboard":` — false in dev
+        - run_model.py: `if getattr(sys, "frozen", False):` —
+          false in dev, falls through to original
+          `[python, -u, script, ...]` invocation
+
+        Also patched _check_dashboard_imports to skip when frozen
+        (otherwise `[exe, "-c", ...]` would re-launch the .exe
+        and confuse the dispatcher; PyInstaller's bundle has the
+        deps anyway).
+
+        Single source of truth: dev = prod, no separate file
+        tree.  build_exe.bat targets the same _Python/tkinter/
+        sources as the dev launcher.
+
+        TODO for first prod build (v100+):
+        - _project_dir() needs to handle sys._MEIPASS for reads
+          of bundled template.inp / remfluor_v8a.exe, while
+          writes (input.inp, output.out, dashboard.log,
+          dashboard_state.json) go to dirname(sys.executable).
+
+main.py + state.py + popups + run_model.py + generate_input_file.py + cali_1.py
+   v100 BASE_DIR / BUNDLE_DIR split for frozen builds.  The first .exe
+        produced "folder error" / Paste Example / chicklets-not-found
+        because every read-only asset lookup walked up from __file__,
+        which lands at sys._MEIPASS in a --onefile bundle (not next
+        to the .exe).
+
+        Fixes:
+
+        (a) main.py BASE_DIR/BUNDLE_DIR split:
+              dev:    BASE_DIR = BUNDLE_DIR = walked-up __file__
+              frozen: BASE_DIR  = dirname(sys.executable)  (writable)
+                      BUNDLE_DIR = sys._MEIPASS           (read-only)
+            New _bundle_path(rel) helper searches BASE_DIR first
+            (so users can override bundled assets by dropping a
+            file next to the .exe), then falls back to BUNDLE_DIR.
+            FIGURES_DIR uses _bundle_path("Figures").
+
+        (b) state.AppState gained a `bundle_dir` field.  main.py sets
+            it to BUNDLE_DIR at startup so functions/ modules can
+            resolve bundled assets without importing from main.
+
+        (c) restore_from_example.run() searches both work_dir
+            and state.bundle_dir for the Example/<sub>/ folder.
+
+        (d) Each popup's _docs_root() now consults
+            state.bundle_dir → state.work_dir → walked-up __file__
+            (in that order).  Patched in popups_calibration,
+            popups_heterogeneity, popups_GWvelocity, popups_numerical,
+            popups_transformation, popups_retardation.
+
+        (e) run_model.py:
+              - _project_dir() returns dirname(sys.executable) when
+                frozen (writable runtime location for input.inp,
+                output.out, dashboard.log, dashboard_state.json).
+              - new _bundle_dir() returns sys._MEIPASS when frozen.
+              - new _resolve_asset(*parts) searches project then
+                bundle for read-only assets.
+              - exe_path now resolved via _resolve_asset
+                ("remfluor_v8a.exe").
+
+        (f) generate_input_file.run(): template.inp lookup tries
+            work_dir first, then state.bundle_dir.  output_path
+            stays in work_dir.
+
+        (g) cali_1.run(): same template.inp search; exe_path now
+            checks both project and sys._MEIPASS.
+
+        Effect: a frozen REMFluor-MD.exe finds Figures/, Example/,
+        docs/_site/, template.inp, remfluor_v8a.exe, and the
+        calibration .xlsx templates inside its own bundle (no need
+        to copy them next to the .exe).  Output files (input.inp,
+        output.out, dashboard.log, dashboard_state.json, sidecar
+        .txt files, run_history.csv, best_calib.json,
+        mw_observations.json, etc.) are written next to the .exe so
+        the user can see and inspect them.
 
 
 # Update protocol

@@ -1,0 +1,34 @@
+# https://quarto.org/docs/authoring/brand.html
+
+# color:
+#   palette:
+#     blue: "#1C6EAC"
+#     dark-blue: "#005782"
+#     light-blue: "#6AD1D8"
+#     orange: "#EB7C32"
+#     black: "#231F20"
+#     gray: "#636363"
+#     light-gray: "#EBEFF2"
+#     white: "#FFFFFF"
+
+logo:
+  images:
+    gsi-logo-sm:
+      path: static/logo-sm.svg
+      alt: "GSI Environmental Inc."
+    gsi-logo-md:
+      path: static/logo.svg
+      alt: "GSI Environmental Inc."
+  small: gsi-logo-sm
+  medium: gsi-logo-md
+
+# https://quarto.org/docs/dashboards/theming.html#sass-variables
+defaults:
+  bootstrap:
+    defaults:
+      link-color: "#1C6EAC"
+      link-hover-color: "#EB7C32"
+      navbar-bg: "#005782"
+      navbar-fg: "#F3F6F7"
+      navbar-hl: "#6AD1D8"
+      toc-active-border: "#EB7C32"
