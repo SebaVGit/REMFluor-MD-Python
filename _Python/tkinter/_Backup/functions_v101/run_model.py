@@ -263,8 +263,14 @@ def _dump_dashboard_state(app, project: str) -> str:
         "E16":  _num("E16", 5.0),    # Source thick  (v_sw_thick)
         "E22":  _num("E22", 1.0),    # Velocity (Darcy)
 
-        # Sample years (only one is used depending on version_flag)
-        "R36":  _int("R36", start_year),
+        # Sample years (only one is used depending on version_flag).
+        # v101: v_sample_yr only maps to Y74 in CELL_MAP, so R36 is
+        # always blank in state for Simple users.  Default R36 to Y74
+        # (the user's actual §10 Sample Year input) so the dashboard's
+        # Simple-mode read of R36 doesn't fall through to start_year
+        # — which made obs markers plot at the simulation start year
+        # instead of the user-specified sample year.
+        "R36":  _int("R36", _int("Y74", start_year)),
         "Y74":  _int("Y74", start_year),
 
         # ── Ranges ──────────────────────────────────────────────────

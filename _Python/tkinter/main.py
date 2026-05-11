@@ -914,10 +914,21 @@ def run_script(macro_name, extra_args=None):
         return
 
     if macro_name == "OpenAppendix_2_1_Relative":
+        # v101: open the help HTML first, then drop into the popup.
+        # In dev / standalone-Python mode, dispatch to the pure-Python
+        # popups_cellsize.run() — DO NOT fall back to the .exe (the
+        # whole point of the functions/ port is to run without exes).
         html_path = HTML_APPENDIX[macro_name]
         _open_html(html_path)
-        exe, tmpl = EXES["OpenAppendix_2_1_Relative_EXE"]
-        _launch_exe(exe, _resolve_args(tmpl, sheet, unitflag), wait=True)
+        if _FUNCS_LOADED and _app_ref is not None:
+            try:
+                popups_cellsize.run(_app_ref)
+            except Exception as exc:
+                messagebox.showerror("Cell Size",
+                                     f"Popup failed:\n{exc}")
+        else:
+            exe, tmpl = EXES["OpenAppendix_2_1_Relative_EXE"]
+            _launch_exe(exe, _resolve_args(tmpl, sheet, unitflag), wait=True)
         return
 
     if macro_name in HTML_APPENDIX:
@@ -1268,8 +1279,31 @@ def run_script(macro_name, extra_args=None):
     # ── Pure-Python ports of the dist/ EXEs (no Excel install needed) ──
     if _FUNCS_LOADED and _app_ref is not None:
         if macro_name == "SourceRemediation":
+            # v101: prefer the baseline-aware _apply_s8_to_s7 (defined
+            # in App.__init__) so repeated clicks don't compound — it
+            # always re-derives §7 from the captured baseline using the
+            # CURRENT §8 % and start year.  Fall back to the popup port
+            # (popups_source_remediation.run multiplies in place — fine
+            # for first click, compounds on repeat clicks).
             try:
-                popups_source_remediation.run(_app_ref)
+                cb = getattr(_app_ref, "_apply_s8_to_s7", None)
+                if callable(cb):
+                    cb()
+                    # Light confirmation so the user sees something
+                    # happened.  Read §8 values for the message.
+                    try:
+                        red = _app_ref.v_src_conc_red.get().strip()
+                        yr  = _app_ref.v_src_rem_yr.get().strip()
+                        messagebox.showinfo(
+                            "Apply Remediation",
+                            f"Source Concentration Reduction = {red}%\n"
+                            f"Source Treatment Start Year = {yr}\n\n"
+                            f"§7 PFAA-1 / PFAA-2 (and precursors in "
+                            f"Detailed) updated from baseline.")
+                    except Exception:
+                        pass
+                else:
+                    popups_source_remediation.run(_app_ref)
             except Exception as exc:
                 messagebox.showerror("Apply Remediation",
                                      f"Could not apply remediation:\n{exc}")
@@ -3851,9 +3885,15 @@ class REMFluorApp(tk.Tk):
             for i, var in enumerate(lst):
                 var.trace_add("write", _make_baseline_updater(key, i))
 
-        # Trigger the auto-apply on §8 changes.
-        self.v_src_conc_red.trace_add("write", _apply_s8_to_s7)
-        self.v_src_rem_yr.trace_add("write", _apply_s8_to_s7)
+        # v101: NO auto-apply on §8 changes — user explicitly asked
+        # that §7 only updates when the "Apply Remediation" button is
+        # pressed (avoids unexpected mass loss while editing % or
+        # start year).  The SourceRemediation dispatch in run_script()
+        # now calls _apply_s8_to_s7 on demand.
+        #
+        # Previously:
+        #   self.v_src_conc_red.trace_add("write", _apply_s8_to_s7)
+        #   self.v_src_rem_yr  .trace_add("write", _apply_s8_to_s7)
 
         # Apply the Simple/Detailed-specific colors to the §7 widgets
         # whose bg differs between versions (Row 0 header labels +

@@ -1,0 +1,6 @@
+Groundwater BulkDarcy Velocity Calculator Results
+Bulk Hydraulic Conductivity Value: 39.3506
+Bulk Hydraulic Conductivity Unit: m/year
+Bulk Hydraulic Gradient: 0.1929
+Bulk Darcy Velocity (m/year): 7.590731
+Bulk Darcy Velocity (ft/year): 24.903972

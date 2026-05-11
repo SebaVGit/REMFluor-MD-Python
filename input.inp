@@ -1,0 +1,76 @@
+***flags for choosing components to be simulated and presence of CAC barrier
+ncomp, ipre, iwall, iTVD
+1, 1, 1, 1
+***source zone concentrations at 11 times
+stime(n) (yr), czero(1,n), czero(2,n), czero(3,n), czero(4,n) (ug/l)
+0, 1953.17, 1316.7, 0, 0
+10.0, 1953.17, 1316.7, 0, 0
+20.0, 1953.17, 1316.7, 0, 0
+30.0, 1953.17, 1316.7, 0, 0
+40.0, 976.58, 658.35, 0, 0
+50.0, 976.58, 658.35, 0, 0
+60.0, 976.58, 658.35, 0, 0
+70.0, 976.58, 658.35, 0, 0
+80.0, 976.58, 658.35, 0, 0
+90.0, 976.58, 658.35, 0, 0
+100.0, 976.58, 658.35, 0, 0
+***source zone parameters
+lysource, lzsourcemax, lzsourcemin, vd (m/yr)
+6, 1, 1, 7.590736017225751
+***High K zone transport terms
+porf, tortf, bulkden (g/ml), foc, alphax (m), alphay (m), alphaz (m)
+0.2, 1e-06, 1.7, 0.002, 3.2, 0.04, 0.004
+***High K zone organic carbon partition coeff
+ock(1), ock(2), ock(3), ock(4) (ml/g)
+220.0, 220.0, 0.0, 0.0
+***distance to end of zone 1 and zone 2 for plume remediation
+x1, x2 (m)
+250.0, 254.0
+***length of period 1 and period 2 for plume remediation
+tplume1, tplume2 (yr)
+48.0, 700
+***Freundlich adsorption parameters for sorption barrier, exponent
+fra(1), fra(2), fra(3), fra(4),
+0.33, 0.33, 0, 0.0
+***Freundlich adsorption fcac*Kf, units (ug/kg)(ug/L)**(-a)
+fcackf(1), fcackf(2), fcackf(3), fcackf(4)
+2947.0824, 2947.0824, 0, 0.0
+***decay terms in high K zone -alwyas set yieldf(3)=0
+yieldf(2), yieldf(3), yieldf(4)
+0.75, 0, 0
+**Base decay rates in high k zone
+decayf(1), decayf(2), decayf(3), decayf(4) (1/yr)
+1.8240715277893296, 0, 0, 0
+*** Low K zone transport terms
+mdflag, porm, tortm, focm, diff (m^2/yr), volfrac, difflen (m)
+0, 0.48, 0.7, 0.001, 0.0110376, 1.0, 0.1
+***decay terms in Low K zone
+yieldm(2), yieldm(3), yieldm(4) -alwyas set yieldf(3)=0
+0.75, 0, 0.0
+**Base decay rates in low K zone
+decaym(1), decaym(2), decaym(3), decaym(4) (1/yr)
+1.8240715277893296, 0, 0, 0
+***x-direction grid
+xmax (m), nx1, nxpsb, nx2
+500.0, 50, 4, 49
+***y-direction locations
+dy (m), ny
+5.0, 10
+***z-direction locations
+dz (m), nz
+10.0, 1
+***timesteps
+dt (yr), nt, npt
+0.1, 1000, 50
+***numerical iteration parameters
+tol (ug/L), maxit
+1.0e-03, 5000
+***observation well locations x, y, top of screen, bottom of screen
+nwell(n), xwell(n) (m), ywell(n) (m), zwelltop(n) (m), zwellbot(n) (m)
+1, 10.0, 0, 10.0, 5.0
+2, 50.0, 0, 10.0, 5.0
+3, 100.0, 0, 10.0, 5.0
+4, 200.0, 0, 10.0, 5.0
+5, 300.0, 0, 10.0, 5.0
+6, 400.0, 0, 10.0, 5.0
+7, 500.0, 0, 10.0, 5.0
