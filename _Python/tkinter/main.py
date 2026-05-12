@@ -2713,7 +2713,10 @@ class REMFluorApp(tk.Tk):
         self.v_psb_kf_conv2 = tk.StringVar(value="")
         self.v_psb_kf_conv3 = tk.StringVar(value="")
         self.v_psb_kf_conv4 = tk.StringVar(value="")
-        self.v_psb_kf_unit  = tk.StringVar(value="(mg/kg)(mg/L)^(-a)")
+        # v102: default Kf unit is (ug/kg)(ug/L)^(-a) — matches the
+        # default concentration unit (µg/L) used everywhere else in
+        # the app, so the freshly-loaded form is self-consistent.
+        self.v_psb_kf_unit  = tk.StringVar(value="(ug/kg)(ug/L)^(-a)")
         # S molecular weight (g/mol) — only visible when v_psb_kf_unit is mol-based
         self.v_psb_mw_1     = tk.StringVar(value="")
         self.v_psb_mw_2     = tk.StringVar(value="")
@@ -2794,6 +2797,47 @@ class REMFluorApp(tk.Tk):
         # Initial paint
         try:
             self._recompute_run_time()
+        except Exception:
+            pass
+
+        # v102: §7 source year cells (U8..U18) auto-fill from §2 start
+        # and end years by linear interpolation across 11 rows so the
+        # user only has to edit §2.  Set a guard so paste-example /
+        # load-data writes don't trigger re-interpolation mid-restore.
+        self._s7_years_filling = False
+
+        def _refill_s7_years(*_):
+            if getattr(self, "_s7_years_filling", False):
+                return
+            try:
+                yr_start = float(str(self.v_yr_start.get()).strip())
+                yr_end   = float(str(self.v_yr_end.get()).strip())
+            except (ValueError, TypeError, AttributeError):
+                return
+            if yr_end <= yr_start:
+                return
+            self._s7_years_filling = True
+            try:
+                n = len(self.v_src_years)
+                if n < 2:
+                    return
+                step = (yr_end - yr_start) / (n - 1)
+                for i, var in enumerate(self.v_src_years):
+                    val = yr_start + i * step
+                    # Integer years for whole-year steps, else one decimal
+                    if abs(val - round(val)) < 1e-6:
+                        var.set(str(int(round(val))))
+                    else:
+                        var.set(f"{val:.1f}")
+            finally:
+                self._s7_years_filling = False
+
+        self._refill_s7_years = _refill_s7_years
+        self.v_yr_start.trace_add("write", _refill_s7_years)
+        self.v_yr_end.trace_add("write", _refill_s7_years)
+        # Initial fill so §7's defaults match §2's defaults.
+        try:
+            _refill_s7_years()
         except Exception:
             pass
 

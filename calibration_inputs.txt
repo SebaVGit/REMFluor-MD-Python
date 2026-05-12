@@ -1,40 +1,4 @@
-Excel File Path: C:/Users/svazquezgasty/Documents/10213_REMFluor_MD/_REMFluor_MD/REMFluorMD_v2.6/CalibrationTemplate_Detailed.xlsx
-REMFluor-MD Calibration Inputs
-==================================================
-
-Iterations: 5
-PFAS species: PFOS / PFOA
-Calibrate against PFAA-1: True
-Calibrate against PFAA-2: True
-
-Step 3 — Monitoring well weighting factors
---------------------------------------------------
-name,distance,weight
-MW-504,10,1
-FS-MW504,50,1
-FS-MW505,100,1
-FS-MW506,200,1
-FS-MW507,300,1
-FS-MW508,400,1
-FS-MW509,499,1
-
-Step 4 — Calibration parameter ranges
---------------------------------------------------
-use,parameter,lo,mid,hi
-0,Source Start Year (nt),,1977.0,
-1,Hydraulic Conductivity (k),4,0.011992,100
-1,Hydraulic Gradient (i),0.05,1,0.2
-0,Effective Porosity (porf),,0.2,
-0,Transmissive Fraction of Model (volfrac),,0.8,
-0,Average Diffusion Length (difflen),,0.25,
-0,Retardation Factor of PFAA-1 (ock(2)),,4.7,
-0,Retardation Factor of PFAA-2 (ock(4)),,4.4,
-0,Longitudinal Dispersivity (alphax (m)),,3.2,
-1,Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n)),0.5,1,2
-0,Multiplier to PFAA-2 Source Concentration in #7 (czero(4,n)),,1,
-0,First order decay rate coefficient for Precursors-1 (decayf(1)),,,
-0,First order decay rate coefficient for Precursors-2 (decayf(3)),,,
-0,Retardation Factor of Precursors-1 (ock(1)),,4.7,
-0,Retardation Factor of Precursors-2 (ock(3)),,4.4,
-1,Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n)),0.5,1,2
-0,Multiplier to Precursor-2 Source Concentration in #7 (czero(3,n)),,1,
+Calibration Data
+Excel File Path: C:/REMChlorMD_64bit/0_REMFluorMD_64/CalibrationTemplate_Detailed.xlsx
+File Name: CalibrationTemplate_test.xlsx
+Available Sheets: Model Location, Model Data, Calibration

@@ -2713,7 +2713,10 @@ class REMFluorApp(tk.Tk):
         self.v_psb_kf_conv2 = tk.StringVar(value="")
         self.v_psb_kf_conv3 = tk.StringVar(value="")
         self.v_psb_kf_conv4 = tk.StringVar(value="")
-        self.v_psb_kf_unit  = tk.StringVar(value="(mg/kg)(mg/L)^(-a)")
+        # v102: default Kf unit is (ug/kg)(ug/L)^(-a) — matches the
+        # default concentration unit (µg/L) used everywhere else in
+        # the app, so the freshly-loaded form is self-consistent.
+        self.v_psb_kf_unit  = tk.StringVar(value="(ug/kg)(ug/L)^(-a)")
         # S molecular weight (g/mol) — only visible when v_psb_kf_unit is mol-based
         self.v_psb_mw_1     = tk.StringVar(value="")
         self.v_psb_mw_2     = tk.StringVar(value="")
@@ -2794,6 +2797,47 @@ class REMFluorApp(tk.Tk):
         # Initial paint
         try:
             self._recompute_run_time()
+        except Exception:
+            pass
+
+        # v102: §7 source year cells (U8..U18) auto-fill from §2 start
+        # and end years by linear interpolation across 11 rows so the
+        # user only has to edit §2.  Set a guard so paste-example /
+        # load-data writes don't trigger re-interpolation mid-restore.
+        self._s7_years_filling = False
+
+        def _refill_s7_years(*_):
+            if getattr(self, "_s7_years_filling", False):
+                return
+            try:
+                yr_start = float(str(self.v_yr_start.get()).strip())
+                yr_end   = float(str(self.v_yr_end.get()).strip())
+            except (ValueError, TypeError, AttributeError):
+                return
+            if yr_end <= yr_start:
+                return
+            self._s7_years_filling = True
+            try:
+                n = len(self.v_src_years)
+                if n < 2:
+                    return
+                step = (yr_end - yr_start) / (n - 1)
+                for i, var in enumerate(self.v_src_years):
+                    val = yr_start + i * step
+                    # Integer years for whole-year steps, else one decimal
+                    if abs(val - round(val)) < 1e-6:
+                        var.set(str(int(round(val))))
+                    else:
+                        var.set(f"{val:.1f}")
+            finally:
+                self._s7_years_filling = False
+
+        self._refill_s7_years = _refill_s7_years
+        self.v_yr_start.trace_add("write", _refill_s7_years)
+        self.v_yr_end.trace_add("write", _refill_s7_years)
+        # Initial fill so §7's defaults match §2's defaults.
+        try:
+            _refill_s7_years()
         except Exception:
             pass
 
@@ -5569,4 +5613,160 @@ class REMFluorApp(tk.Tk):
         # Wire trace_add on every distinct source StringVar (callable
         # sources can't be traced; they get re-read whenever
         # _refresh_calib_mids is called from elsewhere — Paste
-   
+        # Example, GW/Heterogeneity popup close, etc.)
+        seen = set()
+        for src in SRC_MAP.values():
+            if src is None or callable(src) or id(src) in seen:
+                continue
+            seen.add(id(src))
+            try:
+                src.trace_add("write", _refresh_all_mids)
+            except Exception:
+                pass
+        # _src_K reads v_darcy via callable, so v_darcy isn't picked
+        # up by the loop above — register it explicitly so K Mid
+        # updates the moment v_darcy changes (e.g. after GW Velocity
+        # Calculator Apply, which writes the new Darcy velocity).
+        try:
+            self.v_darcy.trace_add("write", _refresh_all_mids)
+        except Exception:
+            pass
+
+        # ── Initial baseline seed for rows without a §StringVar ──────
+        # _refresh_one_mid is deferential and won't auto-fill these.
+        # Seed once at build time so the user sees sensible defaults.
+        BASELINE_MID = {
+            "Hydraulic Gradient (i)":                                              "1",
+            "Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n))":        "1",
+            "Multiplier to PFAA-2 Source Concentration in #7 (czero(4,n))":        "1",
+            "Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n))":   "1",
+            "Multiplier to Precursor-2 Source Concentration in #7 (czero(3,n))":   "1",
+        }
+        for i, lbl in enumerate(_CALIB_PARAMS):
+            if i >= len(self.v_calib_mid): break
+            if lbl in BASELINE_MID:
+                try: self.v_calib_mid[i].set(BASELINE_MID[lbl])
+                except Exception: pass
+        # Now fire the deferential refresh so live-tracking rows
+        # (year, K, porf, retardation, alphax) pull their values.
+        _refresh_all_mids()  # initial paint
+
+        # ── K ↔ i linked checkboxes ──────────────────────────────────
+        # The two go hand-in-hand for groundwater calibration: vd =
+        # K × i, so the optimizer needs both perturbed together (or
+        # neither).  Toggle one → toggle the other.  Re-entrancy
+        # guard prevents infinite loop.
+        try:
+            k_idx = _CALIB_PARAMS.index("Hydraulic Conductivity (k)")
+            i_idx = _CALIB_PARAMS.index("Hydraulic Gradient (i)")
+        except ValueError:
+            k_idx = i_idx = None
+
+        if (k_idx is not None and i_idx is not None
+                and k_idx < len(self.v_calib_chk)
+                and i_idx < len(self.v_calib_chk)):
+            self._ki_link_busy = False
+            def _link_ki(driver_idx, follower_idx):
+                def _cb(*_):
+                    if self._ki_link_busy:
+                        return
+                    self._ki_link_busy = True
+                    try:
+                        self.v_calib_chk[follower_idx].set(
+                            bool(self.v_calib_chk[driver_idx].get()))
+                    finally:
+                        self._ki_link_busy = False
+                return _cb
+            self.v_calib_chk[k_idx].trace_add("write",
+                                              _link_ki(k_idx, i_idx))
+            self.v_calib_chk[i_idx].trace_add("write",
+                                              _link_ki(i_idx, k_idx))
+
+        # ── Bottom action buttons — uniform size, centered 3-row block ─
+        # Every action button now uses the same width / padx / pady so the
+        # rows visually balance regardless of how long the caption is.
+        # _RoundButton sizes its canvas to max(text_width, width*"0").
+        BTN_W   = 22
+        BTN_PX  = 12
+        BTN_PY  = 12      # taller so 2-line captions don't overflow
+        BTN_GAP = 8
+
+        # All button captions wrap to 2 lines (or stay on 1) so every
+        # button gets the SAME height regardless of caption length.
+        actwrap = tk.Frame(outer, bg=BG_MAIN)
+        actwrap.pack(pady=(16, 4))
+
+        actrow1 = tk.Frame(actwrap, bg=BG_MAIN); actrow1.pack(pady=3)
+        make_btn(actrow1, "1. Save\nCalibration Data",
+                 "Save_Data_Calibration",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        make_btn(actrow1, "2. Run Machine\nBased Calibration",
+                 "Run_Machine_Based_Calibration",
+                 fg=FG_BTN_RED, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        make_btn(actrow1, "Go Back to\nMain Interface",
+                 "Show_MainInterface",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+
+        actrow2 = tk.Frame(actwrap, bg=BG_MAIN); actrow2.pack(pady=3)
+        make_btn(actrow2, "3. See All\nCalibration Data",
+                 "See_Calibration_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        make_btn(actrow2, "4. Load\nOptimal Data",
+                 "Load_Optimal_Data",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        make_btn(actrow2, "5. Run Optimal\nModel",
+                 "Run_Optimal_Model",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        make_btn(actrow2, "Help\n ",
+                 "Help_Calibration",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+
+        actrow3 = tk.Frame(actwrap, bg=BG_MAIN); actrow3.pack(pady=3)
+        make_btn(actrow3, "6. Save\nOptimal Model",
+                 "Save_Optimal_Model",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg=BTN_FILL, width=BTN_W).pack(padx=BTN_GAP)
+
+        # Initial state — hide the Detailed-only widgets I just registered
+        # if we're starting in Simple mode (default).  Mirrors the pattern
+        # used elsewhere in _build_s5_transport / _build_s9_psb / etc.
+        if self.active_sheet != "Detailed_2":
+            for w in (det_lbl1, det_chk1, det_lbl2, det_chk2,
+                      gap, note_pre):
+                try: w.grid_remove()
+                except Exception: pass
+            # Also hide every Detailed-only Step 4 row I tagged above —
+            # they're all in self._detailed_only_frames after the
+            # det_lbl* / gap / note_pre entries.  Safest: hide every
+            # entry whose master is `tbl` and that has _toggle_kind set.
+            for w in self._detailed_only_frames:
+                try:
+                    if w.master is tbl:
+                        w.grid_remove()
+                except Exception: pass
+
+
+    def _build_bottom_bar(self, parent):
+        return None
+
+
+# ENTRY POINT
+if __name__ == "__main__":
+    app = REMFluorApp()
+    app.mainloop()
+

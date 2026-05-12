@@ -379,11 +379,27 @@ def build_inp_data(state) -> dict:
         fra1  = _safe_float(state.get("Z23", 0)) if ipre == 1 else 0
         fra3  = _safe_float(state.get("AB23", 0)) if (ipre == 1 and ncomp == 2) else 0
 
-        kf_conv = _safe_float(state.get("V26") or state.get("V24"), 1)
-        fcackf2 = _safe_float(state.get("V24", 0)) * PSBloading
-        fcackf4 = _safe_float(state.get("X24", 0)) * PSBloading
-        fcackf1 = _safe_float(state.get("Z24", 0)) * PSBloading if ipre == 1 else 0
-        fcackf3 = _safe_float(state.get("AB24", 0)) * PSBloading if (ipre==1 and ncomp==2) else 0
+        # v102: use the CONVERTED Kf cells (V26 / X26 / Z26 / AB26) as
+        # the authoritative source, falling back to the raw Kf cells
+        # (V24 / X24 / Z24 / AB24) only if the converted value is blank.
+        # The Fortran solver expects Kf in canonical (ug/kg)(ug/L)^-a
+        # units — the §9 unit dropdown auto-fills V26..AB26 with the
+        # raw V24..AB24 values rescaled to ug/kg by the trace in
+        # _recompute_psb_conv_kf.  Reading V24 directly would feed the
+        # raw user-typed value in whatever unit the dropdown shows,
+        # which would skew the model.
+        def _kf_pick(conv_addr, raw_addr):
+            cv = state.get(conv_addr)
+            if cv is not None and str(cv).strip() not in ("", "None"):
+                return _safe_float(cv, 0)
+            return _safe_float(state.get(raw_addr, 0), 0)
+        kf_conv = _kf_pick("V26", "V24") or 1
+        fcackf2 = _kf_pick("V26",  "V24")  * PSBloading
+        fcackf4 = _kf_pick("X26",  "X24")  * PSBloading
+        fcackf1 = (_kf_pick("Z26",  "Z24")  * PSBloading
+                   if ipre == 1 else 0)
+        fcackf3 = (_kf_pick("AB26", "AB24") * PSBloading
+                   if (ipre == 1 and ncomp == 2) else 0)
 
     # numerical
     num_data = _read_txt(os.path.join(work_dir, 'numerical_inputs.txt'))

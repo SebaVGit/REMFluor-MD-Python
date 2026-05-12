@@ -73,8 +73,15 @@ def run(app):
     # Write parsed data into state
     write_inp_to_state(state, data, additional, unit_flag)
 
-    # Push to UI
-    state.push(app)
+    # v102: temporarily disable §7 auto-year-interpolator so the
+    # values loaded from input.inp / store_info don't get overwritten
+    # by the trace that fires when v_yr_start / v_yr_end change.
+    setattr(app, "_s7_years_filling", True)
+    try:
+        # Push to UI
+        state.push(app)
+    finally:
+        setattr(app, "_s7_years_filling", False)
 
     # Re-run §9 Converted-Kf auto-formula (state.push wipes V26..AB26)
     if hasattr(app, '_recompute_psb_conv_kf'):

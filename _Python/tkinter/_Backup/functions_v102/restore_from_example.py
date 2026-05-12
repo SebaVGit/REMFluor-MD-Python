@@ -97,8 +97,15 @@ def run(app):
     # Write parsed data into state
     write_inp_to_state(state, data, additional, unit_flag)
 
-    # Push to UI
-    state.push(app)
+    # v102: temporarily disable §7 auto-year-interpolator so the
+    # values loaded from input.inp / store_info don't get overwritten
+    # by the trace that fires when v_yr_start / v_yr_end change.
+    setattr(app, "_s7_years_filling", True)
+    try:
+        # Push to UI
+        state.push(app)
+    finally:
+        setattr(app, "_s7_years_filling", False)
 
     # Recompute section 5 (retardation factors + mol-diff) from PFAS names
     # that were just pushed. _on_pfaa_change uses PFAA_KOC lookup table.
