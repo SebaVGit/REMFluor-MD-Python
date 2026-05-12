@@ -143,12 +143,48 @@ def run(app):
     except Exception as exc:
         print(f"[restore_from_example] calibration load failed: {exc}")
 
+    # v102: Also auto-import per-well screen depths from the
+    # calibration template .xlsx (CalibrationTemplate_Detailed.xlsx /
+    # _Simple.xlsx) so the next Run Model picks up real per-well
+    # zwelltop/zwellbot from Model Location columns 4/5 — same flow
+    # as if the user had clicked the §calibration data loader button.
+    # Skips quietly if no calibration .xlsx is reachable.
+    try:
+        # Look for the calibration .xlsx alongside the example folder.
+        # restore_calibration writes its path into calibration_inputs.txt.
+        cal_txt = os.path.join(work_dir, "calibration_inputs.txt")
+        cal_xlsx = None
+        if os.path.exists(cal_txt):
+            with open(cal_txt, encoding="utf-8", errors="replace") as fh:
+                for ln in fh:
+                    if ln.lstrip().startswith("Excel File Path:"):
+                        cand = ln.split(":", 1)[1].strip()
+                        if cand and os.path.isfile(cand):
+                            cal_xlsx = cand
+                        break
+        if cal_xlsx is None:
+            is_detailed = (state.get("A8", 2) == 2)
+            tmpl = ("CalibrationTemplate_Detailed.xlsx" if is_detailed
+                    else "CalibrationTemplate_Simple.xlsx")
+            for base in (work_dir, getattr(state, "bundle_dir", "") or ""):
+                if not base:
+                    continue
+                cand = os.path.join(base, tmpl)
+                if os.path.isfile(cand):
+                    cal_xlsx = cand
+                    break
+        if cal_xlsx:
+            from . import popups_calibration
+            try:
+                status = popups_calibration._import_xlsx_into_app(app, cal_xlsx)
+                print(f"[restore_from_example] xlsx import: {status}")
+            except Exception as exc:
+                print(f"[restore_from_example] xlsx import failed: {exc}")
+    except Exception as exc:
+        print(f"[restore_from_example] xlsx auto-import failed: {exc}")
+
     # Re-pull the Step 4 Mid-Range column from the freshly-loaded
     # source cells (§3 vd / porf, §5 retardation, §2 years, etc.).
-    # The trace_add registered in _build_calibration_panel fires on
-    # each individual var change during state.push, but we call this
-    # one final sync explicitly so the user sees the right Mid values
-    # the moment the popup closes.
     if hasattr(app, '_refresh_calib_mids'):
         try:
             app._refresh_calib_mids()

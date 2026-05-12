@@ -153,6 +153,40 @@ def _read_transformation(path: str) -> dict:
     return result
 
 
+def _smart_fmt(v, fallback="0"):
+    """Smart precision picker that trims trailing zeros.  Used to make
+    input.inp values human-readable after feet->meters conversion (e.g.
+    1.999488 -> "2", 3.2000001024 -> "3.2", 0.04 -> "0.04").  Rules:
+      abs(v) >= 100  : 0 decimals
+      abs(v) >= 1    : up to 2 decimals
+      abs(v) >= 0.01 : up to 4 decimals
+      else           : 4 significant figures
+    Trailing zeros after the decimal are stripped.
+    """
+    try:
+        if v is None:
+            return fallback
+        x = float(v)
+    except (TypeError, ValueError):
+        return fallback
+    if x == 0:
+        return "0"
+    a = abs(x)
+    if a >= 100:
+        s = f"{x:.0f}"
+    elif a >= 1:
+        s = f"{x:.2f}"
+    elif a >= 0.01:
+        s = f"{x:.4f}"
+    else:
+        s = f"{x:.4g}"
+    if '.' in s and 'e' not in s and 'E' not in s:
+        s = s.rstrip('0').rstrip('.')
+        if not s or s == '-':
+            s = "0"
+    return s
+
+
 def build_inp_data(state) -> dict:
     """
     Read all values from AppState and build the same dict that
@@ -269,9 +303,20 @@ def build_inp_data(state) -> dict:
         dz = round(Z / nz, 2)
 
     # source concentrations (11 rows)
-    times  = [_safe_float(state.get(f"U{8+i}"), startT) - startT for i in range(11)]
-    concs2 = [_safe_float(state.get(f"V{8+i}"), 0) for i in range(11)]   # PFAA 1
-    concs4 = [_safe_float(state.get(f"X{8+i}"), 0) for i in range(11)]   # PFAA 2
+    # v102: build raw lists first, then trim ".0" off integer values
+    # so input.inp shows "0, 1600, 1600, 0, 0" instead of "0, 1600.0,..."
+    def _trim_num(x):
+        try:
+            xf = float(x)
+        except (TypeError, ValueError):
+            return x
+        if xf == int(xf):
+            return int(xf)
+        return xf
+    times  = [_trim_num(_safe_float(state.get(f"U{8+i}"), startT) - startT)
+              for i in range(11)]
+    concs2 = [_trim_num(_safe_float(state.get(f"V{8+i}"), 0)) for i in range(11)]
+    concs4 = [_trim_num(_safe_float(state.get(f"X{8+i}"), 0)) for i in range(11)]
     concs1 = ([_safe_float(state.get(f"Z{8+i}"), 0) for i in range(11)]
               if ipre == 1 else [0]*11)                                    # Precursor 1
     concs3 = ([_safe_float(state.get(f"AB{8+i}"), 0) for i in range(11)]
@@ -479,8 +524,63 @@ def build_inp_data(state) -> dict:
                 except Exception:
                     pass
         wells.append(
-            f"{nwell}, {xwell_f:.1f}, 0, {z_top:.1f}, {z_bot:.1f}"
+            f"{nwell}, {_smart_fmt(xwell_f)}, 0, "
+            f"{_smart_fmt(z_top)}, {_smart_fmt(z_bot)}"
         )
+
+    # v102: use module-level _smart_fmt so we can call it from inside
+    # the obs-well loop above as well.  Same trim-trailing-zero behaviour.
+    _smart = _smart_fmt
+
+    # v102: _smart only on values that went through c() (feet->m) and
+    # therefore carry float dust like 0.0040000001280000004.
+    alphax = _smart(alphax)
+    alphay = _smart(alphay)
+    alphaz = _smart(alphaz)
+    x1     = _smart(x1)
+    x2     = _smart(x2)
+    X      = _smart(X)       # xmax
+    dy     = _smart(dy)
+    dz     = _smart(dz)
+    difflen = _smart(difflen)
+    # _trim: strip trailing ".0" from integer-valued floats so e.g.
+    # times "10.0" -> "10" and concentrations "1600.0" -> "1600", but
+    # keep "10.5" as "10.5" and "0.011992" as "0.011992".  Used for
+    # fields that DON'T need rounding (raw user data + computed
+    # rates) but should still look tidy in input.inp.
+    def _trim(v):
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            return v if v is not None else 0
+        if x == int(x):
+            return int(x)
+        return x
+    # v102: vd preserved raw (e.g. 0.011992); diff & tortm to 3 decimals
+    # (user request — readable but enough precision for the solver).
+    def _fmt3(v, fallback="0"):
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            return fallback
+        if x == 0:
+            return "0"
+        s = f"{x:.3f}"
+        if '.' in s:
+            s = s.rstrip('0').rstrip('.')
+            if not s or s == '-':
+                s = "0"
+        return s
+    vd       = _trim(vd)        # preserve precision (e.g. 0.011992)
+    diff     = _fmt3(diff)      # 3 dec (e.g. 0.011 from 0.0110376)
+    tortm    = _fmt3(tortm)     # 3 dec (e.g. 0.562 from 0.5617222...)
+    tplume1  = _trim(tplume1)
+    tplume2  = _trim(tplume2)
+    fra1, fra2, fra3, fra4 = _trim(fra1), _trim(fra2), _trim(fra3), _trim(fra4)
+    fcackf1, fcackf2, fcackf3, fcackf4 = (
+        _trim(fcackf1), _trim(fcackf2), _trim(fcackf3), _trim(fcackf4))
+    # tortm has many digits in some examples (0.5617222837346214) —
+    # leave it raw, only _trim if integer-valued.
 
     return dict(
         ncomp=ncomp, ipre=ipre, iwall=iwall, iTVD=iTVD,
