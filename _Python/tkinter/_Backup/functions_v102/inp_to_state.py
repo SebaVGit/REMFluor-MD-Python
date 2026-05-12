@@ -210,10 +210,22 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("E19", _blank(additional.get('end_year')))
         state.set("AH7", _blank(additional.get('source_treatment_start_year')))
         state.set("AH8", _blank(additional.get('source_treatment_end_year')))
-        state.set("AH9", _blank(additional.get('source_concentration_reduction')))
+        # v102: source_concentration_reduction in legacy store_info files
+        # is stored as a FRACTION (e.g. 0.5 means 50%).  The UI's §8 cell
+        # expects PERCENT, so multiply by 100 when the loaded value is
+        # in the (0, 1] range — keeps any already-percentage values
+        # (e.g. 50, 75) intact.
+        _scr = additional.get('source_concentration_reduction')
+        try:
+            _scr_f = float(_scr) if _scr is not None else None
+            if _scr_f is not None and 0.0 < _scr_f <= 1.0:
+                _scr = _scr_f * 100.0
+        except (TypeError, ValueError):
+            pass
+        state.set("AH9", _blank(_scr))
         # Mirror to UI-bound cells (Section 8)
         state.set("D27", _blank(additional.get('source_treatment_start_year')))
-        state.set("D28", _blank(additional.get('source_concentration_reduction')))
+        state.set("D28", _blank(_scr))
 
         state.set("Y74", _blank(additional.get('sample_year')))  # Section 10 sample yr
         if state.get("A8", 2) == 1:

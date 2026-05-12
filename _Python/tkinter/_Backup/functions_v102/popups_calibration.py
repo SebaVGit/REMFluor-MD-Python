@@ -180,9 +180,13 @@ def _import_xlsx_into_app(app, xlsx_path):
             "wells", "locations",
         }
 
+        # v102: per-well screen depths from .xlsx Model Location
+        # (top_screen / bot_screen columns).  Empty when not in the
+        # sheet — generate_input_file falls back to constant Z, Z/2.
+        well_depths = {}
         if loc_sheet is not None:
             header_row = None
-            name_col = dist_col = None
+            name_col = dist_col = top_col = bot_col = None
             for r in range(1, 30):
                 for c in range(1, 27):
                     val = loc_sheet.cell(row=r, column=c).value
@@ -195,6 +199,11 @@ def _import_xlsx_into_app(app, xlsx_path):
                     elif dist_col is None and ("distance" in s or s == "x"
                                                or "from source" in s):
                         dist_col = c
+                    elif top_col is None and ("top" in s and "screen" in s):
+                        top_col = c
+                    elif bot_col is None and (
+                            ("bottom" in s or "bot" in s) and "screen" in s):
+                        bot_col = c
                 if header_row is not None:
                     break
 
@@ -203,9 +212,16 @@ def _import_xlsx_into_app(app, xlsx_path):
                 _log("No header found; defaulting to col A=names, col B=distances")
             else:
                 _log(f"Location sheet header row={header_row}: "
-                     f"name_col={name_col}, dist_col={dist_col}")
+                     f"name_col={name_col}, dist_col={dist_col}, "
+                     f"top_col={top_col}, bot_col={bot_col}")
             if name_col is None:
                 name_col = 1
+            # v102: if no header was found for top/bot, fall back to
+            # columns 4 and 5 (matches the legacy Source_Py reader).
+            if top_col is None:
+                top_col = 4
+            if bot_col is None:
+                bot_col = 5
 
             mw_names = getattr(app, "v_mw_names", []) or []
             mw_dists = getattr(app, "v_mw_dist", []) or []
@@ -239,6 +255,21 @@ def _import_xlsx_into_app(app, xlsx_path):
                         mw_dists[idx].set(ds_clean)
                     except Exception as exc:
                         _log(f"failed to set v_mw_dist[{idx}]: {exc}")
+                # v102: capture top/bot screen depths if present
+                try:
+                    top_v = (loc_sheet.cell(row=r, column=top_col).value
+                             if top_col else None)
+                    bot_v = (loc_sheet.cell(row=r, column=bot_col).value
+                             if bot_col else None)
+                    if top_v is not None or bot_v is not None:
+                        try: top_f = float(top_v) if top_v is not None else None
+                        except (TypeError, ValueError): top_f = None
+                        try: bot_f = float(bot_v) if bot_v is not None else None
+                        except (TypeError, ValueError): bot_f = None
+                        if top_f is not None or bot_f is not None:
+                            well_depths[well_name] = (top_f, bot_f)
+                except Exception as exc:
+                    _log(f"failed to read top/bot for {well_name}: {exc}")
                 if idx >= 6:
                     break
             _log(f"Wells imported from Location sheet: {seen_wells}")
@@ -450,6 +481,12 @@ def _import_xlsx_into_app(app, xlsx_path):
                 "source_xlsx": xlsx_path,
                 "analytes_found": sorted(unique_analytes),
                 "records": obs_records,
+                # v102: per-well screen depths in user's unit (m or ft)
+                # — generate_input_file converts to meters as needed.
+                "well_depths": {
+                    w: {"top": d[0], "bot": d[1]}
+                    for w, d in well_depths.items()
+                },
             }
             with open(obs_path, "w", encoding="utf-8") as fh:
                 _json.dump(payload, fh, indent=2, default=str)

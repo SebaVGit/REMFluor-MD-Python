@@ -1,5 +1,5 @@
 {
-  "best_rmsle": 6.530812004148044,
+  "best_rmsle": 6.625666325426626,
   "labels": [
     "Hydraulic Conductivity (k)",
     "Hydraulic Gradient (i)",
@@ -7,10 +7,10 @@
     "Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n))"
   ],
   "best_x": [
-    39.35061962634401,
-    0.19290003789785282,
-    0.8229370702287448,
-    1.2207266665147423
+    71.91337655581381,
+    0.1709705330896168,
+    1.5380118375620293,
+    0.9571340805178579
   ],
   "n_evals": 5
 }

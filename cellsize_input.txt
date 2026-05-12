@@ -2,5 +2,5 @@ Grid Cell Sizes
 Parameter,Value
 Cell Size X:,5.0
 Cell Size Y:,5.0
-Cell Size Z:,10.0
-Unit Flag:,2.0
+Cell Size Z:,1.0
+Unit Flag:,2

@@ -1,61 +1,61 @@
 REMFluor-MD Optimal Model snapshot v4
-Best RMSLE: 6.53081
+Best RMSLE: 6.62567
 Iterations: 5
 # Source cell snapshot (§3 / §5 / §6)
 src.v_yr_start=1977.0
-src.v_darcy=7.5907
+src.v_darcy=12.2951
 src.v_porf=0.2
 src.v_alpha_l=3.2
 src.v_ret_trans1=4.7
-src.v_ret_trans2=
+src.v_ret_trans2=4.4
 src.v_ret_trans3=4.7
-src.v_ret_trans4=
+src.v_ret_trans4=4.4
 
 # §7 source zone (post-multiplier values)
-s7.pfaa1[0]=1,316.70
-s7.pfaa1[1]=1,316.70
-s7.pfaa1[2]=1,316.70
-s7.pfaa1[3]=1,316.70
-s7.pfaa1[4]=658.35
-s7.pfaa1[5]=658.35
-s7.pfaa1[6]=658.35
-s7.pfaa1[7]=658.35
-s7.pfaa1[8]=658.35
-s7.pfaa1[9]=658.35
-s7.pfaa1[10]=658.35
-s7.pfaa2[0]=
-s7.pfaa2[1]=
-s7.pfaa2[2]=
-s7.pfaa2[3]=
-s7.pfaa2[4]=
-s7.pfaa2[5]=
-s7.pfaa2[6]=
-s7.pfaa2[7]=
-s7.pfaa2[8]=
-s7.pfaa2[9]=
-s7.pfaa2[10]=
-s7.pre1[0]=1,953.17
-s7.pre1[1]=1,953.17
-s7.pre1[2]=1,953.17
-s7.pre1[3]=1,953.17
-s7.pre1[4]=976.58
-s7.pre1[5]=976.58
-s7.pre1[6]=976.58
-s7.pre1[7]=976.58
-s7.pre1[8]=976.58
-s7.pre1[9]=976.58
-s7.pre1[10]=976.58
-s7.pre2[0]=
-s7.pre2[1]=
-s7.pre2[2]=
-s7.pre2[3]=
-s7.pre2[4]=
-s7.pre2[5]=
-s7.pre2[6]=
-s7.pre2[7]=
-s7.pre2[8]=
-s7.pre2[9]=
-s7.pre2[10]=
+s7.pfaa1[0]=2,460.82
+s7.pfaa1[1]=2,460.82
+s7.pfaa1[2]=2,460.82
+s7.pfaa1[3]=2,460.82
+s7.pfaa1[4]=1,230.41
+s7.pfaa1[5]=1,230.41
+s7.pfaa1[6]=1,230.41
+s7.pfaa1[7]=1,230.41
+s7.pfaa1[8]=1,230.41
+s7.pfaa1[9]=1,230.41
+s7.pfaa1[10]=1,230.41
+s7.pfaa2[0]=1,600.00
+s7.pfaa2[1]=1,600.00
+s7.pfaa2[2]=1,600.00
+s7.pfaa2[3]=1,600.00
+s7.pfaa2[4]=800.00
+s7.pfaa2[5]=800.00
+s7.pfaa2[6]=800.00
+s7.pfaa2[7]=800.00
+s7.pfaa2[8]=800.00
+s7.pfaa2[9]=800.00
+s7.pfaa2[10]=800.00
+s7.pre1[0]=1,531.41
+s7.pre1[1]=1,531.41
+s7.pre1[2]=1,531.41
+s7.pre1[3]=1,531.41
+s7.pre1[4]=765.71
+s7.pre1[5]=765.71
+s7.pre1[6]=765.71
+s7.pre1[7]=765.71
+s7.pre1[8]=765.71
+s7.pre1[9]=765.71
+s7.pre1[10]=765.71
+s7.pre2[0]=1,600.00
+s7.pre2[1]=1,600.00
+s7.pre2[2]=1,600.00
+s7.pre2[3]=1,600.00
+s7.pre2[4]=800.00
+s7.pre2[5]=800.00
+s7.pre2[6]=800.00
+s7.pre2[7]=800.00
+s7.pre2[8]=800.00
+s7.pre2[9]=800.00
+s7.pre2[10]=800.00
 
 # Step 4 calibration rows
 row[0]
@@ -68,13 +68,13 @@ row[1]
   label=Hydraulic Conductivity (k)
   use=True
   lo=4
-  mid=39.3506
+  mid=71.9134
   hi=100
 row[2]
   label=Hydraulic Gradient (i)
   use=True
   lo=0.05
-  mid=0.1929
+  mid=0.170971
   hi=0.2
 row[3]
   label=Effective Porosity (porf)
@@ -104,7 +104,7 @@ row[7]
   label=Retardation Factor of PFAA-2 (ock(4))
   use=False
   lo=
-  mid=
+  mid=4.4
   hi=
 row[8]
   label=Longitudinal Dispersivity (alphax (m))
@@ -116,7 +116,7 @@ row[9]
   label=Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n))
   use=True
   lo=0.5
-  mid=0.822937
+  mid=1.53801
   hi=2
 row[10]
   label=Multiplier to PFAA-2 Source Concentration in #7 (czero(4,n))
@@ -146,13 +146,13 @@ row[14]
   label=Retardation Factor of Precursors-2 (ock(3))
   use=False
   lo=
-  mid=
+  mid=4.4
   hi=
 row[15]
   label=Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n))
   use=True
   lo=0.5
-  mid=1.22073
+  mid=0.957134
   hi=2
 row[16]
   label=Multiplier to Precursor-2 Source Concentration in #7 (czero(3,n))

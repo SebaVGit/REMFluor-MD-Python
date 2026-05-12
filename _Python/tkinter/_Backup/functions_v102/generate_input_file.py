@@ -397,16 +397,74 @@ def build_inp_data(state) -> dict:
     maxit = 5000
 
     # observation wells
+    # v102 default: zwelltop = Z, zwellbot = Z/2 (constant for every well).
+    # Matches Example/*/input.inp format:  1, 60.0, 0, 10.0, 5.0
+    #
+    # v102 override: if the user loaded a calibration .xlsx and
+    # popups_calibration._import_xlsx_into_app saved per-well screen
+    # depths to mw_observations.json (well_depths), use those.  This
+    # restores the legacy Source_Py Detailed-mode behaviour of
+    # honouring real screen-interval depths from the .xlsx Model
+    # Location sheet — but only when those columns exist.
     wells = []
+    z_top_default = float(Z) if (Z is not None and Z != 0) else 10.0
+    z_bot_default = z_top_default / 2.0
+
+    # Try to load per-well depths from mw_observations.json sidecar.
+    # The sidecar stores depths in the USER'S unit (ft or m); c() will
+    # convert to meters for input.inp.
+    well_depths_map = {}
+    try:
+        import json as _json
+        obs_path = os.path.join(work_dir, 'mw_observations.json')
+        if os.path.exists(obs_path):
+            with open(obs_path, 'r', encoding='utf-8') as fh:
+                obs_payload = _json.load(fh) or {}
+            wd = obs_payload.get('well_depths', {}) or {}
+            for wname, d in wd.items():
+                if isinstance(d, dict):
+                    well_depths_map[str(wname).strip()] = (
+                        d.get('top'), d.get('bot'))
+    except Exception:
+        well_depths_map = {}
+
     for i in range(7):
         row = 34 + i
         xwell = c(state.get(f"AF{row}"))
         if xwell is None:
             continue
+        try:
+            xwell_f = float(xwell)
+        except (TypeError, ValueError):
+            continue
         nwell = i + 1
-        zwelltop = Z
-        zwellbot  = Z / 2
-        wells.append(f"{nwell}, {xwell}, 0, {zwelltop}, {zwellbot}")
+        # Resolve per-well depths: check mw_observations.json under
+        # this well's name (U34..U40 / v_mw_names) — fall back to
+        # default Z, Z/2 if missing or invalid.
+        z_top = z_top_default
+        z_bot = z_bot_default
+        well_name = state.get(f"U{row}")
+        if well_name:
+            d = well_depths_map.get(str(well_name).strip())
+            if d:
+                top_v, bot_v = d
+                try:
+                    if top_v is not None:
+                        tv = c(top_v)
+                        if tv is not None:
+                            z_top = float(tv)
+                except Exception:
+                    pass
+                try:
+                    if bot_v is not None:
+                        bv = c(bot_v)
+                        if bv is not None:
+                            z_bot = float(bv)
+                except Exception:
+                    pass
+        wells.append(
+            f"{nwell}, {xwell_f:.1f}, 0, {z_top:.1f}, {z_bot:.1f}"
+        )
 
     return dict(
         ncomp=ncomp, ipre=ipre, iwall=iwall, iTVD=iTVD,

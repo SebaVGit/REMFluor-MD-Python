@@ -442,21 +442,58 @@ def main(workbook_path=None, sheet_name=None):
     while len(MW_names) < len(obs_well_files):
         MW_names.append(f"Well {len(MW_names) + 1}")
 
-    # Read and combine all observation well files into one DataFrame
+    # Read and combine all observation well files into one DataFrame.
+    # v102: hardened reader + diagnostics.  The Fortran solver writes
+    # the column header ONLY in obs_well1.out — files 2..7 start
+    # straight at data.  We capture the header columns from file 1 and
+    # reuse them for the rest.  skipinitialspace=True normalises the
+    # multi-space alignment the solver uses ("   0.100,  0.11522...").
+    CANON_COLS = ['Time yr', 'C1well', 'C2well', 'C3well', 'C4well']
     dfs = []
+    captured_cols = None
     for idx, fname in enumerate(obs_well_files):
-        if idx == 0:
-            df = pd.read_csv(fname)
-            columns = df.columns
+        try:
+            if idx == 0:
+                df = pd.read_csv(fname, skipinitialspace=True)
+                # Strip leading/trailing whitespace from header names
+                df.columns = [str(c).strip() for c in df.columns]
+                captured_cols = list(df.columns)
+            else:
+                use_cols = captured_cols if captured_cols else CANON_COLS
+                df = pd.read_csv(fname, header=None, names=use_cols,
+                                 skipinitialspace=True)
+                df.columns = [str(c).strip() for c in df.columns]
             df['well_file'] = MW_names[idx]
             dfs.append(df)
-        else:
-            df = pd.read_csv(fname, header=None, names=columns)
-            df['well_file'] = MW_names[idx]
-            dfs.append(df)
+            # Diagnostic: per-file row count + C2well max so user can
+            # compare to the .out at a glance.
+            try:
+                c2_max = (df['C2well'].astype(float).max()
+                          if 'C2well' in df.columns else float('nan'))
+                print(f"[obs_well] {fname} -> {MW_names[idx]!r}: "
+                      f"{len(df)} rows, C2well max={c2_max:.6g}")
+            except Exception:
+                pass
+        except Exception as exc:
+            print(f"[obs_well] FAILED to read {fname}: {exc}")
+
     df_obs_MW = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
-    # Clean column names by removing all spaces
+    # Clean column names by removing all spaces (defence against any
+    # remaining whitespace that slipped past read_csv).
     df_obs_MW.columns = df_obs_MW.columns.str.strip()
+    # If the captured header had non-canonical names (e.g. solver wrote
+    # different labels in some build), force the canonical names.  This
+    # guarantees downstream code that references "C2well" etc. works.
+    if len(df_obs_MW.columns) >= 5:
+        rename_map = {}
+        for old_col, canon in zip(df_obs_MW.columns[:5], CANON_COLS):
+            if old_col != canon:
+                rename_map[old_col] = canon
+        if rename_map:
+            print(f"[obs_well] renaming columns: {rename_map}")
+            df_obs_MW = df_obs_MW.rename(columns=rename_map)
+    print(f"[obs_well] combined frame: {len(df_obs_MW)} rows, "
+          f"columns={list(df_obs_MW.columns)}")
     df_obs_MassD = pd.read_csv("discharge.out") # mass discharge (kg/yr)
     # Clean column names by removing all spaces
     df_obs_MassD.columns = df_obs_MassD.columns.str.strip()
