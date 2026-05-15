@@ -221,7 +221,9 @@ def build_inp_data(state) -> dict:
     precursor_flag = (version_flag == 2 and k38 and
                       str(k38).strip() not in ('', 'None', 'none'))
     ipre  = 1 if precursor_flag else 0
-    iwall = 1 if PSB_flag else 0
+    # v102: iwall = 2 when PSB activated, 0 when off (matches the
+    # Detailed Excel/Fortran convention used in inptest.inp).
+    iwall = 2 if PSB_flag else 0
 
     # time
     startT = _safe_float(state.get("E18", 1977))
@@ -247,17 +249,38 @@ def build_inp_data(state) -> dict:
     alphaz = c(state.get("Z4", 0.004))
 
     # model size (convert if feet)
+    # v102: snap to 4 decimals to wipe floating-point dust from
+    # feet↔meters round-trips (e.g. 500 m → 1640.42 ft → ×0.3048 →
+    # 500.000016 m).  Without this, downstream banker's-rounding in
+    # nx1/ny/nz can flip on the dust (round(50.000008)=50 stable but
+    # round(2.500008)=3 vs round(2.5)=2 banker's → different lzsourcemin).
     X = c(state.get("E11", 500))
     Y = c(state.get("E12", 50))
     Z = c(state.get("E13", 10))
+    if X is not None: X = round(X, 4)
+    if Y is not None: Y = round(Y, 4)
+    if Z is not None: Z = round(Z, 4)
 
     # cell sizes from cellsize_input.txt
+    # v102: respect the sidecar's OWN Unit Flag, not the live UI flag.
+    # Previously this used `ft` (the UI's current state["AD1"]), which
+    # caused a double-conversion bug: user pastes example in meters
+    # → sidecar has values + "Unit Flag: 2", toggle UI to feet, run
+    # again → sidecar STILL has meters values + flag 2, but `ft=True`
+    # made the code multiply by 0.3048 anyway → cell sizes shrank to
+    # ~1/3 their true value (dy 5 m → 1.524 m, dz 2 m → 0.61 m).
     cell_data = _read_txt(os.path.join(work_dir, 'cellsize_input.txt'))
     dx = cell_data.get('Cell Size X:', 5.0)
     dy_file = cell_data.get('Cell Size Y:', None)
     dz_file = cell_data.get('Cell Size Z:', None)
-    if ft:
-        dx = dx * FT2M if dx else dx
+    # Read the sidecar's own unit flag (1=feet, 2=meters).  Default 2
+    # if the sidecar is missing the line (back-compat with older files).
+    try:
+        cell_unit = int(float(cell_data.get('Unit Flag:', 2)))
+    except (TypeError, ValueError):
+        cell_unit = 2
+    if cell_unit == 1:    # sidecar values are in FEET → convert
+        dx      = dx * FT2M      if dx      else dx
         dy_file = dy_file * FT2M if dy_file else dy_file
         dz_file = dz_file * FT2M if dz_file else dz_file
 
@@ -329,12 +352,25 @@ def build_inp_data(state) -> dict:
     # a virtual multiply here — that would double-apply.
 
     # source geometry
+    # v102: snap source_width to wipe FP dust (same reason as X/Y/Z).
     source_width = c(state.get("E15", 60))
+    if source_width is not None:
+        source_width = round(source_width, 4)
     lysource = math.ceil(source_width / dy / 2) if source_width and dy else 0
 
     top_z = Z
     source_thick = c(state.get("E16", 5))
+    # v102: snap top_z / source_thick to 4 decimals to wipe floating-
+    # point dust from feet↔meters conversions (e.g. 10 m → 32.8084 ft
+    # → c() → 10.0000016 m).  Without this, lzsourcemin's banker's-
+    # rounding behaviour flipped between unit toggles (round(2.5)=2,
+    # round(2.5000008)=3), giving different cell indices in input.inp.
+    if source_thick is not None:
+        source_thick = round(source_thick, 4)
+    top_z = round(top_z, 4) if top_z is not None else top_z
     bot_z = (top_z - source_thick) if source_thick is not None else None
+    if bot_z is not None:
+        bot_z = round(bot_z, 4)
 
     # compute layer indices
     fzGridBlock = round(Z / dz) if dz else nz
@@ -345,7 +381,22 @@ def build_inp_data(state) -> dict:
     lzsourcemax_val = min(lzsourcemax_val, fzGridBlock)
 
     # velocity
-    vd = c(state.get("E22", state.get("C22", 10)))
+    # v102: read v_darcy via state["C22"] FIRST (that's the live UI
+    # value that gets unit-converted by _apply_units on §1 toggle).
+    # state["E22"] is a one-shot fallback written by inp_to_state during
+    # Paste Example / Load Data; it never updates after a units toggle,
+    # so reading it first caused vd to come out in the wrong unit (e.g.
+    # 10 m/yr in state["E22"] interpreted as ft/yr → 3.048 m/yr in
+    # input.inp after toggling to feet).
+    vd = c(state.get("C22", state.get("E22", 10)))
+    # v102: keep state["E22"] in sync with the live v_darcy reading so
+    # downstream callers (cali_1, generate_dashboard) that may still
+    # consult E22 don't see a stale Paste-Example value.  Cheap defence.
+    try:
+        if vd is not None:
+            state.set("E22", state.get("C22"))
+    except Exception:
+        pass
 
     # low-K zone
     porm  = _safe_float(state.get("K27", 0.48))

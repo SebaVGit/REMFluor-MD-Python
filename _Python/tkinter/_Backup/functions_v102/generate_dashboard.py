@@ -345,6 +345,15 @@ def main(workbook_path=None, sheet_name=None):
         return v
     StartY = _scalar("E18", 2025)
     Total_Depth = _scalar("E13", 10.0)
+    # v102: REMFluor-MD.out's Z column is in METRES (Fortran works in
+    # metres regardless of the UI unit).  Total_Depth comes from state
+    # E13 which is in the user's unit (ft or m).  Convert to metres
+    # here so the `Total_Depth - df_obs['Z']` arithmetic below is
+    # unit-consistent.  Without this, feet-mode users saw depth values
+    # multiplied effectively twice (once mismatched, then once on
+    # display) — e.g. 75-108 ft for a 10 m / 33 ft model.
+    if unit_flag == 1:
+        Total_Depth = Total_Depth * feet_to_meters   # ft → m
 
     # Check G38 to determine ncomp: if blank, ncomp = 1, otherwise ncomp = 2
     g38_value = get_cell_value(ws, "G38")
@@ -1214,7 +1223,8 @@ def main(workbook_path=None, sheet_name=None):
                     ),
                     hovertemplate=f'<b>{display_name}</b><br>' +
                                 f'Concentration: %{{x:.3f}} μg/L<br>' +
-                                'Depth: %{y:.2f} m<br>' +
+                                # v102: depth unit follows §1 feet/meters
+                                f'Depth: %{{y:.2f}} {length_unit_label}<br>' +
                                 '<extra></extra>'
                 ))
             # Set y-axis to have 0 at the top (reverse the axis)
@@ -2035,23 +2045,4 @@ if __name__ == "__main__":
     workbook_path = None
     sheet_name = None
     #if len(sys.argv) > 1:
-    #    workbook_path = sys.argv[1]
-    #    if len(sys.argv) > 2:
-    #        sheet_name = sys.argv[2]
-    try:
-        main(workbook_path, sheet_name)
-    except KeyboardInterrupt:
-        # Handle Ctrl+C gracefully
-        print("\nDashboard interrupted by user. Exiting...")
-        sys.exit(0)
-    except Exception as e:
-        print(f"Error starting dashboard: {e}")
-        import traceback
-        traceback.print_exc()
-        print("\nPress Ctrl+C to exit...")
-        # Wait briefly to allow user to see the error, then exit
-        try:
-            time.sleep(2)
-        except KeyboardInterrupt:
-            sys.exit(0)
-        sys.exit(1)
+ 

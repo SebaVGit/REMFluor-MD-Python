@@ -857,9 +857,142 @@ def run_script(macro_name, extra_args=None):
             return
 
         if macro_name == "Save_Data":
-            ok = generate_input_file.run(_app_ref)
-            if ok:
-                messagebox.showinfo("Save Data", "input.inp generated successfully.")
+            # v102: prompt user for destination folder + copy input.inp
+            # AND every sidecar (.txt / .json) so the saved folder can
+            # be reloaded with Load Data later.  Also writes a fresh
+            # store_info_additional_input.txt for fields not in input.inp
+            # (site name, date, sample year, sample event, source
+            # treatment %, monitoring-well names + concentrations).
+            from tkinter import filedialog as _fd
+            from functions.state import get_state as _gs, INPUT_TXT_FILES as _SIDECARS
+            try:
+                # Step 1: build input.inp in the live work_dir (always)
+                if not generate_input_file.run(_app_ref):
+                    return
+                state = _gs()
+                work_dir = state.work_dir or os.getcwd()
+                # Step 2: ask user where to save
+                dst = _fd.askdirectory(
+                    title="Choose folder to save model setup",
+                    initialdir=work_dir,
+                    mustexist=False,
+                )
+                if not dst:
+                    return  # user cancelled
+                os.makedirs(dst, exist_ok=True)
+                # Step 3: write store_info_additional_input.txt next to
+                # input.inp (UI-only fields not in the .inp).
+                try:
+                    add_lines = [
+                        "Additional Information Not in input.inp",
+                        "=" * 50, "",
+                        f"Site Location and ID:,{_app_ref.v_site.get()}",
+                        f"Date:,{_app_ref.v_date.get()}",
+                        f"Thickness:,{_app_ref.v_z_size.get()}",
+                        f"Start Year:,{_app_ref.v_yr_start.get()}",
+                        f"End Year:,{_app_ref.v_yr_end.get()}", "",
+                        f"Source Treatment Start Year:,{_app_ref.v_src_rem_yr.get() or 'None'}",
+                        f"Source Concentration Reduction:,{_app_ref.v_src_conc_red.get() or 'None'}", "",
+                        f"Sample Year:,{_app_ref.v_sample_yr.get()}",
+                        f"Sample Event:,{getattr(_app_ref, 'v_event', tk.StringVar()).get()}", "",
+                        f"Unit Flag (AD1):,"
+                        f"{'1' if _app_ref.v_units.get()=='feet' else '2'}",
+                        f"Dispersivity Flag (AC1):,2", "",
+                        f"PSB Loading (AH28):,{_app_ref.v_psb_load.get() or 'None'}", "",
+                        "Monitoring Well Names (Simple Version):",
+                    ]
+                    for i, nm in enumerate(_app_ref.v_mw_names, 1):
+                        add_lines.append(f"Well {i}:,{nm.get()}")
+                    add_lines.append("")
+                    add_lines.append("Monitoring Well Concentrations (Simple Version):")
+                    for i, cv in enumerate(_app_ref.v_mw_conc, 1):
+                        add_lines.append(f"Well {i}:,{cv.get()},")
+                    add_path = os.path.join(dst, "store_info_additional_input.txt")
+                    with open(add_path, "w", encoding="utf-8") as fh:
+                        fh.write("\n".join(add_lines) + "\n")
+                except Exception as exc:
+                    print(f"[Save_Data] additional info write failed: {exc}")
+                # Step 4: copy input.inp + every sidecar listed in
+                # INPUT_TXT_FILES from work_dir to dst.  v102: handle
+                # three edge cases that broke the previous version:
+                #   (a) user picks the SAME folder as work_dir →
+                #       shutil.copy2 raised SameFileError because src
+                #       and dst resolve to the same path.  Skip the
+                #       copy in that case — files are already there.
+                #   (b) destination file is read-only (Windows often
+                #       drops the read-only attribute after the .exe
+                #       run wrote it).  chmod 0o666 before overwriting.
+                #   (c) any per-file failure shouldn't abort the whole
+                #       save — keep going, log per-file errors.
+                import shutil
+                # Resolve real paths once so the same-folder check is
+                # robust to slashes and case (Windows).
+                try:
+                    src_dir_real = os.path.realpath(work_dir)
+                    dst_dir_real = os.path.realpath(dst)
+                except Exception:
+                    src_dir_real = work_dir
+                    dst_dir_real = dst
+                same_folder = (os.path.normcase(src_dir_real) ==
+                               os.path.normcase(dst_dir_real))
+
+                def _copy_one(src, dst_path):
+                    """Copy src → dst_path with overwrite + same-file
+                    safety.  Returns True on success / no-op, False on
+                    failure."""
+                    if not os.path.exists(src):
+                        return False
+                    try:
+                        # Same file (same folder, same name) → no-op.
+                        if (os.path.exists(dst_path)
+                                and os.path.samefile(src, dst_path)):
+                            return True
+                    except Exception:
+                        pass
+                    # Make destination writable if it already exists.
+                    if os.path.exists(dst_path):
+                        try: os.chmod(dst_path, 0o666)
+                        except Exception: pass
+                    try:
+                        shutil.copy2(src, dst_path)
+                        return True
+                    except shutil.SameFileError:
+                        return True   # treat as success
+                    except Exception as exc:
+                        print(f"[Save_Data] copy failed "
+                              f"{os.path.basename(src)}: {exc}")
+                        return False
+
+                copied = []
+                # input.inp
+                src_inp = os.path.join(work_dir, "input.inp")
+                dst_inp = os.path.join(dst, "input.inp")
+                if same_folder and os.path.exists(src_inp):
+                    copied.append("input.inp")        # already there
+                elif _copy_one(src_inp, dst_inp):
+                    copied.append("input.inp")
+                # Every sidecar (.txt / .json)
+                for fname in _SIDECARS:
+                    src = os.path.join(work_dir, fname)
+                    if not os.path.exists(src):
+                        continue
+                    if same_folder:
+                        copied.append(fname)          # already there
+                        continue
+                    if _copy_one(src, os.path.join(dst, fname)):
+                        copied.append(fname)
+                # User-facing summary
+                same_note = ("\n(destination is the same as the work "
+                             "folder — existing files left in place)"
+                             if same_folder else "")
+                messagebox.showinfo(
+                    "Save Data",
+                    f"Saved {len(copied)} file(s) to:\n{dst}{same_note}\n\n"
+                    + "\n".join(f"  {f}" for f in copied)
+                )
+            except Exception as exc:
+                messagebox.showerror("Save Data",
+                                     f"Could not save:\n{exc}")
             return
 
         if macro_name == "RunPythonScript":
@@ -2267,11 +2400,34 @@ class REMFluorApp(tk.Tk):
     }
 
     def _read_retardation_file(self):
-        """Read foc/rho_b/Koc list from retardation_inputs.txt in BASE_DIR.
-        Returns (rho_b, foc_t, foc_l, koc_list) or defaults if file missing."""
+        """Read foc/rho_b/Koc list from retardation_inputs.txt.
+
+        v102: search state.work_dir FIRST (that's where popups_retardation
+        writes to), then fall back to BASE_DIR.  Previously the BASE_DIR-
+        only lookup missed the fresh file the popup just wrote, so
+        clicking "Calculate Retardation Factors" had no visible effect
+        — the §5 Koc fell through to PFAA_KOC table defaults and the
+        user's custom Koc / foc / bulk density input was ignored.
+
+        Returns (rho_b, foc_t, foc_l, koc_list) or defaults if missing."""
         import os
-        ret_file = os.path.join(BASE_DIR, "retardation_inputs.txt")
         rho_b, foc_t, foc_l, koc_list = 1.7, 0.001, 0.002, []
+        # v102: prefer the live work_dir (where popups write); fall back
+        # to BASE_DIR (legacy hardcoded location).
+        candidates = []
+        try:
+            from functions.state import get_state
+            st = get_state()
+            wd = getattr(st, "work_dir", "") or ""
+            if wd:
+                candidates.append(os.path.join(wd, "retardation_inputs.txt"))
+        except Exception:
+            pass
+        candidates.append(os.path.join(BASE_DIR, "retardation_inputs.txt"))
+        ret_file = None
+        for c in candidates:
+            if c and os.path.exists(c):
+                ret_file = c; break
         if not ret_file or not os.path.exists(ret_file):
             return rho_b, foc_t, foc_l, koc_list
         try:
@@ -2349,14 +2505,24 @@ class REMFluorApp(tk.Tk):
 
             if koc is None or koc == 0:
                 ret_t.set(""); ret_l.set("")
+                # v102: also blank v_mol_diff when PFAA-1 is unset so
+                # Clear All Data wipes the diffusion coefficient cell.
+                if idx == 0:
+                    try: self.v_mol_diff.set("")
+                    except Exception: pass
                 continue
             r_high = 1.0 + (rho_b * foc_t * koc / G22) if G22 > 0 else 1.0
             r_low  = 1.0 + (rho_b * foc_l * koc / K27) if K27 > 0 else 1.0
             ret_t.set(f"{r_high:.1f}")
             ret_l.set(f"{r_low:.1f}")
             # Molecular diffusion from PFAA-1 only
-            if idx == 0 and diff is not None:
-                self.v_mol_diff.set(f"{diff:.2E}")
+            if idx == 0:
+                if diff is not None:
+                    self.v_mol_diff.set(f"{diff:.2E}")
+                else:
+                    # Species recognised but no diff table entry → blank
+                    try: self.v_mol_diff.set("")
+                    except Exception: pass
 
     # ── Decimal-formatting helpers ──────────────────────────────
     @staticmethod
@@ -2505,12 +2671,18 @@ class REMFluorApp(tk.Tk):
             return
         prev = getattr(self, "_prev_units", new_unit)
         # Compute conversion factor for the toggle
-        FT_PER_M = 3.28084
+        # v102: use the EXACT reciprocal of FT2M=0.3048 so that
+        # toggling units twice (m → ft → m) is bit-exactly idempotent.
+        # Previous code used 3.28084 (rounded), so 500 m → 1640.42 ft
+        # → 499.9999...m and rounding/formatting made the round-trip
+        # drift visibly.  1 / 0.3048 = 3.280839895013123... — applying
+        # factor and then 1/factor cancels exactly in IEEE-754.
+        FT2M = 0.3048
         factor = None
         if prev == "meters" and new_unit == "feet":
-            factor = FT_PER_M          # m → ft
+            factor = 1.0 / FT2M        # m → ft
         elif prev == "feet" and new_unit == "meters":
-            factor = 1.0 / FT_PER_M    # ft → m
+            factor = FT2M              # ft → m
         # Update labels first (labels are visible immediately)
         u = self._unit_len()
         for w, fmt in list(self._unit_labels):
@@ -2518,23 +2690,27 @@ class REMFluorApp(tk.Tk):
                 w.config(text=fmt.format(u=u))
             except Exception:
                 pass
-        # Convert registered numeric values when toggling between units
+        # Convert registered numeric values when toggling between units.
+        # v102: format with `g`-style precision that preserves enough
+        # digits so m → ft → m round-trips to the same string the user
+        # started with.  Previous 2-decimal formatting caused visible
+        # drift on the second toggle.
+        def _fmt_round_trip(val):
+            a = abs(val)
+            if a == 0:
+                return "0"
+            # Use up to 6 significant digits, strip trailing zeros.
+            s = f"{val:.6g}"
+            return s
         if factor is not None:
             for var, kind in list(self._unit_length_vars):
                 try:
                     raw = str(var.get()).strip()
                     if not raw:
                         continue
-                    # Strip commas, parse, multiply, write back
                     num = float(raw.replace(",", ""))
                     new_val = num * factor
-                    # Choose a reasonable display format
-                    if abs(new_val) >= 1000:
-                        var.set(f"{new_val:,.0f}")
-                    elif abs(new_val) >= 1:
-                        var.set(f"{new_val:.2f}")
-                    else:
-                        var.set(f"{new_val:.4f}")
+                    var.set(_fmt_round_trip(new_val))
                 except (ValueError, TypeError, AttributeError):
                     pass
         self._prev_units = new_unit
@@ -4596,8 +4772,10 @@ class REMFluorApp(tk.Tk):
         help_link(sub_fr, "OpenTable10_3").pack(side="left", padx=(4, 0))
 
         # Row 2 — column headers (Event | PFOS | None) + Event help.
-        # "Event" sits inside its own BLACK locked cell to mirror the
-        # PFOS / None header style (per Excel reference).
+        # v102: "Event" stays a static black label (per user spec —
+        # uneditable, just labels the row of well-name entries below).
+        # The well NAMES in rows 3-9 are editable Entry widgets so the
+        # user can type per-well monitoring point names there.
         hdr_event = tk.Frame(mid, bg=BG_MAIN)
         hdr_event.grid(row=2, column=0, padx=4)
         tk.Label(hdr_event, text="Event", font=FONT_LABEL_B,
@@ -4623,10 +4801,12 @@ class REMFluorApp(tk.Tk):
         # Concentration values: BLACK text on white (red is reserved for
         # the Distance column only).
         for i in range(7):
+            # v102: well-name entries are editable now (were state="readonly")
+            # so the user can type custom monitoring well names directly
+            # into §10 — matches the Excel reference.
             tk.Entry(mid, textvariable=self.v_mw_names[i], width=10,
                      font=FONT_INPUT, bg=BG_INPUT_BLUE, fg=FG_INPUT,
                      relief="solid", bd=1, justify="right",
-                     state="readonly", readonlybackground=BG_INPUT_BLUE
                      ).grid(row=3+i, column=0, padx=2, pady=1)
             tk.Entry(mid, textvariable=self.v_mw_conc[i], width=12,
                      font=FONT_INPUT, bg=BG_INPUT_BLUE, fg=FG_INPUT,

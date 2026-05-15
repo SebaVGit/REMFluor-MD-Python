@@ -5,8 +5,8 @@
 # --- Folders to exclude entirely from version control ---
 docs/
 env/
-Example/
-Figures/
+Meters/
+Feet/
  
 # --- Python compiled / cache files inside _Python (and anywhere else) ---
 # Ignore all .pyc files but keep .py files tracked

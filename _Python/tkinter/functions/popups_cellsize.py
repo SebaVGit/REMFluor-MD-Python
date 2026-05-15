@@ -84,9 +84,44 @@ def run(app, parent=None):
              font=FONT_SMALL, fg="gray", bg="#F0F0F0"
              ).grid(row=1, column=0, columnspan=4, pady=(0, 12), sticky="w")
 
-    sv_dx = tk.StringVar(value=str(existing.get("Cell Size X:", "")))
-    sv_dy = tk.StringVar(value=str(existing.get("Cell Size Y:", "")))
-    sv_dz = tk.StringVar(value=str(existing.get("Cell Size Z:", "")))
+    # v102: convert existing values from the unit they were SAVED in
+    # (file's own "Unit Flag:") to the unit the user is CURRENTLY in,
+    # so the form displays meaningful numbers after a units toggle.
+    # Without this, file written in meters would display as 5 in feet
+    # mode (interpreted as "5 ft" by the form even though the file
+    # meant "5 m"); clicking OK then stored 5 with Unit Flag:1, silently
+    # converting 5 m → 5 ft = 1.524 m in input.inp.  See generate_input_file
+    # cell_unit handling for the consumer side of this contract.
+    FT2M = 0.3048
+    file_unit = int(existing.get("Unit Flag:", 2)) \
+        if "Unit Flag:" in existing else 2
+    ui_unit = 1 if units_str == "feet" else 2
+    def _to_ui(v):
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            return v
+        if file_unit == ui_unit:
+            return x
+        if file_unit == 2 and ui_unit == 1:
+            return x / FT2M          # m → ft for display
+        if file_unit == 1 and ui_unit == 2:
+            return x * FT2M          # ft → m for display
+        return x
+
+    def _disp(key):
+        val = existing.get(key, "")
+        if val == "" or val is None:
+            return ""
+        v = _to_ui(val)
+        try:
+            return f"{float(v):g}"     # strip trailing zeros
+        except (TypeError, ValueError):
+            return str(v)
+
+    sv_dx = tk.StringVar(value=_disp("Cell Size X:"))
+    sv_dy = tk.StringVar(value=_disp("Cell Size Y:"))
+    sv_dz = tk.StringVar(value=_disp("Cell Size Z:"))
 
     label_nx = tk.Label(outer, text="", font=FONT_SMALL, fg="gray", bg="#F0F0F0")
     label_ny = tk.Label(outer, text="", font=FONT_SMALL, fg="gray", bg="#F0F0F0")
@@ -176,39 +211,6 @@ def run(app, parent=None):
             f.write(f"Cell Size Z:,{dz}\n")
             f.write(f"Unit Flag:,{unit_flag}\n")
 
-        msg = (f"Cell sizes saved.\n\n"
-               f"Cell Size X: {dx} {units_str}\n")
-        if not is_simple:
-            msg += f"Cell Size Y: {dy} {units_str}\n"
-        msg += f"Cell Size Z: {dz} {units_str}"
-        messagebox.showinfo("Success", msg, parent=root)
-        try: root.grab_release()
-        except Exception: pass
-        root.destroy()
-
-    def _cancel():
-        try: root.grab_release()
-        except Exception: pass
-        root.destroy()
-
-    bar = tk.Frame(outer, bg="#F0F0F0")
-    bar.grid(row=row_z + 2, column=0, columnspan=4, pady=(20, 0))
-    tk.Button(bar, text="OK",     width=10, font=FONT_BTN,
-              command=_save_and_exit).pack(side="left", padx=6)
-    tk.Button(bar, text="Cancel", width=10, font=FONT_BTN,
-              command=_cancel).pack(side="left", padx=6)
-
-    root.protocol("WM_DELETE_WINDOW", _cancel)
-    root.update_idletasks()
-    w = max(root.winfo_reqwidth() + 32, 580)
-    h = max(root.winfo_reqheight() + 24, 260)
-    try:
-        sw = root.winfo_screenwidth(); sh = root.winfo_screenheight()
-        x = max(0, (sw - w) // 2); y = max(0, (sh - h) // 2 - 30)
-        root.geometry(f"{w}x{h}+{x}+{y}")
-    except Exception:
-        root.geometry(f"{w}x{h}")
-    root.minsize(w, h); root.resizable(True, True)
     try:
         root.deiconify(); root.lift(); root.focus_force()
     except Exception: pass

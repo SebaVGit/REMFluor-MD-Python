@@ -41,6 +41,21 @@ def run(app) -> list:
     if hasattr(app, '_on_pfaa_change'):
         app._on_pfaa_change()
 
+    # v102: blank the molecular-diffusion StringVar AFTER the trace runs.
+    # v_pfaa1 (E38) is intentionally preserved on Clear All Data (per the
+    # Excel macro behaviour — dropdown selections survive a clear), so
+    # _on_pfaa_change above sees "PFOS" still in the dropdown and
+    # re-populates v_mol_diff with PFOS's diffusion value.  Override
+    # that by clearing v_mol_diff as the FINAL step.  This gives the
+    # user the visible "clean slate" they expect from Clear All Data —
+    # the cell stays empty until they explicitly change a §5 dropdown
+    # (which fires _on_pfaa_change again with a real species).
+    try:
+        if hasattr(app, 'v_mol_diff'):
+            app.v_mol_diff.set("")
+    except Exception:
+        pass
+
     # Same idea for the §9 Converted-Kf cells.  state.push leaves them
     # blank after a clear; the recompute here propagates the cleared
     # V24/V23 inputs into V26..AB26 (also blank).
