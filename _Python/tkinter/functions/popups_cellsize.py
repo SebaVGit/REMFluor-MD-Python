@@ -210,6 +210,28 @@ def run(app, parent=None):
             f.write(f"Cell Size Y:,{dy}\n")
             f.write(f"Cell Size Z:,{dz}\n")
             f.write(f"Unit Flag:,{unit_flag}\n")
+        # v103: close the popup after a successful save.  Previously
+        # there was no destroy() call, leaving the dialog open with no
+        # way to confirm + exit cleanly.
+        try: root.destroy()
+        except Exception: pass
+
+    # v103: OK + Cancel action row.  _save_and_exit was previously
+    # defined but never wired to a widget, so the popup had no way to
+    # commit.  Enter triggers OK, Esc cancels.
+    btn_row = tk.Frame(outer, bg="#F0F0F0")
+    btn_row.grid(row=row_z + 1, column=0, columnspan=4,
+                 sticky="ew", pady=(18, 4))
+    btn_row.grid_columnconfigure(0, weight=1)
+    btn_row.grid_columnconfigure(3, weight=1)
+    tk.Button(btn_row, text="OK", width=12, font=FONT_BTN,
+              command=_save_and_exit
+              ).grid(row=0, column=1, padx=8)
+    tk.Button(btn_row, text="Cancel", width=12, font=FONT_BTN,
+              command=root.destroy
+              ).grid(row=0, column=2, padx=8)
+    root.bind("<Return>", lambda _e: _save_and_exit())
+    root.bind("<Escape>", lambda _e: root.destroy())
 
     try:
         root.deiconify(); root.lift(); root.focus_force()

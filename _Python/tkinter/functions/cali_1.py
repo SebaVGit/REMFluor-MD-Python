@@ -84,30 +84,38 @@ PARAM_MAP: Dict[str, Any] = {
     "Hydraulic Gradient (i)":         "i",   # joint with K
     "Effective Porosity (porf)":
         lambda s, v: s.set("G22", v),
+    # v103: was a no-op.  Writes a calibration override key that
+    # generate_input_file picks up before falling back to the sidecar.
     "Transmissive Fraction of Model (volfrac)":
-        # volfrac is in heterogeneity_inputs.txt; sidecar writer not
-        # yet implemented — DDS perturbs but no-op on input.inp.
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_volfrac", float(v)),
     "Average Diffusion Length (difflen)":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_difflen", float(v)),
+    # v103: ock overrides (Koc m^3/g) for PFAA-1/2.  The label says
+    # "Retardation Factor" but the .inp field is Koc — the solver
+    # computes R = 1 + bulkden*foc*Koc/porf.  Perturbing Koc here is
+    # the only physically-meaningful way to vary retardation.
     "Retardation Factor of PFAA-1 (ock(2))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_ock2", float(v)),
     "Retardation Factor of PFAA-2 (ock(4))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_ock4", float(v)),
     "Longitudinal Dispersivity (alphax (m))":
         lambda s, v: s.set("V4", v),
     "Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n))":
         lambda s, v: _mul_source_col(s, "V{row}", v),
     "Multiplier to PFAA-2 Source Concentration in #7 (czero(4,n))":
         lambda s, v: _mul_source_col(s, "X{row}", v),
+    # v103: decay-rate overrides for Precursor 1/2 (1/yr).  Direct
+    # rate, NOT half-life — generate_input_file bypasses the
+    # ln(2)/half-life conversion when the override is present.
     "First order decay rate coefficient for Precursors-1 (decayf(1))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_decayf1", float(v)),
     "First order decay rate coefficient for Precursors-2 (decayf(3))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_decayf3", float(v)),
+    # v103: Precursor ock overrides.
     "Retardation Factor of Precursors-1 (ock(1))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_ock1", float(v)),
     "Retardation Factor of Precursors-2 (ock(3))":
-        lambda s, v: None,
+        lambda s, v: s.set("_calib_ock3", float(v)),
     "Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n))":
         lambda s, v: _mul_source_col(s, "Z{row}", v),
     "Multiplier to Precursor-2 Source Concentration in #7 (czero(3,n))":
@@ -467,6 +475,17 @@ def _objective_for_app(app, work_dir, exe_path) -> Callable:
                       "check §10 v_mw_conc / sample year vs simulation duration")
             return FAIL_PENALTY
         err = _rmsle(all_obs, all_sim)
+        # v103: log the obs/pred arrays for every eval so the user can
+        # diff against the dashboard's RMSLE log when numbers don't
+        # match.  Writes to cali_debug.log (already truncated at the
+        # start of the run by the parent function).
+        try:
+            with open(debug_log_path, "a", encoding="utf-8") as fp:
+                fp.write(f"[eval @ target_t={target_t}] rmsle={err:.6f}\n")
+                fp.write(f"  obs:  {list(all_obs)}\n")
+                fp.write(f"  pred: {list(all_sim)}\n")
+        except Exception:
+            pass
         return -err   # DDS maximizes; we want to minimize RMSLE
 
     return _eval
@@ -602,6 +621,25 @@ def run(app, parent=None) -> bool:
         max_evals = max(1, int(float(app.v_n_iter.get())))
     except Exception:
         max_evals = 50
+
+    # v103: snapshot the §5 PFAS species at calibration start so we
+    # can restore them no matter what at the end.  Several users
+    # reported v_pfaa1 silently flipping from PFOS to PFHxS during a
+    # calibration run; this guard makes sure the dropdown selection
+    # the user TYPED is the one that ends up persisted in
+    # retardation_inputs.txt + UI when the run finishes.
+    def _snap_pfaa(attr):
+        try:
+            v = getattr(app, attr, None)
+            return str(v.get()) if v is not None else None
+        except Exception:
+            return None
+    pfaa_snapshot = {
+        "v_pfaa1": _snap_pfaa("v_pfaa1"),
+        "v_pfaa2": _snap_pfaa("v_pfaa2"),
+        "v_pfaa3": _snap_pfaa("v_pfaa3"),
+        "v_pfaa4": _snap_pfaa("v_pfaa4"),
+    }
 
     # Resolve solver path.  v100: in a frozen --onefile build the
     # .exe is at sys._MEIPASS, not next to sys.executable.  Search
@@ -813,60 +851,212 @@ def run(app, parent=None) -> bool:
         except Exception as exc:
             print(f"[cali] gwvelocity_inputs.txt write failed: {exc}")
 
-        # Step 3 — delete heterogeneity sidecar (volfrac/difflen
-        # optima live only in v_calib_mid for now; no Python writer
-        # exists for heterogeneity_inputs.txt yet).
+        # Step 3 — v103: write heterogeneity_inputs.txt with the
+        # calibrated volfrac / difflen so Run Optimal Model picks them
+        # up.  Previously this step DELETED the sidecar (because the
+        # calibrator was a no-op for these two parameters); now that
+        # the optimizer actually varies them, we have to persist the
+        # optimum.
         try:
-            sp = os.path.join(project, "heterogeneity_inputs.txt")
-            if os.path.exists(sp):
-                try: os.remove(sp)
+            # v104: only read Mid values when the user CHECKED these
+            # rows in Step 4.  Mid auto-populates from the input sheet
+            # for unchecked rows (e.g. v_volfrac default 0.8), and
+            # writing that back would no-op or corrupt the sidecar.
+            _chk_list = getattr(app, "v_calib_chk", [])
+            def _checked(idx_in_full_list):
+                if idx_in_full_list is None or idx_in_full_list >= len(_chk_list):
+                    return False
+                try: return bool(_chk_list[idx_in_full_list].get())
+                except Exception: return False
+            v_idx = label_to_idx.get("Transmissive Fraction of Model (volfrac)")
+            d_idx = label_to_idx.get("Average Diffusion Length (difflen)")
+            new_volfrac = new_difflen = None
+            if v_idx is not None and v_idx < len(mid) and _checked(v_idx):
+                try: new_volfrac = float(mid[v_idx].get())
                 except Exception: pass
-        except Exception:
-            pass
+            if d_idx is not None and d_idx < len(mid) and _checked(d_idx):
+                try: new_difflen = float(mid[d_idx].get())
+                except Exception: pass
+            # Preserve mdflag from any existing file; default to 2.
+            mdflag = 2
+            hp = os.path.join(project, "heterogeneity_inputs.txt")
+            if os.path.exists(hp):
+                try:
+                    with open(hp) as fp:
+                        for ln in fp:
+                            if ln.strip().startswith("mdflag:"):
+                                try: mdflag = int(ln.split(":")[1].strip())
+                                except Exception: pass
+                                break
+                except Exception: pass
+            if new_volfrac is not None or new_difflen is not None:
+                # Only write if calibrator actually optimized one or both
+                # — otherwise leave the existing sidecar alone.
+                if new_volfrac is None: new_volfrac = 0.8
+                if new_difflen is None: new_difflen = 0.25
+                with open(hp, "w", encoding="utf-8") as fp:
+                    fp.write("Heterogeneity Calculator Results\n")
+                    fp.write(f"mdflag: {mdflag}\n")
+                    fp.write(f"Transmissive Fraction of Model (-): {new_volfrac}\n")
+                    fp.write(f"Diffusion Length (m): {new_difflen:.2f}\n")
+        except Exception as exc:
+            print(f"[cali] heterogeneity_inputs.txt write failed: {exc}")
 
-        # Step 4 — push Mid → app source cells (vd = K × i, porf,
-        # alphax, retardation).  With the sidecar already in place
-        # (step 2), _push's trailing refresh reads K from sidecar
-        # and Mid stays correct.
+        # Step 3b — v103: write retardation_inputs.txt with the
+        # calibrated Koc values so Run Optimal Model uses the new
+        # retardation.  Without this, _on_pfaa_change() in Step 6
+        # below would overwrite the new R values with PFAS-default Koc
+        # lookups.
+        # v104 FIX: only write Koc values for rows that were actually
+        # CHECKED in Step 4.  Previously this read v_calib_mid for every
+        # ock row regardless of whether the user checked it, and Mid
+        # auto-populates from §5 v_ret_trans1 (=2.9 for PFOS).  That
+        # 2.9 then got written as Koc in retardation_inputs.txt and
+        # broke Run Optimal Model (R≈1 → unretarded fast plume that
+        # saturates all wells, contradicting the optimizer's recorded
+        # RMSLE).
+        try:
+            chk = getattr(app, "v_calib_chk", [])
+            def _is_checked(idx_in_full_list):
+                if idx_in_full_list is None or idx_in_full_list >= len(chk):
+                    return False
+                try: return bool(chk[idx_in_full_list].get())
+                except Exception: return False
+            ock_idx = {
+                1: label_to_idx.get("Retardation Factor of Precursors-1 (ock(1))"),
+                2: label_to_idx.get("Retardation Factor of PFAA-1 (ock(2))"),
+                3: label_to_idx.get("Retardation Factor of Precursors-2 (ock(3))"),
+                4: label_to_idx.get("Retardation Factor of PFAA-2 (ock(4))"),
+            }
+            any_ock = any(_is_checked(i) for i in ock_idx.values())
+            if any_ock:
+                # Read the existing retardation file to preserve
+                # bulk density / foc / PFAS-name lines.
+                rp = os.path.join(project, "retardation_inputs.txt")
+                # Pull current Koc as starting point, then overlay the
+                # calibrated values where the optimizer ran them.
+                from .generate_input_file import _read_retardation
+                rd = _read_retardation(rp)
+                bulkden = rd.get("Transmissive", {}).get("bulkden", 1.7)
+                foc_t   = rd.get("Transmissive", {}).get("foc", 0.001)
+            
+                foc_l   = rd.get("Low-K", {}).get("foc", 0.002)
+                koc     = list(rd.get("Transmissive", {}).get("koc",
+                               [220.0, 0.0, 0.0, 0.0]))
+                while len(koc) < 4:
+                    koc.append(0.0)
+                # ock(2) -> koc[0], ock(4) -> koc[1],
+                # ock(1) -> koc[2], ock(3) -> koc[3]
+                # v104: only overlay Mid values for rows the user
+                # CHECKED.  Unchecked rows keep the baseline Koc from
+                # the existing retardation_inputs.txt.
+                def _try(idx_in_mid):
+                    if idx_in_mid is None or idx_in_mid >= len(mid):
+                        return None
+                    if not _is_checked(idx_in_mid):
+                        return None
+                    try: return float(mid[idx_in_mid].get())
+                    except Exception: return None
+                v = _try(ock_idx[2])
+                if v is not None: koc[0] = v
+                v = _try(ock_idx[4])
+                if v is not None: koc[1] = v
+                v = _try(ock_idx[1])
+                if v is not None: koc[2] = v
+                v = _try(ock_idx[3])
+                if v is not None: koc[3] = v
+                # v103: use the snapshot taken at calibration START
+                # (pfaa_snapshot) instead of live values.  Several
+                # users reported v_pfaa1 silently flipping mid-run;
+                # writing live values here baked that flip into the
+                # sidecar and made Load Data restore the wrong species.
+                pfaa1 = pfaa_snapshot.get("v_pfaa1") or "PFOS"
+                pfaa2 = pfaa_snapshot.get("v_pfaa2") or "None"
+                pre1  = pfaa_snapshot.get("v_pfaa3") or "None"
+                pre2  = pfaa_snapshot.get("v_pfaa4") or "None"
+                with open(rp, "w", encoding="utf-8") as fp:
+                    fp.write("PFAS Names from Excel\n")
+                    fp.write(f"PFAA 1 (E38):,{pfaa1}\n")
+                    fp.write(f"PFAA 2 (G38):,{pfaa2}\n")
+                    fp.write(f"Precursor 1 (K38):,{pre1}\n")
+                    fp.write(f"Precursor 2 (M38):,{pre2}\n\n")
+                    fp.write("Transmissive Zone\n")
+                    fp.write("Parameter,PFAA 1,PFAA 2\n")
+                    fp.write(f"Soil Bulk Density (g/ml),{bulkden}\n\n")
+                    fp.write(f"foc (-),{foc_t}\n\n")
+                    fp.write(f"Koc (L/kg),{koc[0]},{koc[1]}\n\n")
+                    fp.write("Low-K Zone\n")
+                    fp.write("Parameter,PFAA 1,PFAA 2\n")
+                    fp.write(f"foc (-),{foc_l}\n")
+        except Exception as exc:
+            print(f"[cali] retardation_inputs.txt write failed: {exc}")
+
+        # Step 4 - push Mid -> app source cells
         cb = getattr(app, "_push_calib_mids_to_inputs", None)
         if callable(cb):
             try: cb()
             except Exception: pass
 
-        # Step 5 — bake calibration multipliers physically into §7
-        # source cells, then reset multiplier Mid to 1 so a future
-        # run doesn't compound.  This makes the §7 view match what
-        # the solver will see in input.inp at Run Optimal Model time.
+        # Step 5 - bake source multipliers into Section 7 cells
         cb = getattr(app, "_apply_calib_multipliers_to_s7", None)
         if callable(cb):
             try: cb()
             except Exception: pass
 
-        # Step 6 — recompute retardation from new porf + PFAA species.
+        # Step 6 - recompute retardation factors from new Koc/porf
         cb = getattr(app, "_on_pfaa_change", None)
         if callable(cb):
             try: cb()
             except Exception: pass
 
-        # Save run history
+        # v103: defensive restore of §5 PFAS species selections.  If
+        # any step above silently flipped v_pfaa1..4 (a bug some users
+        # have reported), put the snapshot back.  Compares against
+        # current value to avoid spurious trace fires when nothing
+        # actually changed.
+        for attr, snap in pfaa_snapshot.items():
+            if snap is None:
+                continue
+            try:
+                v = getattr(app, attr, None)
+                if v is not None and str(v.get()) != snap:
+                    print(f"[cali] WARNING: {attr} changed during "
+                          f"calibration ({v.get()!r} -> restoring {snap!r})")
+                    v.set(snap)
+            except Exception:
+                pass
+
+        # Save run history.  v103: add an "iter" column (0-indexed),
+        # a "Best?" column marking the optimum row, and write the
+        # BEST row first (right under the header) so it's visible at
+        # a glance.  Previously the user had to scan all 50+ rows to
+        # find the lowest RMSLE — the last row was the FINAL DDS
+        # iteration, not the best, which was misleading.
         try:
             csv_path = os.path.join(project, "run_history.csv")
+            x_hist = list(res["x_history"])
+            f_hist = list(res["f_history"])
+            rmsle_list = [-f for f in f_hist]
+            # best = lowest RMSLE
+            best_i = min(range(len(rmsle_list)), key=lambda i: rmsle_list[i]) \
+                     if rmsle_list else None
             with open(csv_path, "w", newline="", encoding="utf-8") as fp:
                 w = csv.writer(fp)
-                w.writerow(list(labels) + ["RMSLE"])
-                for x_row, f_row in zip(res["x_history"],
-                                        res["f_history"]):
-                    w.writerow(list(x_row) + [-f_row])
+                w.writerow(["iter"] + list(labels) + ["RMSLE", "Best?"])
+                # 1) BEST row right after header for quick reference
+                if best_i is not None:
+                    w.writerow([best_i] + list(x_hist[best_i]) +
+                               [rmsle_list[best_i], "YES"])
+                    w.writerow([])  # blank separator
+                # 2) Full chronological history
+                for i, (x_row, r) in enumerate(zip(x_hist, rmsle_list)):
+                    is_best = "YES" if i == best_i else ""
+                    w.writerow([i] + list(x_row) + [r, is_best])
         except Exception as exc:
             print(f"[cali] run_history.csv write failed: {exc}")
 
         best_rmsle = -res["best_cost"]
 
-        # v90: write best_calib.json with the EXPLICIT best (lowest
-        # RMSLE) values, separate from v_calib_mid.  Save Optimal Model
-        # reads this file preferentially so it always saves the BEST
-        # iteration, not whatever happened to land in Mid after the
-        # post-calibration callbacks (push, multipliers, refresh) ran.
         try:
             import json as _json
             best_path = os.path.join(project, "best_calib.json")
@@ -885,8 +1075,7 @@ def run(app, parent=None) -> bool:
             text=f"{len(labels)} parameter(s) optimized over "
                  f"{len(res['x_history'])} evaluations.\n"
                  f"Best values pushed into the Mid-Range column.\n"
-                 f"Full history → run_history.csv")
-        # Replace Cancel with Close
+                 f"Full history -> run_history.csv")
         for child in btn_row.winfo_children():
             child.destroy()
         tk.Button(btn_row, text="Close", width=16, font=("Arial", 14),

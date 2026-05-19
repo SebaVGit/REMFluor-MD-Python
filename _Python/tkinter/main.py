@@ -882,13 +882,38 @@ def run_script(macro_name, extra_args=None):
                 os.makedirs(dst, exist_ok=True)
                 # Step 3: write store_info_additional_input.txt next to
                 # input.inp (UI-only fields not in the .inp).
+                # v102 FIXES:
+                #   - "Thickness:" must be SOURCE thickness (v_sw_thick →
+                #     E16), NOT model depth (v_z_size → E13).  The parser
+                #     in inp_parser.py maps "Thickness" to E16.  Writing
+                #     v_z_size here caused Save→Load to overwrite the
+                #     user's source thickness with the model depth.
+                #   - Added explicit "Source Width:" + "Model X/Y/Z Size:"
+                #     lines so round-trip is exact (previously source
+                #     width was recovered from lysource*dy*2 in input.inp,
+                #     which is lossy when (sw_width / 2*dy) isn't an int).
                 try:
+                    # Helper: pull a StringVar's value, falling back to a
+                    # default if the attribute is missing entirely (some
+                    # vars are Detailed-only and absent in Simple mode).
+                    def _gv(name, default=""):
+                        v = getattr(_app_ref, name, None)
+                        try: return v.get() if v is not None else default
+                        except Exception: return default
+                    # Map model_version: "Simple" / "Detailed_2" → file
+                    _mv = "Detailed" if getattr(_app_ref, "active_sheet",
+                                                 "Simple") == "Detailed_2" \
+                                       else "Simple"
                     add_lines = [
                         "Additional Information Not in input.inp",
                         "=" * 50, "",
                         f"Site Location and ID:,{_app_ref.v_site.get()}",
                         f"Date:,{_app_ref.v_date.get()}",
-                        f"Thickness:,{_app_ref.v_z_size.get()}",
+                        f"Thickness:,{_app_ref.v_sw_thick.get()}",
+                        f"Source Width:,{_app_ref.v_sw_width.get()}",
+                        f"Model X Size:,{_app_ref.v_x_size.get()}",
+                        f"Model Y Size:,{_app_ref.v_y_size.get()}",
+                        f"Model Z Size:,{_app_ref.v_z_size.get()}",
                         f"Start Year:,{_app_ref.v_yr_start.get()}",
                         f"End Year:,{_app_ref.v_yr_end.get()}", "",
                         f"Source Treatment Start Year:,{_app_ref.v_src_rem_yr.get() or 'None'}",
@@ -898,7 +923,22 @@ def run_script(macro_name, extra_args=None):
                         f"Unit Flag (AD1):,"
                         f"{'1' if _app_ref.v_units.get()=='feet' else '2'}",
                         f"Dispersivity Flag (AC1):,2", "",
+                        # Dropdown selections — needed so Load Data restores
+                        # the full UI state (radios + dropdowns), not just
+                        # the numeric cells.  Each line is read by
+                        # inp_parser.parse_additional_info().
+                        f"Model Version:,{_mv}",
+                        f"Units:,{_app_ref.v_units.get()}",
+                        f"Heterogeneity:,{_gv('v_het', 'Medium')}",
+                        f"Low-k Zone Media:,{_gv('v_lowk_media', '')}",
+                        f"PFAA 1:,{_gv('v_pfaa1', 'PFOS')}",
+                        f"PFAA 2:,{_gv('v_pfaa2', 'None')}",
+                        f"Precursor 1:,{_gv('v_pfaa3', 'None')}",
+                        f"Precursor 2:,{_gv('v_pfaa4', 'None')}",
+                        f"PSB Kf Unit:,{_gv('v_psb_kf_unit', '')}", "",
                         f"PSB Loading (AH28):,{_app_ref.v_psb_load.get() or 'None'}", "",
+                        f"Bulk Darcy Velocity (vd):,{_app_ref.v_darcy.get()}",
+                        f"Effective Porosity (porf):,{_app_ref.v_porf.get()}", "",
                         "Monitoring Well Names (Simple Version):",
                     ]
                     for i, nm in enumerate(_app_ref.v_mw_names, 1):
@@ -2832,6 +2872,24 @@ class REMFluorApp(tk.Tk):
         self.v_pfaa2.trace_add("write", lambda *_: self._on_pfaa_change())
         self.v_pfaa3.trace_add("write", lambda *_: self._on_pfaa_change())
         self.v_pfaa4.trace_add("write", lambda *_: self._on_pfaa_change())
+
+        # Display-mirror StringVars for §5 PFAA dropdowns: when the
+        # underlying var is empty (user cleared the dropdown or loaded
+        # blank state), these mirrors render "None" instead of "" so
+        # places like calibration Step 2 always show a meaningful label
+        # next to the radio button.  v_pfaa1 has no "None" choice so we
+        # mirror it verbatim — but provide it for symmetry.
+        def _mk_disp(src_var, fallback="None"):
+            disp = tk.StringVar(value=(src_var.get() or fallback))
+            def _sync(*_):
+                v = src_var.get()
+                disp.set(v if str(v).strip() else fallback)
+            src_var.trace_add("write", _sync)
+            return disp
+        self._v_pfaa1_disp = _mk_disp(self.v_pfaa1, fallback="PFOS")
+        self._v_pfaa2_disp = _mk_disp(self.v_pfaa2, fallback="None")
+        self._v_pfaa3_disp = _mk_disp(self.v_pfaa3, fallback="None")
+        self._v_pfaa4_disp = _mk_disp(self.v_pfaa4, fallback="None")
 
         # Section 6 – Dispersivity (top header)
         self.v_het     = tk.StringVar(value="Medium")
@@ -5163,25 +5221,31 @@ class REMFluorApp(tk.Tk):
         self.v_calib_pre      = tk.BooleanVar(value=True)
         self.v_calib_pre_none = tk.BooleanVar(value=False)
 
-        # Row 1 — PFAA-1 (textvariable on label so it tracks v_pfaa1)
-        tk.Label(s2, textvariable=self.v_pfaa1, font=FONT_LABEL,
+        # Row 1 — PFAA-1 (textvariable on label so it tracks v_pfaa1).
+        # Uses the display-mirror so a cleared dropdown still renders a
+        # meaningful label next to the radio (falls back to "PFOS").
+        tk.Label(s2, textvariable=self._v_pfaa1_disp, font=FONT_LABEL,
                  bg=BG_MAIN
                  ).grid(row=1, column=0, sticky="e", padx=(8, 4),
                         pady=2)
         big_check(s2, "", self.v_calib_pfoa, bg=BG_MAIN
                   ).grid(row=1, column=1, sticky="w", pady=2)
-        # Row 2 — PFAA-2 (was hardcoded "None")
-        tk.Label(s2, textvariable=self.v_pfaa2, font=FONT_LABEL,
+        # Row 2 — PFAA-2.  Was previously bound to v_pfaa2 directly,
+        # which left the label blank whenever §5 PFAA-2 was empty.
+        # The display-mirror falls back to "None" so the radio always
+        # has a label.
+        tk.Label(s2, textvariable=self._v_pfaa2_disp, font=FONT_LABEL,
                  bg=BG_MAIN
                  ).grid(row=2, column=0, sticky="e", padx=(8, 4),
                         pady=2)
         big_check(s2, "", self.v_calib_none, bg=BG_MAIN
                   ).grid(row=2, column=1, sticky="w", pady=2)
-        # Detailed-only: rows 3-4 mirror Precursor 1/2 species (v_pfaa3/4)
-        det_lbl1 = tk.Label(s2, textvariable=self.v_pfaa3,
+        # Detailed-only: rows 3-4 mirror Precursor 1/2 species
+        # (display-mirrors so cleared dropdowns still render "None").
+        det_lbl1 = tk.Label(s2, textvariable=self._v_pfaa3_disp,
                             font=FONT_LABEL, bg=BG_MAIN)
         det_chk1 = big_check(s2, "", self.v_calib_pre, bg=BG_MAIN)
-        det_lbl2 = tk.Label(s2, textvariable=self.v_pfaa4,
+        det_lbl2 = tk.Label(s2, textvariable=self._v_pfaa4_disp,
                             font=FONT_LABEL, bg=BG_MAIN)
         det_chk2 = big_check(s2, "", self.v_calib_pre_none, bg=BG_MAIN)
         det_lbl1.grid(row=3, column=0, sticky="e", padx=(8, 4), pady=2)
@@ -5949,4 +6013,3 @@ class REMFluorApp(tk.Tk):
 if __name__ == "__main__":
     app = REMFluorApp()
     app.mainloop()
-

@@ -882,13 +882,27 @@ def run_script(macro_name, extra_args=None):
                 os.makedirs(dst, exist_ok=True)
                 # Step 3: write store_info_additional_input.txt next to
                 # input.inp (UI-only fields not in the .inp).
+                # v102 FIXES:
+                #   - "Thickness:" must be SOURCE thickness (v_sw_thick →
+                #     E16), NOT model depth (v_z_size → E13).  The parser
+                #     in inp_parser.py maps "Thickness" to E16.  Writing
+                #     v_z_size here caused Save→Load to overwrite the
+                #     user's source thickness with the model depth.
+                #   - Added explicit "Source Width:" + "Model X/Y/Z Size:"
+                #     lines so round-trip is exact (previously source
+                #     width was recovered from lysource*dy*2 in input.inp,
+                #     which is lossy when (sw_width / 2*dy) isn't an int).
                 try:
                     add_lines = [
                         "Additional Information Not in input.inp",
                         "=" * 50, "",
                         f"Site Location and ID:,{_app_ref.v_site.get()}",
                         f"Date:,{_app_ref.v_date.get()}",
-                        f"Thickness:,{_app_ref.v_z_size.get()}",
+                        f"Thickness:,{_app_ref.v_sw_thick.get()}",
+                        f"Source Width:,{_app_ref.v_sw_width.get()}",
+                        f"Model X Size:,{_app_ref.v_x_size.get()}",
+                        f"Model Y Size:,{_app_ref.v_y_size.get()}",
+                        f"Model Z Size:,{_app_ref.v_z_size.get()}",
                         f"Start Year:,{_app_ref.v_yr_start.get()}",
                         f"End Year:,{_app_ref.v_yr_end.get()}", "",
                         f"Source Treatment Start Year:,{_app_ref.v_src_rem_yr.get() or 'None'}",
@@ -899,6 +913,8 @@ def run_script(macro_name, extra_args=None):
                         f"{'1' if _app_ref.v_units.get()=='feet' else '2'}",
                         f"Dispersivity Flag (AC1):,2", "",
                         f"PSB Loading (AH28):,{_app_ref.v_psb_load.get() or 'None'}", "",
+                        f"Bulk Darcy Velocity (vd):,{_app_ref.v_darcy.get()}",
+                        f"Effective Porosity (porf):,{_app_ref.v_porf.get()}", "",
                         "Monitoring Well Names (Simple Version):",
                     ]
                     for i, nm in enumerate(_app_ref.v_mw_names, 1):

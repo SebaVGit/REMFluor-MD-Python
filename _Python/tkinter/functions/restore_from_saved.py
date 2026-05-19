@@ -64,14 +64,23 @@ def run(app):
     add_file = os.path.join(saved_dir, "store_info_additional_input.txt")
     additional = parse_additional_info(add_file) if os.path.exists(add_file) else {}
 
-    # Parse and set PFAS names
+    # Write parsed data into state — sets E38/G38/K38/M38 from
+    # store_info_additional_input.txt's "PFAA 1:" / "PFAA 2:" lines.
+    write_inp_to_state(state, data, additional, unit_flag)
+
+    # v103: parse retardation_inputs.txt LAST so its "PFAS Names from
+    # Excel" block wins when the two sidecars disagree.  This file is
+    # the authoritative §5 source (it's what _on_pfaa_change reads to
+    # compute R); store_info is a secondary mirror written by Save
+    # Data.  Previously the order was reversed and store_info won,
+    # which meant any prior calibration glitch that wrote a wrong
+    # species into store_info would override the correct
+    # retardation_inputs.txt value on Load Data.
     ret_file = os.path.join(work_dir, "retardation_inputs.txt")
     pfas_names = parse_retardation_pfas_names(ret_file)
     for addr, name in pfas_names.items():
-        state.set(addr, name)
-
-    # Write parsed data into state
-    write_inp_to_state(state, data, additional, unit_flag)
+        if name and str(name).strip():
+            state.set(addr, name)
 
     # v102: temporarily disable §7 auto-year-interpolator so the
     # values loaded from input.inp / store_info don't get overwritten

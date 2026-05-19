@@ -206,6 +206,24 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("B4",  _blank(additional.get('site_location_id')))
         state.set("E4",  _blank(additional.get('date')))
         state.set("E16", _blank(additional.get('thickness')))
+        # v102: explicit overrides — Save Data writes these in user-unit
+        # so we DON'T cv()-convert them (the recovered input.inp value
+        # was already cv-converted in the §model-dimensions block above;
+        # this just overwrites with the exact user-typed value if the
+        # store_info has the explicit field).
+        if additional.get('source_width') is not None:
+            state.set("E15", additional['source_width'])
+        if additional.get('model_x_size') is not None:
+            state.set("E11", additional['model_x_size'])
+        if additional.get('model_y_size') is not None:
+            state.set("E12", additional['model_y_size'])
+        if additional.get('model_z_size') is not None:
+            state.set("E13", additional['model_z_size'])
+        if additional.get('vd_user_unit') is not None:
+            state.set("C22", additional['vd_user_unit'])
+            state.set("E22", additional['vd_user_unit'])
+        if additional.get('porf') is not None:
+            state.set("G22", additional['porf'])
         state.set("E18", _blank(additional.get('start_year')))
         state.set("E19", _blank(additional.get('end_year')))
         state.set("AH7", _blank(additional.get('source_treatment_start_year')))
@@ -234,6 +252,29 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("AD1", _blank(additional.get('unit_flag')))
         state.set("AC1", _blank(additional.get('dispersivity_flag')))
         state.set("AH28", _blank(additional.get('psb_loading')) if iwall else None)
+
+        # v103: dropdown selections — push to state cells so state.push()
+        # restores the UI widgets on Load Data.  Cell addresses follow
+        # CELL_MAP in functions/state.py.
+        if additional.get('model_version') is not None:
+            mv = str(additional['model_version']).strip().lower()
+            # A8 = 1 → Simple, 2 → Detailed (matches xlsm convention)
+            state.set("A8", 2 if mv.startswith("detail") else 1)
+        if additional.get('heterogeneity') is not None:
+            state.set("A1", _blank(additional['heterogeneity']))
+        if additional.get('lowk_media') is not None:
+            state.set("K26", _blank(additional['lowk_media']))
+        if additional.get('pfaa1') is not None:
+            state.set("E38", _blank(additional['pfaa1']))
+        if additional.get('pfaa2') is not None:
+            # Empty / "None" string is meaningful for PFAA-2 — keep it
+            state.set("G38", additional['pfaa2'] or "None")
+        if additional.get('precursor1') is not None:
+            state.set("K38", additional['precursor1'] or "None")
+        if additional.get('precursor2') is not None:
+            state.set("M38", additional['precursor2'] or "None")
+        if additional.get('psb_kf_unit'):
+            state.set("U24", additional['psb_kf_unit'])
 
         for i, name in enumerate(additional.get('monitoring_well_names', [])[:7]):
             state.set(f"U{34+i}", _blank(name))

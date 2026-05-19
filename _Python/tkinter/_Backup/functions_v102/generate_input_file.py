@@ -402,7 +402,21 @@ def build_inp_data(state) -> dict:
     porm  = _safe_float(state.get("K27", 0.48))
     tortm = _safe_float(state.get("K28", 0.56))
     focm  = 0.001
-    diff_m2s = _safe_float(state.get("E44", 3.5e-10))
+    # v102: state.get returns the STORED value (which may be None or "")
+    # rather than the second-arg default when the key exists.  After
+    # Clear All Data, state["E44"] is None — passing that to _safe_float
+    # gave 0.0, and diff = 0 × seconds_per_year = 0 made the Fortran
+    # solver produce NaN concentrations (mdflag=2 + diff=0 = division
+    # by zero in the matrix-diffusion solver).  Defensive: if the
+    # state value is None, empty, zero, or unparseable, fall back to
+    # the standard PFOS-class diffusion 3.5e-10 m²/s.
+    _e44 = state.get("E44")
+    if _e44 is None or (isinstance(_e44, str) and not str(_e44).strip()):
+        diff_m2s = 3.5e-10
+    else:
+        diff_m2s = _safe_float(_e44, 3.5e-10)
+        if not diff_m2s or diff_m2s <= 0:
+            diff_m2s = 3.5e-10
     diff = diff_m2s * SEC_PER_YR   # m²/yr for .inp
 
     # heterogeneity

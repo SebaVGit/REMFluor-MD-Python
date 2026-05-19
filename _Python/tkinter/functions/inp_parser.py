@@ -270,6 +270,21 @@ def parse_additional_info(path: str) -> dict:
                     result['date'] = val
                 elif "Thickness" in key:
                     result['thickness'] = _flt(val)
+                elif "Source Width" in key:
+                    # v102: explicit source-width override — exact, no
+                    # lossy recovery from lysource*dy*2.
+                    result['source_width'] = _flt(val)
+                elif "Model X Size" in key:
+                    result['model_x_size'] = _flt(val)
+                elif "Model Y Size" in key:
+                    result['model_y_size'] = _flt(val)
+                elif "Model Z Size" in key:
+                    result['model_z_size'] = _flt(val)
+                elif "Bulk Darcy Velocity" in key:
+                    # v102: explicit vd in user's unit at save time.
+                    result['vd_user_unit'] = _flt(val)
+                elif "Effective Porosity" in key:
+                    result['porf'] = _flt(val)
                 elif "Start Year" in key and "Treatment" not in key:
                     result['start_year'] = _flt(val)
                 elif "End Year" in key and "Treatment" not in key:
@@ -288,6 +303,26 @@ def parse_additional_info(path: str) -> dict:
                     result['dispersivity_flag'] = _int(val)
                 elif "PSB Loading" in key:
                     result['psb_loading'] = _flt(val)
+                # v103: dropdown selections so Load Data restores radios
+                # + dropdowns exactly (not just the numeric cells).
+                elif "Model Version" in key:
+                    result['model_version'] = val
+                elif key.strip() == "Units":
+                    result['units'] = val
+                elif "Heterogeneity" in key:
+                    result['heterogeneity'] = val
+                elif "Low-k Zone Media" in key:
+                    result['lowk_media'] = val
+                elif key.strip() == "PFAA 1":
+                    result['pfaa1'] = val
+                elif key.strip() == "PFAA 2":
+                    result['pfaa2'] = val
+                elif key.strip() == "Precursor 1":
+                    result['precursor1'] = val
+                elif key.strip() == "Precursor 2":
+                    result['precursor2'] = val
+                elif "PSB Kf Unit" in key:
+                    result['psb_kf_unit'] = val
     except Exception as e:
         print(f"Warning: could not parse additional info: {e}")
 

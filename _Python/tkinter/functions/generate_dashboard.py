@@ -206,20 +206,37 @@ def find_closest_date(target_date, date_array):
     return date_array[closest_idx]
 
 def calculate_rmsle(observed, predicted):
-    """Calculate Root Mean Squared Log Error"""
-    # Filter out zeros and negative values
-    mask = (observed > 0) & (predicted > 0)
-    if mask.sum() == 0:
+    """Root Mean Squared Log Error — matches functions/cali_1.py:_rmsle
+    exactly so the dashboard's reported value lines up with what the
+    calibration optimizer is minimizing.
+
+    Formula: sqrt(nanmean((log1p(pred) - log1p(obs))**2))
+    Treats NaN observations as "no measurement" (dropped pairwise).
+    Clips negatives to 0 so log1p is always defined."""
+    obs = np.asarray(observed, dtype=float)
+    pred = np.asarray(predicted, dtype=float)
+    if obs.size == 0 or obs.size != pred.size:
         return None
-    
-    obs_filtered = observed[mask]
-    pred_filtered = predicted[mask]
-    
-    # Calculate log errors
-    log_errors = np.log1p(obs_filtered) - np.log1p(pred_filtered)
-    
-    # Calculate RMSLE
-    rmsle = np.sqrt(np.mean(log_errors ** 2))
+    # Pair-wise drop where the observation is NaN (no measurement).
+    valid = ~np.isnan(obs)
+    obs = obs[valid]
+    pred = pred[valid]
+    if obs.size == 0:
+        return None
+    obs = np.clip(obs, 0, None)
+    pred = np.clip(pred, 0, None)
+    log_errors = np.log1p(pred) - np.log1p(obs)
+    rmsle = float(np.sqrt(np.nanmean(log_errors ** 2)))
+    # v103: diagnostic so the user can verify the dashboard's inputs
+    # match the optimizer's.  When values diverge from run_history.csv,
+    # diff the obs/pred arrays printed here against cali_1's
+    # cali_debug.log to find the source.
+    try:
+        print(f"[dashboard RMSLE] n={obs.size} rmsle={rmsle:.6f}")
+        print(f"  obs:  {list(obs)}")
+        print(f"  pred: {list(pred)}")
+    except Exception:
+        pass
     return rmsle
 
 def main(workbook_path=None, sheet_name=None):
@@ -1410,9 +1427,12 @@ def main(workbook_path=None, sheet_name=None):
                                     
                                     if len(well_sim_data) > 0 and conc in well_sim_data.columns:
                                         pred_conc = well_sim_data[conc].mean()  # Average if multiple matches
-                                        if pred_conc > 0:
-                                            observed_vals.append(obs_conc)
-                                            predicted_vals.append(pred_conc)
+                                        # v103: removed `pred_conc > 0` filter so the dashboard
+                                        # RMSLE matches cali_1's optimizer objective.  Including
+                                        # zero-prediction wells penalises the model — same as
+                                        # the optimizer.
+                                        observed_vals.append(obs_conc)
+                                        predicted_vals.append(pred_conc if pred_conc is not None else 0.0)
                             
                             # Calculate RMSLE for this analyte
                             if len(observed_vals) > 0:
@@ -1441,13 +1461,15 @@ def main(workbook_path=None, sheet_name=None):
                                     if (isinstance(key, tuple) and len(key) > 0 and key[0] == well) or key == well:
                                         obs = excel_PFAA1_data[key]
                                         break
-                            if obs is not None and obs > 0:
+                            # v103: keep obs == 0 (clipped to 0 by log1p),
+                            # only skip None/NaN.  Removed `pred > 0`
+                            # filter so RMSLE matches cali_1.
+                            if obs is not None:
                                 well_data = df_filtered[(df_filtered['well_file'] == well) & (np.abs((df_filtered['Time yr'] + StartY) - closest_time) < 0.01)]
                                 if len(well_data) > 0 and 'C2well' in well_data.columns:
                                     pred = well_data['C2well'].mean()
-                                    if pred > 0:
-                                        observed_1.append(obs)
-                                        predicted_1.append(pred)
+                                    observed_1.append(obs)
+                                    predicted_1.append(pred if pred is not None else 0.0)
                         if len(observed_1) > 0:
                             rmsle_1 = calculate_rmsle(np.array(observed_1), np.array(predicted_1))
                             if rmsle_1 is not None:
@@ -1463,13 +1485,14 @@ def main(workbook_path=None, sheet_name=None):
                                         if (isinstance(key, tuple) and len(key) > 0 and key[0] == well) or key == well:
                                             obs = excel_PFAA2_data[key]
                                             break
-                                if obs is not None and obs > 0:
+                                # v103: same fix as PFAA-1 above — keep
+                                # obs == 0, drop the `pred > 0` filter.
+                                if obs is not None:
                                     well_data = df_filtered[(df_filtered['well_file'] == well) & (np.abs((df_filtered['Time yr'] + StartY) - closest_time) < 0.01)]
                                     if len(well_data) > 0 and 'C4well' in well_data.columns:
                                         pred = well_data['C4well'].mean()
-                                        if pred > 0:
-                                            observed_2.append(obs)
-                                            predicted_2.append(pred)
+                                        observed_2.append(obs)
+                                        predicted_2.append(pred if pred is not None else 0.0)
                             if len(observed_2) > 0:
                                 rmsle_2 = calculate_rmsle(np.array(observed_2), np.array(predicted_2))
                                 if rmsle_2 is not None:
@@ -2042,26 +2065,4 @@ def main(workbook_path=None, sheet_name=None):
         sys.exit(0)
 
 if __name__ == "__main__":
-    workbook_path = None
-    sheet_name = None
-    #if len(sys.argv) > 1:
-    #    workbook_path = sys.argv[1]
-    #    if len(sys.argv) > 2:
-    #        sheet_name = sys.argv[2]
-    try:
-        main(workbook_path, sheet_name)
-    except KeyboardInterrupt:
-        # Handle Ctrl+C gracefully
-        print("\nDashboard interrupted by user. Exiting...")
-        sys.exit(0)
-    except Exception as e:
-        print(f"Error starting dashboard: {e}")
-        import traceback
-        traceback.print_exc()
-        print("\nPress Ctrl+C to exit...")
-        # Wait briefly to allow user to see the error, then exit
-        try:
-            time.sleep(2)
-        except KeyboardInterrupt:
-            sys.exit(0)
-        sys.exit(1)
+    main()

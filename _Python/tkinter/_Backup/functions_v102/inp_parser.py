@@ -270,6 +270,21 @@ def parse_additional_info(path: str) -> dict:
                     result['date'] = val
                 elif "Thickness" in key:
                     result['thickness'] = _flt(val)
+                elif "Source Width" in key:
+                    # v102: explicit source-width override — exact, no
+                    # lossy recovery from lysource*dy*2.
+                    result['source_width'] = _flt(val)
+                elif "Model X Size" in key:
+                    result['model_x_size'] = _flt(val)
+                elif "Model Y Size" in key:
+                    result['model_y_size'] = _flt(val)
+                elif "Model Z Size" in key:
+                    result['model_z_size'] = _flt(val)
+                elif "Bulk Darcy Velocity" in key:
+                    # v102: explicit vd in user's unit at save time.
+                    result['vd_user_unit'] = _flt(val)
+                elif "Effective Porosity" in key:
+                    result['porf'] = _flt(val)
                 elif "Start Year" in key and "Treatment" not in key:
                     result['start_year'] = _flt(val)
                 elif "End Year" in key and "Treatment" not in key:
@@ -304,23 +319,4 @@ def parse_retardation_pfas_names(path: str) -> dict:
     if not os.path.exists(path):
         return result
     try:
-        with open(path) as f:
-            lines = [ln.strip() for ln in f]
-        in_sec = False
-        for line in lines:
-            if "PFAS Names from Excel" in line:
-                in_sec = True
-                continue
-            if in_sec:
-                if not line:
-                    in_sec = False
-                    continue
-                for tag, addr in [("PFAA 1 (E38):", "E38"), ("PFAA 2 (G38):", "G38"),
-                                   ("Precursor 1 (K38):", "K38"), ("Precursor 2 (M38):", "M38")]:
-                    if tag in line:
-                        val = line.split(tag, 1)[1].strip().lstrip(',')
-                        if val:
-                            result[addr] = val
-    except Exception as e:
-        print(f"Warning: could not parse PFAS names: {e}")
-    return result
+        with open(pat

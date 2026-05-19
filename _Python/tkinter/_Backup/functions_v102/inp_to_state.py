@@ -206,6 +206,24 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("B4",  _blank(additional.get('site_location_id')))
         state.set("E4",  _blank(additional.get('date')))
         state.set("E16", _blank(additional.get('thickness')))
+        # v102: explicit overrides — Save Data writes these in user-unit
+        # so we DON'T cv()-convert them (the recovered input.inp value
+        # was already cv-converted in the §model-dimensions block above;
+        # this just overwrites with the exact user-typed value if the
+        # store_info has the explicit field).
+        if additional.get('source_width') is not None:
+            state.set("E15", additional['source_width'])
+        if additional.get('model_x_size') is not None:
+            state.set("E11", additional['model_x_size'])
+        if additional.get('model_y_size') is not None:
+            state.set("E12", additional['model_y_size'])
+        if additional.get('model_z_size') is not None:
+            state.set("E13", additional['model_z_size'])
+        if additional.get('vd_user_unit') is not None:
+            state.set("C22", additional['vd_user_unit'])
+            state.set("E22", additional['vd_user_unit'])
+        if additional.get('porf') is not None:
+            state.set("G22", additional['porf'])
         state.set("E18", _blank(additional.get('start_year')))
         state.set("E19", _blank(additional.get('end_year')))
         state.set("AH7", _blank(additional.get('source_treatment_start_year')))
@@ -227,23 +245,4 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("D27", _blank(additional.get('source_treatment_start_year')))
         state.set("D28", _blank(_scr))
 
-        state.set("Y74", _blank(additional.get('sample_year')))  # Section 10 sample yr
-        if state.get("A8", 2) == 1:
-            state.set("R36", _blank(additional.get('sample_year')))
-
-        state.set("AD1", _blank(additional.get('unit_flag')))
-        state.set("AC1", _blank(additional.get('dispersivity_flag')))
-        state.set("AH28", _blank(additional.get('psb_loading')) if iwall else None)
-
-        for i, name in enumerate(additional.get('monitoring_well_names', [])[:7]):
-            state.set(f"U{34+i}", _blank(name))
-        for i, conc in enumerate(additional.get('monitoring_well_concentrations', [])[:7]):
-            if conc is None or (isinstance(conc, str) and conc.strip().lower() == 'none'):
-                state.set(f"V{34+i}", None)
-                state.set(f"X{34+i}", None)
-            elif isinstance(conc, str) and ',' in conc:
-                parts = conc.split(',', 1)
-                state.set(f"V{34+i}", _blank(parts[0].strip()))
-                state.set(f"X{34+i}", _blank(parts[1].strip()) if len(parts) > 1 else None)
-            else:
-                state.set(f"V{34+i}", conc)
+        state.set("Y74", _blank(additional.get('sample_year')))  # Section 10 sa

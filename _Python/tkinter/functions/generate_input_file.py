@@ -242,6 +242,26 @@ def build_inp_data(state) -> dict:
                   koc_list[1] if len(koc_list)>1 else 1)
     ock1, ock3 = ((koc_list[2] if len(koc_list)>2 else 1,
                    koc_list[3] if len(koc_list)>3 else 1) if ipre==1 else (0, 0))
+    # v103: calibration overrides for ock(1..4).  Set by cali_1.PARAM_MAP
+    # during each DDS evaluation so the optimizer can actually vary
+    # PFOS/precursor retardation — previously these were no-op stubs.
+    _ov = state.get("_calib_ock2")
+    if _ov is not None:
+        try: ock2 = float(_ov)
+        except (TypeError, ValueError): pass
+    _ov = state.get("_calib_ock4")
+    if _ov is not None:
+        try: ock4 = float(_ov)
+        except (TypeError, ValueError): pass
+    if ipre == 1:
+        _ov = state.get("_calib_ock1")
+        if _ov is not None:
+            try: ock1 = float(_ov)
+            except (TypeError, ValueError): pass
+        _ov = state.get("_calib_ock3")
+        if _ov is not None:
+            try: ock3 = float(_ov)
+            except (TypeError, ValueError): pass
 
     # dispersivity (convert if feet)
     alphax = c(state.get("V4", 3.2))
@@ -402,12 +422,37 @@ def build_inp_data(state) -> dict:
     porm  = _safe_float(state.get("K27", 0.48))
     tortm = _safe_float(state.get("K28", 0.56))
     focm  = 0.001
-    diff_m2s = _safe_float(state.get("E44", 3.5e-10))
+    # v102: state.get returns the STORED value (which may be None or "")
+    # rather than the second-arg default when the key exists.  After
+    # Clear All Data, state["E44"] is None — passing that to _safe_float
+    # gave 0.0, and diff = 0 × seconds_per_year = 0 made the Fortran
+    # solver produce NaN concentrations (mdflag=2 + diff=0 = division
+    # by zero in the matrix-diffusion solver).  Defensive: if the
+    # state value is None, empty, zero, or unparseable, fall back to
+    # the standard PFOS-class diffusion 3.5e-10 m²/s.
+    _e44 = state.get("E44")
+    if _e44 is None or (isinstance(_e44, str) and not str(_e44).strip()):
+        diff_m2s = 3.5e-10
+    else:
+        diff_m2s = _safe_float(_e44, 3.5e-10)
+        if not diff_m2s or diff_m2s <= 0:
+            diff_m2s = 3.5e-10
     diff = diff_m2s * SEC_PER_YR   # m²/yr for .inp
 
     # heterogeneity
     mdflag, volfrac, difflen = _read_hetero(
         os.path.join(work_dir, 'heterogeneity_inputs.txt'))
+    # v103: calibration overrides for volfrac / difflen.  The DDS optimizer
+    # sets these in state during each eval so it can actually vary these
+    # matrix-diffusion knobs — previously they were no-op stubs.
+    _ov = state.get("_calib_volfrac")
+    if _ov is not None:
+        try: volfrac = float(_ov)
+        except (TypeError, ValueError): pass
+    _ov = state.get("_calib_difflen")
+    if _ov is not None:
+        try: difflen = float(_ov)
+        except (TypeError, ValueError): pass
 
     # high-K yield / decay
     yieldf2 = _safe_float(state.get("K42", 0)) if ipre == 1 else 0
@@ -425,6 +470,17 @@ def build_inp_data(state) -> dict:
     decayf2 = 0
     decayf3 = _decay("M41") if (ipre == 1 and ncomp == 2) else 0
     decayf4 = 0
+    # v103: calibration overrides for decayf(1) / decayf(3) — set in
+    # state directly as 1/yr rate by cali_1.PARAM_MAP (not as a
+    # half-life — the optimizer perturbs the rate constant).
+    _ov = state.get("_calib_decayf1")
+    if _ov is not None:
+        try: decayf1 = float(_ov)
+        except (TypeError, ValueError): pass
+    _ov = state.get("_calib_decayf3")
+    if _ov is not None:
+        try: decayf3 = float(_ov)
+        except (TypeError, ValueError): pass
 
     # low-K transformation
     yieldm2 = yieldm4 = 0; yieldm3 = 0

@@ -7,6 +7,8 @@ docs/
 env/
 Meters/
 Feet/
+Det_Meter/
+Det_Feet/
  
 # --- Python compiled / cache files inside _Python (and anywhere else) ---
 # Ignore all .pyc files but keep .py files tracked
@@ -31,6 +33,7 @@ Thumbs.db
 # --- Logs and simulation output files (generated at runtime) ---
 *.log
 *.out
+*.csv
  
 # If you DO want to keep specific output files tracked, un-ignore them:
 # !template.inp

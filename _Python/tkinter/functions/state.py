@@ -322,14 +322,33 @@ class AppState:
         if a8 is not None:
             ver = getattr(app, 'v_model_version', None)
             if ver:
-                ver.set("Simple Version" if a8 == 1 else "Detailed Version")
+                try: a8i = int(float(a8))
+                except (ValueError, TypeError): a8i = 1
+                ver.set("Simple Version" if a8i == 1 else "Detailed Version")
         ad1 = self.get("AD1")
         if ad1 is not None:
             unit = getattr(app, 'v_units', None)
             if unit:
-                unit.set("feet" if ad1 == 1 else "meters")
+                try: ad1i = int(float(ad1))
+                except (ValueError, TypeError):
+                    # Already a string like "feet" / "meters" — pass through
+                    unit.set(str(ad1))
+                else:
+                    unit.set("feet" if ad1i == 1 else "meters")
+        # v103: heterogeneity (A1).  Stored as either:
+        #   int 1/2/3 (from state.snapshot)  → map back to High/Medium/Weak
+        #   string "High"/"Medium"/"Weak"/"Enter…" (from inp_to_state)
+        a1 = self.get("A1")
+        if a1 is not None:
+            het = getattr(app, 'v_het', None)
+            if het:
+                try:
+                    a1i = int(float(a1))
+                    het.set({1: "High", 2: "Medium", 3: "Weak"}.get(a1i, "Medium"))
+                except (ValueError, TypeError):
+                    het.set(str(a1))
 
-    # ── clear helpers ─────────────────────────────────────────────────────
+    # clear helpers
 
     def clear_restore_cells(self):
         """Zero cells that clear_for_restore clears in the xlsm."""
@@ -337,7 +356,7 @@ class AppState:
             self.set(addr, None)
         self.set("R22", False)
 
-    # ── persistence ───────────────────────────────────────────────────────
+    # persistence
 
     def save_json(self, path: str):
         with open(path, 'w') as f:
