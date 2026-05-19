@@ -1,0 +1,71 @@
+---
+title: "APPENDIX 2.2  ESTIMATING THE SOURCE START TIME"
+---
+
+**TESTHOW TO ESTIMATE WHEN PFAS WAS FIRST RELEASED TO THE SOIL**
+
+REMFluor-MD’s predecessor model, the original REMChlor-MD code, was designed to model chlorinated solvent DNAPL sources and the resulting plumes. However, PFAS sources exhibit significantly different behavior compared to DNAPL sources in terms of their transport through the subsurface and establishment of groundwater contamination. DNAPL, being denser than water and often present as a separate phase, tends to migrate rapidly through the unsaturated zone, potentially reaching groundwater shortly after release. This results in the relatively quick establishment of a significant source concentration in the saturated zone. 
+
+In contrast, PFAS contamination typically originates from surface releases and is transported vertically through the unsaturated zone primarily by dissolved-phase movement in infiltrating water. This process can be much slower, potentially taking years for PFAS to reach groundwater after the initial surface release. The rate of this vertical transport is heavily influenced by factors such as soil properties, depth to groundwater, and recharge rates.
+
+To address this difference in REMFluor-MD model users have two main approaches when trying to determine the PFAS source start time:
+
+1. The simpler method involves assuming that the travel time through the unsaturated zone is relatively short compared to the overall site history. Given that many PFAS sites involve releases that occurred 30 to 50 years ago, users might reasonably approximate the year PFAS entered groundwater as the same year that PFAS was first used at the site. This is most often determined from site historical records, such as *"fire training activities at FTA-1 started in 1972".* As a first-cut approximation, it is often assumed the groundwater impact occurred relatively quickly (the same year that fire training started). This simplification can be appropriate for initial screening-level assessments or when detailed unsaturated zone data is unavailable.
+
+    Gamlin et al. (2024, open access) provides more detail on when different types of Aqueous Film Forming Foams were manufactured (see Figure 1 below). If your site appears to be dominated by the ECF type AFFF (e.g., mostly PFOS), then the earliest release time would be about 1968. For sites dominated by FT type AFFF (in general, mostly PFOA), then the earliest release time would be about 1972. Note the number of new sources of PFOS, PFOA likely went down by 2010s due to the decision to stop production of long-chain PFAAs in 2000.
+![](./Figure_Appdx_2.2_1.png){fig-alt="PFAS Manufacture Dates from Gamlin et al. (2024)" width=700px}
+
+
+2. Alternatively, a more sophisticated approach incorporates unsaturated zone modeling. Options include using simple hydrologic methods (see below) or PFAS specific approaches such as ESTCP's PFAS-Leach Tool (ESTCP, 2025) to estimate the travel time more accurately. This method can provide a more realistic representation of the delay between surface release and groundwater impact, especially for sites with deep water tables or low recharge rates. To inform these models and improve estimates of PFAS flux to groundwater, practitioners can refer to resources like Newell et al. (2023), which offers guidance on estimating recharge rates. This information helps quantify the annual water flux through unsaturated zone PFAS sources, a critical factor in determining contaminant transport to groundwater. By considering these approaches, modelers can better account for the unique characteristics of PFAS transport in the unsaturated zone and more accurately represent source terms in REMFluor-MD simulations.
+
+**SIMPLE METHODS TO ESTIMATE VADOSE ZONE TRAVEL TIME**
+
+**Summary**
+
+This memo presents a summary of some simplified methods to estimate the time it takes for a contaminant to travel through the unsaturated (vadose) zone and reach the water table. For REMFluor-MD modeling, the travel time can be important for determining the lag between the initial release date and the date at which the plume begins to spread horizontally through groundwater, rather than vertically down through the unsaturated soil. For these purposes, at least a basic estimate of the unsaturated zone travel time is helpful to decide whether a more in-depth analysis is needed, and to calculate an appropriate start date and time step for the model.
+
+**SAAT Method Overview**
+
+As presented in Sousa et al. (2013), the simplest available way to estimate the unsaturated zone travel time is the Surface to Aquifer Advection Time (SAAT) method from the Province of Ontario (2006). This method can be accomplished with basic knowledge of the site subsurface, as opposed to the more technical methods in Sousa et al., which require estimations of saturation as a function of depth and pressure head. Using SAAT, the unsaturated zone travel time is approximated as:
+
+$$
+t_u = \frac{\bar{\theta}\, L}{R}
+\tag{1}
+$$ 
+
+Where tu is the unsaturated zone travel time (T), $\bar{\theta}$ is the dimensionless average mobile moisture content, L is the depth from the source to the water table (L), and R is the groundwater recharge (L/T). Typical values of  are presented in Table 1 below. Estimations of $\bar{\theta}$ for mixed soils can be made using this table; for example, Koch (2015) used the average of the $\bar{\theta}$ values for silt and sand as the $\bar{\theta}$ value for silty sand.
+
+Table 1. Mobile moisture content estimates for typical soil types, from Koch (2009).
+![](./Figure_Appdx_2.2_2.png){fig-alt="Mobile moisture content" width=700px}
+
+Meanwhile, there are many methods for calculating groundwater recharge, as outlined in Scanlon et al. (2002). Physical measurements at the site of hydraulic parameters in Darcy’s law, large-scale water balances (from existing long-term data or through installation of lysimeters), and chemical tracer applications are some possible methods mentioned. 
+
+**Other Travel Time Methods**
+
+The other simplified model mentioned by Sousa et al. (2013), the “No flow” van Genuchten method, uses the assumption of no-flow conditions in the unsaturated zone to give a simplified estimate for the saturation as a function of depth. This saturation factors into a formula for downward groundwater velocity that can then be integrated to find the travel time.
+
+Szymkiewicz et al. (2018) also provides an approximation for the estimated vadose zone travel time:
+
+$$
+t_u = \frac{L \, n_e}{\sqrt[3]{R^2 k_s}}
+\tag{2}
+$$
+
+Where $n_\mathrm{e}$ is the effective porosity and $k_s$ is the hydraulic conductivity at saturation, which can both be estimated from literature or soil sample analysis. The parameters involved are very similar to the SAAT method and would require a similar amount of effort.
+
+**REFERENCES**
+
+ESTCP. (2025). A Comprehensive Decision Support Platform for Predicting PFAS Leaching in Source Zones.  Environmental Security and Technology Certification Program Project ER21-5041. Accessed 2 July 2023.    
+
+Gamlin, J., Newell, C. J., Holton, C., Kulkarni, P. R., Skaggs, J., Adamson, D. T., Blotevogel, J., & Higgins, C. P. (2024). Data Evaluation Framework for Refining PFAS Conceptual Site Models. Groundwater Monitoring & Remediation, 44(4), 53–66. 
+
+Koch, J. (2009). Evaluating Regional Aquifer Vulnerability and BMP Performance in an Agricultural Environment Using A Multi-Scale Data Integration Approach. Library and Archives Canada. 
+
+Newell, C. J., Stockwell, E. B., Alanis, J., Adamson, D. T., Walker, K. L., & Anderson, R. H. (2023). Determining groundwater recharge for quantifying PFAS mass discharge from unsaturated source zones. Vadose Zone Journal, 22(4), e20262. 
+
+Scanlon, B. R., Healy, R. W., & Cook, P. G. (2002). Choosing appropriate techniques for quantifying groundwater recharge. *Hydrogeology Journal*, *10*(1), 18–39. 
+
+Sousa, M. R., Jones, J. P., Frind, E. O., & Rudolph, D. L. (2013). A simple method to assess unsaturated zone time lag in the travel time from ground surface to receptor. *Journal of Contaminant Hydrology*, *144*(1), 138–151. 
+
+Szymkiewicz, A., Gumuła-Kawęcka, A., Potrykus, D., Jaworska-Szulc, B., Pruszkowska-Caceres, M., & Gorczewska-Langner, W. (2018). Estimation of Conservative Contaminant Travel Time through Vadose Zone Based on Transient and Steady Flow Approaches. *Water*, *10*(10). 
+

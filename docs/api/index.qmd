@@ -1,0 +1,19 @@
+---
+title: Anniston SMP REST API Documentation
+description: Documentation for the Anniston Soil Management Portal REST API.
+---
+
+# TEST Backend Overview
+
+The backend is responsible for handling all business logic that the R Shiny frontend relies on. Core responsibilities include:
+
+- Geometry validation, buffering, and grid generation
+- Chemistry data lookup
+- Report creation and validation
+- Asynchronous report generation (PDF)
+- Permissions and user authentication
+- Dataset versioning for chemistry results
+
+This document summarizes each component and links to deeper sections.
+
+Use the sidebar to navigate to specific topics.

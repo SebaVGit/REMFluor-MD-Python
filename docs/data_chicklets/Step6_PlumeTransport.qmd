@@ -1,0 +1,155 @@
+---
+title: "Step 6: Plume Transport"
+---
+
+<style>
+/* table-layout: fixed is required or browsers ignore % widths when content is wide */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: #d3d3d3;
+  border: 1px solid #000;
+  padding: 8px;
+  font-weight: bold;
+}
+
+table td {
+  border: 1px solid #000;
+  padding: 8px;
+  vertical-align: top;
+}
+
+table tr:nth-child(1) th {
+  background-color: #d3d3d3;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 5%;
+  max-width: 5%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 95%;
+  max-width: 95%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Indent bullet points and their continuation lines */
+.bullet-item {
+  display: block;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin: 0.25em 0;
+}
+
+/* Indent paragraphs that follow bullet lists */
+.indented-paragraph {
+  display: block;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+</style>
+
+See **_Appendix 6.1 General Methods for Estimating Aquifer Dispersivity_** for more info.
+
+## Longitudinal Dispersivity
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **Longitudinal Dispersivity,** $\alpha\,_{L}$** |
+|---|---|
+| **Units** | ft (or m). |
+| **Description** | Dispersion refers to the process whereby a dissolved solvent will be spatially distributed because of mechanical mixing and chemical diffusion in the aquifer. These processes contribute to the "plume" shape that is the spatial distribution of the dissolved solvent mass in the aquifer. |
+| **Typical Values** | Users can estimate the appropriate longitudinal dispersivity at their site two different ways:<br><br>&nbsp;&nbsp;&nbsp;&nbsp;*Method 1.* Using a dispersion framework <br>&nbsp;&nbsp;&nbsp;&nbsp;developed by Zech et al. (2023) described below <br>&nbsp;&nbsp;&nbsp;&nbsp;(Recommended approach); <br>&nbsp;&nbsp;&nbsp;&nbsp;*Method 2*. Enter your own value (this includes <br>&nbsp;&nbsp;&nbsp;&nbsp;using traditional dispersivity-vs-plume length <br>&nbsp;&nbsp;&nbsp;&nbsp;estimates (e.g., Xu and Eckstein, 1995) <br>&nbsp;&nbsp;&nbsp;&nbsp;methods. <br><br><b>Method 1:</b> The Zech et al. (2023) dispersion paradigm represents a significant advancement in estimating macrodispersivity for groundwater transport modeling by shifting away from the \"universal scaling\" approach toward a geologic heterogeneity-based classification system. This methodology classifies aquifers into three categories: Weak, Medium, and High heterogeneity, based on their depositional environment, sedimentological characteristics, and statistical properties of hydraulic conductivity. A simple method for estimating if your aquifer has Weak, Medium, or High heterogeneity is provided below, or see Appendix 6.1 for more **detailed qualitative and quantitate methods** to determine if your site has Weak, Medium, or High heterogeneity.<br><br>**Weak (Low) Heterogeneity Aquifers <span style="color:red;">(Use α~L~ = 1.1 m)</span>**<br><br>![Step6_1](Step6_1.png)<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Predominantly sandy composition with uniform grain sizes <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Minor fractions of silt/clay and/or gravel <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Well-sorted sediments <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Relatively continuous depositional units <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Terms like \"glaciolacustrine,\" \"glacial <br>&nbsp;&nbsp;&nbsp;&nbsp;outwash,\" \"medium sand,\" \"uniform\" <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Minimal mentions of clay or gravel; if <br>&nbsp;&nbsp;&nbsp;&nbsp;present, described as \"minor\" or \"some\" <br><br>**Medium Heterogeneity Aquifers <span style="color:red;">(Use α~L~ = 3.2 m)</span>**<br><br>![Step6_2](Step6_2.png)<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Mixed grain sizes ranging from gravel to sand with some <br>&nbsp;&nbsp;&nbsp;&nbsp;silt/clay <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Moderate sorting <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Interbedded or layered units <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Terms like \"alluvial,\" \"fluvial,\" <br>&nbsp;&nbsp;&nbsp;&nbsp;\"layered,\" \"interbedded,\" \"lenses\" <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Clay described as \"lenses\" or \"minor <br>&nbsp;&nbsp;&nbsp;&nbsp;content\" <br><br>**High Heterogeneity Aquifers <span style="color:red;">(Use α~L~ = 7.5 m)</span>**<br><br>![Step6_3](Step6_3.png)<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Wide variety of materials from gravel to silt/clay in <br>&nbsp;&nbsp;&nbsp;&nbsp;similar proportions <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Poorly sorted sediments <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Complex, discontinuous depositional units <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Terms like \"poorly sorted,\" \"braided <br>&nbsp;&nbsp;&nbsp;&nbsp;river,\" \"variable,\" \"with inclusions <br>&nbsp;&nbsp;&nbsp;&nbsp;of,\" \"lenses of silt and clay\" <br>&nbsp;&nbsp;&nbsp;&nbsp;&bull; Similar proportions of multiple grain-size <br>&nbsp;&nbsp;&nbsp;&nbsp;classes <br><br><b>Method 2:</b> Other methods for estimating longitudinal dispersivity are described in ***_Appendix 6.1 General Methods for Estimating Aquifer Dispersivity_***. |
+| **Source Of Data** | Hydrogeologic conceptual model for a site. |
+| **How To Enter Data** | 1\) Select "High", "Medium", or "Low" heterogeneity; or<br>2\) Select "Enter Your Own Values" and enter your own value in the data box. |
+
+</div>
+
+
+## Transverse Dispersivity
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **Transverse Dispersivity** |
+|---|---|
+| **Units** | ft (or m). |
+| **Description** | Transverse dispersivity is a parameter that describes the right-left spreading of a plume as it migrates under the advection-dispersion model. After their re-evaluation of dispersivity data, Zech et al. (2015, 2019) found no clear scale-dependency in transverse dispersivity (αT or "alpha-T" or "alpha-Y"), with values typically ranging from 1% to 10% of the longitudinal dispersivity for the most reliable data sets. |
+| **Typical Values** | Recommended Approach:<br>Zech et al. (2023) concluded that a value of **0.03 to 0.05 meters should be used for alphaT:** *"it is preferable to select an absolute value in the range of 3 to 5 cm, at least for aquifers of weak to medium heterogeneity."*<br><br>Previous methods typically employed a ratio approach (Aziz et al., 1999), such as:<br><div style="text-align:center;">α~T~ = 0.10 × α~L~</div><br><br>A default value of 0.04 meters will be populated if "High", "Medium", or "Low" heterogeneity is chosen. |
+| **Source Of Data** | Use estimate above. |
+| **How To Enter Data** | 1\) Select "High", "Medium", or "Low" heterogeneity; or<br>2\) Select "Enter Your Own Values" and enter your own value in the data box. |
+</div>
+
+
+## Vertical Dispersivity
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **Vertical Dispersivity** |
+|---|---|
+| **Units** | ft (or m). |
+| **Description** | Vertical dispersity is a parameter that describes the vertical spreading of a plume as it migrates under the advection-dispersion model. Vertical dispersivity is also referred to as αZ or "alpha-Z." |
+| **Typical Values** | Recommended Approach:<br>Zech et al. (2023) recommended the following approach for estimating alphaZ:<br><span style="display:block;text-align:center;">α~Z~ = 0.1 x α~T~</span><br>Previous methods typically employed a ratio approach (Aziz et al., 1999), such as:<br><span style="display:block;text-align:center;">α~Z~ = 0.05 × α~T~</span><br>A default value of 0.004 meters will be populated if "High", "Medium", or "Low" heterogeneity is chosen. |
+| **Source Of Data** | Use estimate above. |
+| **How To Enter Data** | 1\) Select "High", "Medium", or "Low" heterogeneity; or<br>2\) Select "Enter Your Own Values" and enter your own value in the data box. |
+
+</div>
+
+<style>
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: #d3d3d3;
+  border: 1px solid #000;
+  padding: 8px;
+  font-weight: bold;
+}
+
+table td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+
+table tr:nth-child(1) th {
+  background-color: #d3d3d3;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 25%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 75%;
+}
+
+/* Indent bullet points and their continuation lines */
+.bullet-item {
+  display: block;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin: 0;
+}
+
+/* Indent paragraphs that follow bullet lists */
+.indented-paragraph {
+  display: block;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+</style>
+
+

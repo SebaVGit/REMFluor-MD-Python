@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>APPENDIX 9.1 MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS – Docs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../data_chicklets/Step1_SystemUnits.html" rel="next">
+<link href="../appendix/appendix_8_1.html" rel="prev">
+<link href="../static/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7ac2f9da8c2617a4fdd15004b4601015.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-7ac2f9da8c2617a4fdd15004b4601015.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7ac2f9da8c2617a4fdd15004b4601015.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-622205f1c3d51b6fef90e6fbc3086bdc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-622205f1c3d51b6fef90e6fbc3086bdc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-622205f1c3d51b6fef90e6fbc3086bdc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": true,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "/",
+    "H"
+  ],
+  "show-item-context": true,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../static\logo-sm.svg" alt="GSI Environmental Inc." class="navbar-logo light-content">
+    <img src="../static\logo-sm.svg" alt="GSI Environmental Inc." class="navbar-logo dark-content">
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <span class="nav-link">
+<span class="menu-text">REMFluor-MD Technical Documentation</span>
+    </span>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com/HirokoHort/0_REMFluorMD_64" title="GSI GitHub" class="quarto-navigation-tool px-1" aria-label="GSI GitHub"><i class="bi bi-github"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_9_1.html">APPENDIX 9.1 MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../static\logo.svg" alt="GSI Environmental Inc." class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../static\logo.svg" alt="GSI Environmental Inc." class="sidebar-logo dark-content py-0 d-lg-inline d-none">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_2_2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_3_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 3.1 GROUNDWATER DARCY VELOCITY</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_4_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_4_2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 4.2 WHAT IS A LOW-k GEOLOGIC UNIT?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_5_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 5.1 MODELING PFAS SORPTION IN NATIVE AQUIFER MATERIAL: KEY INPUT DATA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_5_2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 5.2 MODELING PFAS SORPTION IN NATIVE AQUIFER MATERIAL: THEORY</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_5_3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 5.3 PFAS PRECURSOR TRANSFORMATION</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_6_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 6.1 GENERAL METHODS FOR ESTIMATING AQUIFER DISPERSIVITY</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_7_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 7.1 REMFLUOR-MD SOURCE CONCENTRATIONS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_8_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">APPENDIX 8.1. SOURCE REMEDIATION</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/appendix_9_1.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">APPENDIX 9.1 MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Data Chicklets</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step1_SystemUnits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 1: Starting Information</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step2_ModelConfiguration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 2: Model Configuration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step3_GroundwaterDarcyVelocity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 3: Groundwater Darcy Velocity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 4: Hydrogeologic Setting and Matrix Diffusion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step5_PFASTransportProperties.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 5: PFAS Transport Properties</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step6_PlumeTransport.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 6: Plume Transport</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step7_PFASSourceTerm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 7: PFAS Source Term</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step8_SourceRemediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 8: Source Remediation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step9_PlumeRemediationPSB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step10_FieldDataToCalibrate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 10: Field Data to Calibrate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../data_chicklets/Step11_ModelingParameters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Step 11: Modeling Parameters</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#attachment-a.-freundlich-isotherm-data-and-examples" id="toc-attachment-a.-freundlich-isotherm-data-and-examples" class="nav-link active" data-scroll-target="#attachment-a.-freundlich-isotherm-data-and-examples">ATTACHMENT A. FREUNDLICH ISOTHERM DATA AND EXAMPLES</a>
+  <ul class="collapse">
+  <li><a href="#table-a9.1.-default-freundlich-parameter-values-for-individual-pfas" id="toc-table-a9.1.-default-freundlich-parameter-values-for-individual-pfas" class="nav-link" data-scroll-target="#table-a9.1.-default-freundlich-parameter-values-for-individual-pfas">Table A9.1. Default Freundlich Parameter Values for Individual PFAS</a></li>
+  <li><a href="#table-a9.2.-example-pka-density-and-aqueous-solubility-values-of-selected-pfaas-and-precursors" id="toc-table-a9.2.-example-pka-density-and-aqueous-solubility-values-of-selected-pfaas-and-precursors" class="nav-link" data-scroll-target="#table-a9.2.-example-pka-density-and-aqueous-solubility-values-of-selected-pfaas-and-precursors">Table A9.2. Example pK<sub>a</sub>, Density, and Aqueous Solubility Values of Selected PFAAs and Precursors</a></li>
+  <li><a href="#table-a9.3.-to-be-completed" id="toc-table-a9.3.-to-be-completed" class="nav-link" data-scroll-target="#table-a9.3.-to-be-completed">Table A9.3. (To be completed)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_9_1.html">APPENDIX 9.1 MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">APPENDIX 9.1 MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Contributors: Werth, Carey, Newell</p>
+<p><strong>OVERVIEW</strong></p>
+<p>Sorption of per- and polyfluoroalkyl substances (PFAS) to colloidal activated carbon (CAC) is nonlinear and is most commonly described using Freundlich isotherms:</p>
+<p><span class="math display">\[
+q = K_f\, c^a \tag{1}
+\]</span></p>
+<p>where q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), <span class="math inline">\(K_{f}\)</span> is the Freundlich capacity parameter, and a is the Freundlich exponent..</p>
+<p>Freundlich isotherm values for several common PFAS and commercial CAC products are summarized in Attachment A, Table A9-1. In REMFluor‑MD, default sorption parameters are based on laboratory studies in which PFAS mixtures from AFFF‑impacted groundwater were sorbed to the CAC product PlumeStop®. These mixture‑based isotherms are preferred because they partially account for competitive sorption and dissolved organic matter (DOM) effects that reduce PFAS sorption and barrier longevity. Isotherms derived from NaCl‑amended water and other CAC products are included for comparison.</p>
+<p>REMFluor‑MD allows users to directly input site‑specific Freundlich parameters. A primary objective of the model is to estimate CAC barrier longevity, defined as the time required for PFAS concentrations at the downgradient edge of the barrier to reach compound‑specific drinking water standards (Newell et al., 2025). Accurate selection of Freundlich parameters is therefore critical to reliable longevity estimates.</p>
+<p><strong>GENERAL RECOMMENDATIONS TO GET “<span class="math inline">\(K_{f}\)</span> “ AND “a” FOR MODELING CAC BARRIERS</strong></p>
+<p>Whenever possible, Freundlich isotherms derived from experiments using real PFAS mixtures and site groundwater should be used instead of single‑compound laboratory isotherms. Mixture‑based studies partially capture competitive sorption among PFAS and interactions with dissolved organic matter, both of which can substantially reduce sorption affinity and CAC barrier longevity (Carey et al., 2022).</p>
+<p>Isotherms developed using simple electrolyte solutions often overestimate PFAS sorption and therefore overpredict barrier longevity. The influence of DOM is illustrated by laboratory comparisons (Figure 1) showing that PFOS sorption from groundwater is nearly an order of magnitude lower than sorption measured in single‑species laboratory solutions. These effects should be considered explicitly when selecting Freundlich parameters for modeling.</p>
+<p><img src="./Figure_Appdx_9.1_1.png" class="img-fluid" alt="DOm on PFAS" width="600"></p>
+<p>Figure 1. Effects of DOM on PFAS sorption to a commercial CAC (reproduced with permission from Carey et al., 2022)</p>
+<p><strong>WHICH PFAS TO MODEL TO ESTIMATE CAC BARRIER LONGEVITY?</strong></p>
+<p>The first decision point when modeling CAC barrier longevity is which of the PFAS should be modeled in REMFluor-MD. Two key considerations are 1) the relative “exceedance magnitude” of different PFAAs as proxy for individual risk in groundwater from each of the key PFAAs; and 2) competitive sorption effects where long-chain PFAAs can dislodge sorbed short-chain PFAAs and cause them to travel through a CAC barrier faster than what might be expected. These two interrelated factors are discussed in more detail below. Note these methods have been developed from AFFF site data, and that some of selection criteria below may not be relevant at other types of PFAS sites.</p>
+<p><strong>“Exceedance Magnitude” Points to Modeling PFOS, PFOA, PFHxS</strong></p>
+<p>Selection of PFAS compounds for CAC barrier modeling should be guided by two factors: (1) exceedance magnitude relative to regulatory criteria, and (2) competitive sorption behavior within CAC barriers.</p>
+<p>Exceedance magnitude quantifies how much a PFAS concentration exceeds its regulatory standard and serves as a proxy for relative risk. Analysis of 22 AFFF‑impacted sites (Kulkarni et al., 2025) shows that three long‑chain PFAS (PFOS, PFOA, and PFHxS) account for approximately 99% of exceedance magnitude across sites (Table 1, Figure 2). Short‑chain PFAS such as PFHxA, PFBS, and PFBA typically contribute less than 2% of exceedance‑based risk under current federal standards.</p>
+<p>Accordingly, REMFluor‑MD modeling at AFFF sites should <strong>focus on PFOS, PFOA, and PFHxS (and potentially PFNA where relevant</strong>). This approach captures the vast majority of regulatory risk while avoiding unnecessary complexity associated with explicitly modeling short‑chain PFAS that are not primary risk drivers.</p>
+<p>Table 1. Distribution of PFAA Exceedance Magnitude at 22 AFFF sites (Kulkarni et al, 2025).</p>
+<p><img src="./Figure_Appdx_9.1_2.png" class="img-fluid" alt="PFAA exceedance" width="600"></p>
+<p>Figure 2. Distribution of Individual Site Relative Exceedance Magnitude. Bars show the median value of dataset per constituent, and each dot represents an individual site out of 22 sites (Kulkarni et al., 2025). <img src="./Figure_Appdx_9.1_3.png" class="img-fluid" alt="Distribution of Site Exceedance" width="600"></p>
+<p><strong>COMPETITIVE SORPTION EFFECTS OVERVIEW</strong></p>
+<p>Competitive sorption occurs when multiple PFAS compete for finite sorption sites on CAC. Long‑chain PFAS (PFOS, PFOA, PFHxS) sorb much more strongly than short‑chain compounds and can displace them from CAC surfaces. As a result, short‑chain PFAS may break through CAC barriers much earlier than long‑chain PFAS, even when all compounds enter the barrier simultaneously.</p>
+<p>REMFluor‑MD does not explicitly simulate dynamic competitive sorption. However, this limitation is mitigated because the PFAS that control regulatory risk and barrier longevity are the long‑chain compounds that dominate sorption. Among these, PFOA typically controls CAC barrier longevity due to its weaker sorption relative to PFOS and PFHxS. Modeling studies and field data indicate that PFOA is the first of the regulated long‑chain PFAS to break through CAC barriers at most AFFF sites.</p>
+<p>For sites where short‑chain PFAS are of regulatory concern, more complex models capable of explicitly simulating competitive sorption may be required, or conservative assumptions regarding short‑chain breakthrough should be applied.</p>
+<p><strong>TIERED APPROACH FOR SELECTING FREUNDLICH ISOTHERMS</strong></p>
+<p><strong>Tier 1: Use General Literature Values for “<span class="math inline">\(K_{f}\)</span>“and “a” for Three PFAS</strong></p>
+<p>For screening‑level analyses, REMFluor‑MD users should apply Freundlich parameters reported by Carey et al.&nbsp;(2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater (Table 2).</p>
+<p>Table 2. Recommended Freundlich values for planning / screening level CAC modeling in REMFluor-MD (Carey et al., 2022)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 37%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>PFAA</th>
+<th>Source Type</th>
+<th>Type of CAC</th>
+<th><span style="color: red;">K<sub>f</sub> (mg/g/L)</span></th>
+<th><span style="color: red;">a</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PFOS</td>
+<td>AFFF</td>
+<td>PlumeStop</td>
+<td><span style="color: red;">12,000</span></td>
+<td><span style="color: red;">0.33</span></td>
+</tr>
+<tr class="even">
+<td>PFOA</td>
+<td>AFFF</td>
+<td>PlumeStop</td>
+<td><span style="color: red;">580</span></td>
+<td><span style="color: red;">0.25</span></td>
+</tr>
+<tr class="odd">
+<td>PFHxS</td>
+<td>AFFF</td>
+<td>PlumeStop</td>
+<td><span style="color: red;">1,240</span></td>
+<td><span style="color: red;">0.24</span></td>
+</tr>
+</tbody>
+</table>
+<p>As noted above, competitive sorption effects on PFAS longevity can be partially accounted for by using isotherms developed in lab that used a specific PFAS mixture, groundwater, and CAC rather than individual PFAS isotherms conducted using tap water.</p>
+<p><strong>Tier 2a: Use More Site-Specific Literature Values for “Kf “and “a” for PFAS</strong></p>
+<p>As researchers continue to publish Freundlich isotherms derived from different groundwater types, REMFluor-MD users gain the ability to select isotherms developed under conditions that most closely match their site. Users should compare their site’s groundwater characteristics to the groundwater used in published laboratory studies and select isotherms from the most similar conditions. Key characteristics to match include:</p>
+<ol type="1">
+<li><p>PFAS concentrations and compound profiles (which PFAAs are present and at what levels),</p></li>
+<li><p>Groundwater geochemistry parameters such as total dissolved solids, total organic carbon, and divalent cation concentrations (e.g., calcium and magnesium),</p></li>
+<li><p>The type of CAC used in the lab study vs.&nbsp;the actual site. This site-specific isotherm selection approach improves model accuracy compared to using a single ‘universal’ isotherm for all sites.</p></li>
+</ol>
+<p>A compilation of published Freundlich isotherms for PFAS sorption to CAC, current as of late 2025, is provided in Attachment A, Table A9.1. to assist users in selecting appropriate parameters for their site conditions.</p>
+<p><strong>Tier 2b: Apply Simplified Handling of PFAS Short-Chain and Precursor Sorption</strong></p>
+<p>Use of measured isotherms for short-chain and precursor PFAS are always preferred, especially those using a site specific PFAS mixture, groundwater, and CAC. However, such isotherms are often not available because short-chain PFAS often represent a lower risk in groundwater and are less studied, and because short-chain PFAS may be present at very low concentrations relative to other PFAS in a site specific mixture. In the absence of such data, possible approaches include:</p>
+<ol type="1">
+<li><p>Assume no or limited sorption of short-chain PFAS to the CAC barrier and then assess the downgradient risk</p></li>
+<li><p>Use a measured isotherm for the shortest-chain PFAA available as a surrogate (as long as it is not a single-specie isotherm)</p></li>
+<li><p>Use the PAPT model (described below) to predict short-chain PFAS sorption to CAC based on isotherms measured for longer-chain PFAS to the same CAC.</p></li>
+</ol>
+<p>The first assumption is most appropriate for precursors with large aqueous solubility values (e.g., &gt;10⁻¹ mol/L). The second assumption appears most appropriate when the aqueous solubility value for a short-chain or precursor PFAS is within 20% of that for the measured PFAS. While not perfect, these options provide practical pathways for incorporating short-chain and precursor dynamics into remediation modeling.</p>
+<p><strong>Tier 3a: Site-Specific Lab-Based Isotherm Testing for PFAS</strong></p>
+<p>For sites where the most accurate barrier longevity predictions are required, practitioners can obtain site-specific Freundlich isotherms (similar to ones shown in Figure 1) through commercial laboratory testing services. Companies such as SiREM (2025) (Ontario, Canada) and others offer sorptive media isotherm testing specifically designed to determine the capacity of CAC or other sorptive media to adsorb PFAS under site-specific conditions. The process involves sending groundwater samples, soil samples, and the specific CAC product being considered for barrier installation to the laboratory, where technicians conduct controlled batch reactor studies to develop customized isotherm parameters. These laboratory studies expose the actual CAC material to the site’s groundwater chemistry and PFAS mixture, generating Freundlich constants (<span class="math inline">\(K_{f}\)</span> and n values) that reflect the real-world competitive sorption effects and geochemical interactions specific to that site. While this approach requires additional time and cost compared to using literature-derived isotherms, it provides the highest level of confidence for barrier design and longevity predictions, particularly at high-value sites, sites with unusual groundwater chemistry, or sites where regulatory compliance margins are narrow. The resulting site-specific isotherms can be directly input into REMFluor-MD, eliminating uncertainty about whether published isotherm values adequately represent site conditions.</p>
+<p><strong>Tier 3b: Predict Single-Species Freundlich Isotherms for PFAS sorption to CAC</strong></p>
+<p>No methods have been reliably established to predict single-species Freundlich isotherms for PFAS sorption to CACs. However, the Polanyi Adsorption Potential Theory (PAPT) was used to estimate Freundlich isotherms for PFAS sorption to granular activated carbon with some success, and represents a possible approach for predicting Freundlich isotherm parameters for PFAS sorption to CAC. The method requires measured Freundlich isotherms for one or more representative PFAS on the selected CAC (Burkhardt et al., 2023).</p>
+<p><span class="math display">\[
+K_f = \rho W_o \exp\left(\frac{BRT \ln(C_s \times 1000)}{V_m}\right) \tag{2}
+\]</span></p>
+<p><span class="math display">\[
+n_f = \frac{BRT}{V_m} \tag{3}
+\]</span></p>
+<p>Here, ρ is the liquid density (g/cm3), <span class="math inline">\(c_{s}\)</span> is the aqueous solubility (mg/l), and <span class="math inline">\(V_{m}\)</span> is the PFAS molar volume (cm³/mol); the latter two inputs represent individual PFAS physio chemical characteristics and values for selected PFAS are presented in the Attachment A, Table A9.2. Here, $W_{o} (μl/g) is the adsorption saturation limit and B (ml/cal) characterizes the change in adsorption affinity with adsorption potential; these two inputs represent carbon characteristics. Also, R is the ideal gas constant (1.986 cal/(mol-K)) and T is the temperature (K).</p>
+<p>The PAPT assumes that the adsorption potential of the sorbent (e.g., carbon) is directly related to the volume of sorbate it can uptake in its pores. A sorbate’s adsorption potential is quantitated through the ratio of its aqueous solubility and its maximum adsorption volume with a given sorbent. As the adsorption potential and volume remain the same with a specified sorbent at a given sorbate concentration, an estimate of another similar sorbate’s adsorption can be approximated from its molar volume and solubility.</p>
+<p>To implement, single sorbate isotherms for two or more PFAS are first used to obtain single values of Wo and B by transforming Equations (2) and (3) to Equations (4) to (6).</p>
+<p><span class="math display">\[
+x = \frac{\text{Adsorption Potential}}{\text{Molar Volume}} = \frac{RT}{V_m} \ln\left(\frac{C_s}{c} \times 10^3\right)
+\]</span></p>
+<p><span class="math display">\[
+\ln(y) = \ln(\text{Volume Adsorbed}) = \ln\left(\frac{q}{\rho}\right)
+\]</span></p>
+<p><span class="math display">\[
+\ln(y) = B \cdot x + \ln(W_o)
+\]</span></p>
+<p>The variables c (µg/L) and q (µg/mg) are equilibrium concentration and adsorption data point pairs acquired from an isotherm for a given CAC. Values x and ln(y) for the measured single sorbate isotherms are plotted together to obtain single values of Wo and B. These same values of Wo and B are then used to predict single sorbate Freundlich parameter values from Equations (2) and (3) for other PFAS. An example calculation is shown in the Attachment A, Table A9.3.</p>
+<p>Two shortcomings of the PAPT are that it does not consider contributions from electrostatic interactions between charged head groups in PFAS molecules and the CAC surface (Higgins and Luthy, 2007), and it assumes all PFAS have access to the same distribution of pores. The former assumption is expected to be approximately met for longer-chain PFAS, and when solution pH and ionic strength values remain relatively constant. The latter assumption is expected to be approximately met for similar chain length PFAS. This means greater prediction errors are expected for PFAS isotherms when their chain lengths deviate from those used to determine Wo and B.</p>
+<p>It is important to note that the PAPT model has only been used to predict Freundlich isotherms for individual PFAS alone in solution on GAC, based on measured Freundlich isotherms for one or more other PFAS alone in solution on the same GAC. It has not been used to predict Freundlich isotherms for individual PFAS in a mixture based on measured Freundlich isotherms for one or more other PFAS in the same mixture and on the same GAC.</p>
+<p><strong>SUMMARY</strong></p>
+<p>For screening‑level analyses, REMFluor‑MD users should apply Freundlich parameters reported by Carey et al.&nbsp;(2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater.</p>
+<p><strong>REFERENCES</strong></p>
+<p>Burkhardt, J. B., Cadwallader, A., Pressman, J. G., Magnuson, M. L., Williams, A. J., Sinclair, G., &amp; Speth, T. F. (2023). Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon. Journal of Water Process Engineering, 53, 103691. .</p>
+<p>Carey, G. R., McGregor, R., Pham, A. L.-T., Sleep, B., &amp; Hakimabadi, S. G. (2019). Evaluating the longevity of a PFAS in situ colloidal activated carbon remedy. Remediation Journal, 29(2), 17–31.</p>
+<p>Carey, G. R., Hakimabadi, S. G., Singh, M., McGregor, R., Woodfield, C., Van Geel, P. J., &amp; Pham, A. L.-T. (2022). Longevity of colloidal activated carbon for in situ PFAS remediation at AFFF-contaminated airport sites. Remediation Journal, 33(1), 3–23.</p>
+<p>Carey, G. R., Anderson, R. H., Van Geel, P., McGregor, R., Soderberg, K., Danko, A., Hakimabadi, S. G., Pham, A. L.-T., &amp; Rebeiro-Tunstall, M. (2024). Analysis of colloidal activated carbon alternatives for in situ remediation of a large PFAS plume and source area. Remediation Journal, 34(1), e21772.</p>
+<p>Higgins, C. P., &amp; Luthy, R. G. (2007). Modeling Sorption of Anionic Surfactants onto Sediment Materials: An a priori Approach for Perfluoroalkyl Surfactants and Linear Alkylbenzene Sulfonates. Environmental Science &amp; Technology, 41(9), 3254–3261.</p>
+<p>Kulkarni, P. R., Andrzejczyk, N. E., Gavaskar, A., Cartwright, A., Adamson, D. T., Cook, J., &amp; Newell, C. J. (2025). Characteristics of aqueous film forming foam (AFFF) sites impacted with per- and polyfluoroalkyl substances (PFAS): A 37-site study. Water Research, 285, 124124.</p>
+<p>Molé, R. A., Velosa, A. C., Carey, G. R., Liu, X., Li, G., Fan, D., Danko, A., &amp; Lowry, G. V. (2024). Groundwater solutes influence the adsorption of short-chain perfluoroalkyl acids (PFAA) to colloidal activated carbon and impact performance for in situ groundwater remediation. Journal of Hazardous Materials, 474, 134746.</p>
+<p>National Ground Water Association. (2017).&nbsp;Groundwater and PFAS: State of knowledge and practice.&nbsp;</p>
+<p>Newell, C. J., Smith, W. B., Kearney, K., Clay, S., Javed, H., Carey, G. R., Richardson, S. D., &amp; Werth, C. J. (2025). Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater. Remediation Journal, 35(3), e70017. (Open Access)</p>
+<p>SIREM. (2025). SiREM Provides Products and Services for Monitoring and Remediating PFAS.</p>
+<p>Yu, Q., Zhang, R., Deng, S., Huang, J., &amp; Yu, G. (2009). Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study. <em>Water Research</em>, <em>43</em>(4), 1150–1158.</p>
+<section id="attachment-a.-freundlich-isotherm-data-and-examples" class="level2">
+<h2 class="anchored" data-anchor-id="attachment-a.-freundlich-isotherm-data-and-examples">ATTACHMENT A. FREUNDLICH ISOTHERM DATA AND EXAMPLES</h2>
+<section id="table-a9.1.-default-freundlich-parameter-values-for-individual-pfas" class="level3">
+<h3 class="anchored" data-anchor-id="table-a9.1.-default-freundlich-parameter-values-for-individual-pfas">Table A9.1. Default Freundlich Parameter Values for Individual PFAS</h3>
+<p>Default Freundlich parameter values (K<sub>f</sub> and α) for individual PFAS using site-specific PFAS mixtures and groundwater and a commercial CAC. <strong>Values bold in red</strong> are used as defaults in REMFluor-MD.</p>
+<div style="overflow-x: auto;">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 4%">
+<col style="width: 12%">
+<col style="width: 8%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>PFAS</th>
+<th>CAC</th>
+<th>Solution</th>
+<th>K<sub>f</sub> <br> (mg/kg)/(mg/L)<sup>α</sup></th>
+<th>α</th>
+<th>K<sub>d</sub><br>(L/g) <span class="citation" data-cites="C">@C</span>=500ppb</th>
+<th>R</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span style="color:red;font-weight:bold;">PFOS</span></td>
+<td>PlumeStop</td>
+<td>AFFF mixture in groundwater</td>
+<td><span style="color:red;font-weight:bold;">12,000</span></td>
+<td><span style="color:red;font-weight:bold;">0.33</span></td>
+<td>89,300</td>
+<td>44.7×10<sup>6</sup></td>
+<td>Carey et al.&nbsp;(2022)</td>
+</tr>
+<tr class="even">
+<td><span style="color:red;font-weight:bold;">PFOA</span></td>
+<td>PlumeStop</td>
+<td>AFFF mixture in groundwater</td>
+<td><span style="color:red;font-weight:bold;">580</span></td>
+<td><span style="color:red;font-weight:bold;">0.25</span></td>
+<td>5,490</td>
+<td>2.74×10<sup>6</sup></td>
+<td>Carey et al.&nbsp;(2022)</td>
+</tr>
+<tr class="odd">
+<td>PFOA</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>83,600</td>
+<td>0.15</td>
+<td>1.07×10<sup>6</sup></td>
+<td>534×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="even">
+<td><span style="color:red;font-weight:bold;">PFHxS</span></td>
+<td>PlumeStop</td>
+<td>AFFF mixture in groundwater</td>
+<td><span style="color:red;font-weight:bold;">1,240</span></td>
+<td><span style="color:red;font-weight:bold;">0.24</span></td>
+<td>12,100</td>
+<td>6.04×10<sup>6</sup></td>
+<td>Carey et al.&nbsp;(2022)</td>
+</tr>
+<tr class="odd">
+<td>PFHxA</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>32,900</td>
+<td>0.26</td>
+<td>302,000</td>
+<td>151×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="even">
+<td><span style="color:red;font-weight:bold;">6:2 FtS</span></td>
+<td>PlumeStop</td>
+<td>AFFF mixture in groundwater</td>
+<td><span style="color:red;font-weight:bold;">3,900</span></td>
+<td><span style="color:red;font-weight:bold;">0.28</span></td>
+<td>33,700</td>
+<td>16.9×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="odd">
+<td>PFPeA</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>27,600</td>
+<td>0.52</td>
+<td>116,000</td>
+<td>58.2×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="even">
+<td>PFBA</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>7,920</td>
+<td>0.64</td>
+<td>23,300</td>
+<td>11.6×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="odd">
+<td>PFBS</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>41,100</td>
+<td>0.32</td>
+<td>315,000</td>
+<td>157×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+<tr class="even">
+<td>HFPO-DA (GenX)</td>
+<td>Intraplex®, Germany</td>
+<td>NaCl sol’n <span class="citation" data-cites="pH">@pH</span> 7.5</td>
+<td>44,900</td>
+<td>0.3</td>
+<td>365,000</td>
+<td>183×10<sup>6</sup></td>
+<td>Molé et al.&nbsp;(2024)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:0.95em">
+R = 1 + ρ<sub>b</sub>K<sub>d</sub>/θ, with f<sub>cac</sub>=0.002&nbsp;g-carb/g-sed (fraction CAC), ρ<sub>b</sub>=1500&nbsp;g-sed/L (bulk density), θ=0.3 (porosity)
+</p>
+<hr>
+</section>
+<section id="table-a9.2.-example-pka-density-and-aqueous-solubility-values-of-selected-pfaas-and-precursors" class="level3">
+<h3 class="anchored" data-anchor-id="table-a9.2.-example-pka-density-and-aqueous-solubility-values-of-selected-pfaas-and-precursors">Table A9.2. Example pK<sub>a</sub>, Density, and Aqueous Solubility Values of Selected PFAAs and Precursors</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 5%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>PFAS</th>
+<th>CAS #</th>
+<th># C-F</th>
+<th>pK<sub>a</sub><sup>1</sup></th>
+<th>M.W.<br>(g/mol)</th>
+<th>Density<sup>2</sup><br>(g/cm<sup>3</sup>)</th>
+<th>Solubility<sup>6</sup><br>(mol/L)</th>
+<th>Log K<sub>ow</sub><sup>3</sup></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PFbA</td>
+<td>375-22-4</td>
+<td>3</td>
+<td>-0.21</td>
+<td>213.99</td>
+<td>1.55</td>
+<td>2.09E-03</td>
+<td>2.82</td>
+</tr>
+<tr class="even">
+<td>PFPeA</td>
+<td>2706-90-3</td>
+<td>4</td>
+<td>-0.80</td>
+<td>263.98</td>
+<td>1.65</td>
+<td>4.57E-04</td>
+<td>3.43</td>
+</tr>
+<tr class="odd">
+<td>PFHxA</td>
+<td>307-24-4</td>
+<td>5</td>
+<td>0.20</td>
+<td>313.98</td>
+<td>1.66</td>
+<td>9.12E-05</td>
+<td>4.06</td>
+</tr>
+<tr class="even">
+<td>PFHpA</td>
+<td>375-85-9</td>
+<td>6</td>
+<td>0.06</td>
+<td>363.98</td>
+<td>1.68</td>
+<td>3.16E-01</td>
+<td>4.67</td>
+</tr>
+<tr class="odd">
+<td>PFOA</td>
+<td>335-67-1</td>
+<td>7</td>
+<td>0.34</td>
+<td>413.97</td>
+<td>1.70</td>
+<td>3.31E-02</td>
+<td>5.3</td>
+</tr>
+<tr class="even">
+<td>PFNA</td>
+<td>375-95-1</td>
+<td>8</td>
+<td>0.23</td>
+<td>463.97</td>
+<td>1.80</td>
+<td>2.82E-03</td>
+<td>5.92</td>
+</tr>
+<tr class="odd">
+<td>PFDA</td>
+<td>335-76-2</td>
+<td>9</td>
+<td>0.40</td>
+<td>489.97</td>
+<td>1.82</td>
+<td>2.24E-03</td>
+<td>6.5</td>
+</tr>
+<tr class="even">
+<td>PFUnA</td>
+<td>2058-94-8</td>
+<td>10</td>
+<td>0.54</td>
+<td>563.96</td>
+<td>1.85</td>
+<td>1.66E-04</td>
+<td>7.15</td>
+</tr>
+<tr class="odd">
+<td>PFDoA</td>
+<td>307-55-1</td>
+<td>11</td>
+<td>0.54</td>
+<td>614.10</td>
+<td>1.87</td>
+<td>1.35E-04</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFTrDA</td>
+<td>72629-94-8</td>
+<td>12</td>
+<td>0.54</td>
+<td>663.96</td>
+<td>1.92</td>
+<td>4.27E-05</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>PFTeDA</td>
+<td>376-06-7</td>
+<td>13</td>
+<td>0.54</td>
+<td>713.95</td>
+<td>1.94</td>
+<td>3.25E-05</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFbS</td>
+<td>375-73-5</td>
+<td>4</td>
+<td>-1.61</td>
+<td>299.95</td>
+<td>1.81</td>
+<td>7.24E-03</td>
+<td>3.9</td>
+</tr>
+<tr class="odd">
+<td>PFPeS</td>
+<td>2706-91-4</td>
+<td>5</td>
+<td>-1.77</td>
+<td>349.94</td>
+<td>1.81</td>
+<td>2.34E-03</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFHxS</td>
+<td>355-46-4</td>
+<td>6</td>
+<td>-1.64</td>
+<td>399.94</td>
+<td>1.84</td>
+<td>6.17E-04</td>
+<td>5.17</td>
+</tr>
+<tr class="odd">
+<td>PFHpS</td>
+<td>375-92-8</td>
+<td>7</td>
+<td>-1.81</td>
+<td>449.94</td>
+<td>1.89</td>
+<td>1.02E-03</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFOS - L</td>
+<td>1763-23-1</td>
+<td>8</td>
+<td>-1.64</td>
+<td>499.94</td>
+<td>1.85</td>
+<td>8.13E-04</td>
+<td>6.3</td>
+</tr>
+<tr class="odd">
+<td>PFOS - B h</td>
+<td>1763-23-1</td>
+<td>8</td>
+<td>-1.64</td>
+<td>499.94</td>
+<td>1.85</td>
+<td>8.13E-04</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFNS</td>
+<td>68259-12-1</td>
+<td>9</td>
+<td>-1.68</td>
+<td>549.93</td>
+<td>1.88</td>
+<td>6.92E-04</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>PFDS</td>
+<td>335-77-3</td>
+<td>10</td>
+<td>-1.54</td>
+<td>599.93</td>
+<td>1.92</td>
+<td>3.24E-04</td>
+<td>7.66</td>
+</tr>
+<tr class="even">
+<td>PFUdS<sup>g</sup></td>
+<td>749786-16-1</td>
+<td>11</td>
+<td>-1.38<sup>d</sup></td>
+<td>649.93</td>
+<td>1.83</td>
+<td>5.37E-05</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>PFDoS</td>
+<td>79780-39-5</td>
+<td>12</td>
+<td>-1.38</td>
+<td>699.93</td>
+<td>1.93</td>
+<td>3.39E-05</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PFDtrS<sup>g</sup></td>
+<td>791563-89-8</td>
+<td>13</td>
+<td>-1.38<sup>d</sup></td>
+<td>749.93</td>
+<td>1.83</td>
+<td>7.24E-05</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>4:2 FTS<sup>i</sup></td>
+<td>757124-72-4</td>
+<td>4</td>
+<td>0.93<sup>d</sup></td>
+<td>326.97</td>
+<td>1.68</td>
+<td>2.40E-03</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>6:2 FTS<sup>i</sup></td>
+<td>27619-97-2</td>
+<td>6</td>
+<td>1.20</td>
+<td>427.97</td>
+<td>1.64</td>
+<td>1.20E-03</td>
+<td>4.44</td>
+</tr>
+<tr class="odd">
+<td>8:2 FTS<sup>i</sup></td>
+<td>39108-34-4</td>
+<td>8</td>
+<td>1.33</td>
+<td>527.97</td>
+<td>1.69</td>
+<td>6.76E-04</td>
+<td>5.66</td>
+</tr>
+<tr class="even">
+<td>EtFOSA<sup>i</sup></td>
+<td>4151-50-2</td>
+<td>8</td>
+<td>8.36</td>
+<td>527.20</td>
+<td>1.60</td>
+<td>8.13E-07</td>
+<td>6.71</td>
+</tr>
+<tr class="odd">
+<td>FOSA<sup>j</sup></td>
+<td>754-91-6</td>
+<td>8</td>
+<td>6.78</td>
+<td>498.95</td>
+<td>1.78</td>
+<td>7.76E-07</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Me-FOSA<sup>i</sup></td>
+<td>31506-32-8</td>
+<td>8</td>
+<td>8.27</td>
+<td>512.96</td>
+<td>1.62</td>
+<td>7.94E-07</td>
+<td>6.07</td>
+</tr>
+<tr class="odd">
+<td>EtFOSAA<sup>i</sup></td>
+<td>2991-50-6</td>
+<td>8</td>
+<td>-0.57</td>
+<td>584.99</td>
+<td>1.81</td>
+<td>3.27E-06</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NMeFOSAA<sup>i</sup></td>
+<td>2355-31-9</td>
+<td>8</td>
+<td>-0.36</td>
+<td>570.97</td>
+<td>1.82</td>
+<td>3.89E-06</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>MeFOSE<sup>i</sup></td>
+<td>24448-09-7</td>
+<td>8</td>
+<td>6.16</td>
+<td>556.99</td>
+<td>1.76</td>
+<td>1.48E-06</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>EtFOSE<sup>i</sup></td>
+<td>1691-99-2</td>
+<td>8</td>
+<td>5.42</td>
+<td>571.01</td>
+<td>1.76</td>
+<td>2.63E-07</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><sup>6</sup> Solubility units as reported (usually at 25°C)<br> <sup>g</sup> Gaussian estimated<br> <sup>d</sup> Data estimated / default<br> <sup>i</sup> Isomer-specific or precursor<br> <sup>j</sup> Structure confirmation needed</p>
+<p><strong>REFERENCES</strong></p>
+<ol type="1">
+<li><p>OPERA values used per: Q. Yu, R. Zhang, S. Deng, J. Huang, and G. Yu, “Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study,” <em>Water Research</em>, vol.&nbsp;43, no. 4, pp.&nbsp;1150–1158, Mar.&nbsp;2009, doi: <a href="https://doi.org/10.1016/j.watres.2008.12.001">10.1016/j.watres.2008.12.001</a>.</p></li>
+<li><p>TEST values used per: J. B. Burkhardt et al., “Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon,” <em>Journal of Water Process Engineering</em>, vol.&nbsp;53, p.&nbsp;103691, Jul.&nbsp;2023, doi: <a href="https://doi.org/10.1016/j.jwpe.2023.103691">10.1016/j.jwpe.2023.103691</a>.</p></li>
+<li><p>National Ground Water Association. “Groundwater and PFAS: State of knowledge and practice.” Waterville, OH, USA (2017).</p></li>
+</ol>
+<hr>
+</section>
+<section id="table-a9.3.-to-be-completed" class="level3">
+<h3 class="anchored" data-anchor-id="table-a9.3.-to-be-completed">Table A9.3. (To be completed)</h3>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("\/remfluormd\/docs\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../appendix/appendix_8_1.html" class="pagination-link" aria-label="APPENDIX 8.1. SOURCE REMEDIATION">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">APPENDIX 8.1. SOURCE REMEDIATION</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../data_chicklets/Step1_SystemUnits.html" class="pagination-link" aria-label="Step 1: Starting Information">
+        <span class="nav-page-text">Step 1: Starting Information</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2025 <a href="https://gsienv.com">GSI Environmental Inc.</a></p>
+</div>   
+    <div class="nav-footer-center">
+<p><a href="https://gsienv.com"><img src="..\static/logo.svg" class="img-fluid" alt="GSI Environmental Inc." width="65"></a></p>
+</div>
+    <div class="nav-footer-right">
+<p><a href="mailto:cgrant@gsi-net.com?subject=%22Anniston%20SMP%20Documentation%20Feedback%22">Have a question?</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

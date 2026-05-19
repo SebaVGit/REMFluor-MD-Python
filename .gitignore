@@ -3,7 +3,6 @@
 # ============================================================
  
 # --- Folders to exclude entirely from version control ---
-docs/
 env/
 Meters/
 Feet/

@@ -1,0 +1,48 @@
+---
+title: "Architecture"
+---
+
+The backend is built on [Django](https://www.djangoproject.com/) + [Django REST Framework](https://www.django-rest-framework.org/), with [Celery](https://docs.celeryq.dev/en/stable/) for asynchronous tasks and [Postgres/PostGIS](https://postgis.net/) for data storage. The frontend is served via [R Shiny](https://shiny.rstudio.com/). The backend exposes a RESTful API consumed by the R Shiny frontend, handling all business logic including geometry validation, chemistry data lookup, report creation, and asynchronous report generation.
+
+The system is containerized using [Docker](https://www.docker.com/) and orchestrated with [Docker Compose](https://docs.docker.com/compose/), allowing for easy deployment and scalability.
+
+## Overview
+
+The system is composed of:
+
+- **API Layer**
+  REST endpoints for geometry operations, chemistry queries, report creation, and downloading generated reports.
+
+- **Database Layer**
+  PostgreSQL with PostGIS enabled.
+  Stores:
+  - User accounts
+  - Reports
+  - Report grid payloads (JSON)
+  - Chemistry results
+  - Dataset versioning metadata
+
+- **Task Layer (Celery)**
+  Used for:
+  - Running spatial operations
+  - Generating PDF reports
+  - Heavy GIS or data-processing tasks
+
+- **Static + Reverse Proxy Layer**
+  Caddy serves:
+  - The R Shiny frontend
+  - Django API backend
+  - Static assets
+  - Internal documentation
+
+- **Frontend Layer**
+  R Shiny application providing the GUI for users to interact with the system.
+
+## Data Flow
+
+1. Client interacts with the R Shiny frontend.
+2. Frontend makes REST API calls to the Django backend for operations.
+3. Backend processes requests, performing spatial operations and data lookups as needed.
+4. For long-running tasks (e.g., report generation), backend enqueues tasks in Celery.
+5. Celery workers process tasks asynchronously, updating the database with results.
+6. Frontend retrieves results from the backend and displays them to the user.

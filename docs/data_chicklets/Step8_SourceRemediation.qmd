@@ -1,0 +1,96 @@
+---
+title: "Step 8: Source Remediation"
+---
+
+See **_Appendix 8.1 Source Zone Remediation_** for more info.
+
+## Percent Source Mass Removed by Remediation
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PERCENT SOURCE MASS REMOVED BY REMEDIATION** |
+| --- | --- |
+| Description | Percent of source mass removed by source remediation activities.<br><br>PFAS source remediation is quite different compared to chlorinated solvent source remediation for the following reasons: 1) PFAS are not DNAPLs; 2) considerable PFAS mass likely exists in the shallow unsaturated zone; and no proven in-situ remediation technologies have yet been developed that can destroy PFAAs. Therefore, for PFAS source removal/isolation, the key remediation technologies at this time are:<br><br>**Excavation of PFAS-impacted soils.**<br>The simplest method for modeling source remediation assumes that excavation removes nearly all (100%) of the PFAS being modeled.<span class="bullet-item">• If detailed estimates of PFAS mass are available for both the planned excavated soil volume and the remaining unexcavated soil, these estimates can be used to calculate a percentage of mass removal for REMFluor-MD from an excavation project.</span><span class="bullet-item">• It is important to note that, in general, long-chain PFAAs, particularly PFOS, are more likely to be retained in the upper few feet of the unsaturated zone, whereas short-chain PFAAs like PFBS tend to be distributed throughout the entire unsaturated zone.</span><span class="bullet-item">• At some sites complete excavation of the vadose zone soils may be possible. At a much more limited number of sites dewatering can be performed to removed saturated zone soils impacted by PFAS.</span><br>**Capping to reducing PFAS loading through source isolation.**<span class="bullet-item">• Capping involves constructing impermeable covers over PFAS sources in the unsaturated soil zone.</span><span class="bullet-item">• This method can significantly reduce the amount of PFAS entering groundwater by limiting water infiltration, which in turn decreases PFAS leaching.</span><span class="bullet-item">• Note that some PFAS sources may already be present in the saturated zone, either sorbed (attached) to soil particles, or diffused into low-permeability soils, which can later lead to back-diffusion of these PFAS out of the low-permeability soils and into transmissive aquifer zones.</span><br><br>See **_Appendix 8.1 Source Zone Remediation_** for more info. |
+| Units | Percent. |
+| Typical Values | 50% to 100%. |
+| Source of Data | Personal knowledge, vendor information, data from the scientific literature, or performance data from multiple site databases. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## Remediation Started in Year
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **REMEDIATION STARTED IN YEAR** |
+| --- | --- |
+| Description | Time when source remediation starts. Note that the Toolkit assumes that the simulation time starts at zero, when the source release occurs. |
+| Units | Year (YYYY) or yrs. |
+| Source of Data | Site history or remediation plans. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+## Remediation Ended in Year
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **REMEDIATION ENDED IN YEAR** |
+| --- | --- |
+| Description | Time when source remediation ends. Note that the Toolkit assumes that the simulation time starts at zero, when the source release occurs. |
+| Units | Year (YYYY) or yrs. |
+| Source of Data | Site history or remediation plans. |
+| How to Enter Data | Enter directly. |
+
+</div>
+
+<style>
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: #d3d3d3;
+  border: 1px solid #000;
+  padding: 8px;
+  font-weight: bold;
+}
+
+table td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+
+table tr:nth-child(1) th {
+  background-color: #d3d3d3;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 25%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 75%;
+}
+
+/* Indent bullet points and their continuation lines */
+.bullet-item {
+  display: block;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin: 0;
+}
+
+/* Indent paragraphs that follow bullet lists */
+.indented-paragraph {
+  display: block;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+</style>
+
+

@@ -1,0 +1,58 @@
+---
+title: "Step 1: Starting Information"
+---
+
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **System Units** |
+| --- | --- |
+| Description | Unit system for length.  [Note that concentrations and chemical parameters use specific metric units (e.g., ug/L, etc.)]. |
+| Units | English System (ft) or SI System (m). |
+| How to Enter Data | Choose the appropriate radio button. |
+
+</div>
+
+<style>
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: #d3d3d3;
+  border: 1px solid #000;
+  padding: 8px;
+  font-weight: bold;
+}
+
+table td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+
+table tr:nth-child(1) th {
+  background-color: #d3d3d3;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 25%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 75%;
+}
+</style>
+
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **Simple or Detailed Version** |
+| --- | --- |
+| Description | Pick either. <br><br>"_Simple Version_" which simplifies the model approach:  1) no precursor transformation, 2) uniform PFAS source strength over time (until source remediation, if selected), and 3) simple calibration approach just using PFAS concentrations along the centerline of the PFAS plume (assumes Y=0, Z=0). <br><br> OR<br><br>"_Detailed Version_" which includes: 1) precursor transformation, 2) variable PFAS source strength over time, and 3) allows calibration to any monitoring well within the model domain (any X, Y, Z cell). |
+| How to Enter Data | Select radio button. |
+
+</div>
