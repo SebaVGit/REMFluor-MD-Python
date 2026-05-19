@@ -1,4 +1,0 @@
-Calibration Data
-Excel File Path: C:/REMChlorMD_64bit/0_REMFluorMD_64/CalibrationTemplate_Detailed_ft.xlsx
-File Name: CalibrationTemplate_Detailed_ft.xlsx
-Available Sheets: Model Location, Model Data, Calibration

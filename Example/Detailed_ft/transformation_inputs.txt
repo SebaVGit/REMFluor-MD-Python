@@ -1,5 +1,0 @@
-Low-K Zone
-Parameter,Precursors 1,Precursors 2
-Yield Factor (-),0.3,0
-Decay half-life (years),0.2,0
-

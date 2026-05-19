@@ -1,1 +1,0 @@
-Sync test from Write tool — should be visible via bash if mount is consistent.

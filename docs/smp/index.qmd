@@ -1,6 +1,0 @@
----
-title: Anniston SMP Documentation
-description: Documentation for the Anniston Soil Management Portal
----
-
-The SMP Graphical User Interface (GUI) is built using R Shiny, providing an interactive and user-friendly experience.

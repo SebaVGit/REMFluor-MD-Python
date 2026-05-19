@@ -1,6 +1,0 @@
-Grid Cell Sizes
-Parameter,Value
-Cell Size X:,16.4
-Cell Size Y:,16.4
-Cell Size Z:,6.56
-Unit Flag:,1.0
