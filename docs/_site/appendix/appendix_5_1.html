@@ -180,13 +180,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+ <span class="menu-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_2.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</span></a>
+ <span class="menu-text">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -198,7 +198,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_4_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</span></a>
+ <span class="menu-text">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -358,7 +358,7 @@ window.Quarto = {
 </header>
 
 
-<p>Contributors: Werth, Carey, Newell</p>
+<p><em>Contributors: Carey, Werth, Newell</em></p>
 <p><strong>RETARDATION FACTOR CALCULATIONS</strong></p>
 <p><strong>Overview</strong></p>
 <p>REMFluor-MD explicitly represents sorption-driven retardation of PFAS transport in both transmissive aquifer zones and low-permeability (low‑k) geologic units. Low‑k units are defined as geologic materials with hydraulic conductivities substantially lower than the surrounding transmissive zones (e.g., clays, silts, shale, or glaciolacustrine deposits) that can act as long-term contaminant storage domains. Retardation factors are required inputs for both zones because sorption controls the effective velocity of dissolved PFAS and governs mass exchange between mobile groundwater and immobile or low‑mobility domains.</p>
@@ -371,7 +371,7 @@ R = 1 + \frac{K_d \cdot \rho_d}{n}
 <p><span class="math inline">\(K_d\)</span> = soil–water distribution coefficient (mL/g)</p>
 <p><span class="math inline">\(\rho_d\)</span> = dry bulk density of the aquifer material (g/mL)</p>
 <p><span class="math inline">\(n\)</span> = effective porosity (–)</p>
-<p>The distribution coefficient Kd is estimated from organic carbon partitioning using:</p>
+<p>The distribution coefficient <span class="math inline">\(K_d\)</span> can be estimated from organic carbon partitioning using:</p>
 <p><span class="math display">\[
 K_d = K_{oc} \cdot f_{oc}
 \]</span></p>
@@ -379,55 +379,50 @@ K_d = K_{oc} \cdot f_{oc}
 <p><span class="math inline">\(K_{oc}\)</span> = organic carbon–water partition coefficient (mL/g)</p>
 <p><span class="math inline">\(f_{oc}\)</span> = fraction organic carbon of the aquifer material (g/g)</p>
 <p>Use of this last equation assumes hydrophobic effects dominate sorption and no air/water partitioning effects are present. This assumption is more accurate for longer-chain PFAS, and for soils with greater organic carbon (<span class="math inline">\(f_{oc}\)</span>). For shorter chain PFAS, or when organic carbon content is low (&lt;1%), sorption is affected by PFAS polar head groups and/or mineral surfaces, and greater deviations from Eqn. 1 will occur.</p>
-<p>Approaches to estimate Koc have been developed by several authors, and the most recent are based on PFAS physiochemical properties. Three examples include the following:</p>
+<p>Approaches to estimate <span class="math inline">\(K_{oc}\)</span> have been developed by several authors, and the most recent are based on PFAS physiochemical properties. Three examples include the following:</p>
 <p><span class="math display">\[
 \log K_{oc} = \log K_{ow} - 0.21
 \]</span></p>
-<p><em>(Developed from non-PFAS hydrophobic organic chemical sorption to soil data) (Karickhoff, 1984)</em> <span class="math display">\[
-\log K_{oc} = 0.018\,V_m - 2.0
-\]</span> <em>(Developed from long and short-chain PFAS sorption to soil data, with <span class="math inline">\(V_m\)</span> in cm<span class="math inline">\(^3\)</span>/mol) (Brusseau, 2023)</em></p>
+<p><em>(Developed from non-PFAS hydrophobic organic chemical sorption to soil data) (Karickhoff, 1984)</em></p>
 <p><span class="math display">\[
-\log K_{oc} = 1.413\,\log K_{ow} - 0.651
-\]</span> <em>(Developed from linear C7 through C10 PFCA sorption to solid data, with <span class="math inline">\(K_{ow}\)</span> calculated from SPARC method) (Rayne and Forest, 2009)</em></p>
-<p>Physiochemical properties can be directly measured, or estimated using a number of different methods. For example, PFAS octanol-water partition coefficient (<span class="math inline">\(K_{ow}\)</span>) and molar volume (<span class="math inline">\(V_{m}\)</span>) values can be estimated using group contributions methods, linear solvation energy relationships (LSERs), or artificial intelligence models (Nendza et al., 2025; Schwarzenbach and Gschwend, 2002). Selected literature values of PFAS physiochemical properties are listed in the Attachment 1 of this appendix</p>
+\log K_{oc} = (0.018 \pm 0.002) \cdot (V_m - 2.0 \pm 0.6)
+\]</span></p>
+<p><em>(Developed from long PFAS sorption to soil data, with <span class="math inline">\(V_m\)</span> in cm<span class="math inline">\(^3\)</span>/mol) (Brusseau, 2024)</em></p>
+<p><span class="math display">\[
+\log K_{oc} = (1.413 \pm 0.018) \cdot \log K_{ow} - 0.651 \pm 0.140
+\]</span></p>
+<p><em>(Developed from linear C7 through C10 PFCA sorption to solid data, with <span class="math inline">\(K_{ow}\)</span> calculated from SPARC method) (Rayne and Forest, 2009)</em></p>
+<p>Physiochemical properties can be directly measured, or estimated using a number of different methods. For example, PFAS octanol-water partition coefficient (<span class="math inline">\(K_{ow}\)</span>) and molar volume (<span class="math inline">\(V_m\)</span>) values can be estimated using group contributions methods, linear solvation energy relationships (LSERs), or artificial intelligence models (Nendza et al., 2025; Schwarzenbach and Gschwend, 2002). Selected literature values of PFAS physiochemical properties are listed in the Attachment 1 of this appendix.</p>
 <p>Competitive sorption effects with NOM are often small and not considered because partitioning rather than adsorption generally dominates organic chemical uptake on these materials (Luthy et al., 1997).</p>
 <p><strong>KEY INPUT PARAMETERS FOR RETARDATION FACTORS</strong></p>
 <p><strong>Representative Koc Values for Eight PFAS</strong></p>
-<p>The chemical-specific partition coefficient (<span class="math inline">\(K_{oc}\)</span>) shows the relative concentrations of a contaminant sorbed to the soil organic carbon and concentration of this contaminant the aqueous phase when the sorbed and aqueous phase are in equilibrium. Larger values indicate greater affinity of organic constituents for the organic carbon fraction of soil. This value is chemical specific and can be found in chemical reference books.</p>
-<p>Table 1 shows the number of carbons (#C), Log(<span class="math inline">\(K_{oc}\)</span>), <span class="math inline">\(K_{oc}\)</span>, and Data Type for 14 PFAS.</p>
-<p><img src="./Figure_Appdx_5.1_1.png" class="img-fluid" alt="Koc" width="350"></p>
-<p>Source of data for table above:</p>
-<ol type="1">
-<li><p>Values represent mean values of Koc derived from aggregated lab or field-based measurements.</p></li>
-<li><p>Number of field-based investigations in study = 20 (in-situ measurements). Mean values applied for aquifer media.</p></li>
-<li><p>Number of laboratory-based investigations in study = 20.</p></li>
-<li><p>Source: Brusseau, M., 2024.</p></li>
-<li><p><span class="math inline">\(K_{oc}\)</span> = soil organic carbon-water partition coefficient.</p></li>
-</ol>
-<p>For the Detailed Model, <span class="math inline">\(K_{oc}\)</span>’s are needed for the precursor group for PFAA-1 and PFAA-2 (if PFAA-2 is being modeled). There are little data in the literature on what are representative <span class="math inline">\(K_{oc}\)</span>’s for precursors, so as an approximation you can assume the precursor group <span class="math inline">\(K_{oc}\)</span> is similar to the PFAA they are degrading to <span class="math inline">\(K_{oc}\)</span>.</p>
-<p><strong>Representative foc Values for Aquifer Solids in Transmissive Zones</strong></p>
-<p>The <span class="math inline">\(f_{oc}\)</span> parameter represents the fraction of the aquifer material comprised of natural organic carbon in the low-k in uncontaminated areas. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix.</p>
-<p>Typical values are 0.0002 - 0.02 (unitless) in transmissive zones.</p>
-<p>The fraction organic carbon value should be measured, if possible, by collecting a sample of aquifer material from an uncontaminated saturated zone and performing a laboratory analysis for transmissive zones (e.g.&nbsp;ASTM Method 2974-87 or equivalent). If unknown, a default value of 0.001 is often used (e.g., ASTM 1995).</p>
+<p>The chemical-specific partition coefficient (<span class="math inline">\(K_{oc}\)</span>) shows the relative concentrations of a contaminant sorbed to the soil organic carbon versus the concentration of this contaminant in the aqueous phase when the sorbed and aqueous phase are in equilibrium. Larger values in Table 5.1.1 indicate greater affinity of organic constituents for the organic carbon fraction of soil. These values are chemical specific and can be found in chemical reference books.</p>
+<p><em>Table 5.1.1. Number of carbons (#C), Log(<span class="math inline">\(K_{oc}\)</span>), <span class="math inline">\(K_{oc}\)</span> for 11 PFAAs. (Source: Brusseau (2024) Figure 1, based on 18 laboratory studies).</em></p>
+<p><img src="./Figure_Appdx_5.1_1.png" class="img-fluid" alt="Koc Table" width="350"></p>
+<p>For the Detailed Model, <span class="math inline">\(K_{oc}\)</span>’s are needed for the precursor group for PFAA-1 and PFAA-2 (if PFAA-2 is being modeled). There are little data in the literature on what are representative <span class="math inline">\(K_{oc}\)</span>’s for precursors, so as an approximation one can assume the <span class="math inline">\(K_{oc}\)</span> of the precursor group is similar to the <span class="math inline">\(K_{oc}\)</span> of the PFAA they are degrading to. In addition, there are some precursor average <span class="math inline">\(K_{oc}\)</span> values in Brusseau (2024).</p>
+<p><strong>Representative <span class="math inline">\(f_{oc}\)</span> Values for Aquifer Solids in Transmissive Zones</strong></p>
+<p>The <span class="math inline">\(f_{oc}\)</span> parameter represents the fraction of the aquifer material comprised of natural organic carbon in transmissive zones. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix.</p>
+<p>Typical values are 0.0002 – 0.02 (unitless) in transmissive zones.</p>
+<p>The fraction organic carbon value should be measured, if possible, by collecting a sample of aquifer material from an uncontaminated saturated zone and performing a laboratory analysis for transmissive zones (e.g., ASTM Method 2974-87 or equivalent). If unknown, a default value of <strong>0.001</strong> is often used (e.g., ASTM 1995).</p>
 <p><strong>Representative <span class="math inline">\(f_{oc}\)</span> Values for Aquifer Solids in Low-k Zones</strong></p>
-<p>The <span class="math inline">\(f_{oc}\)</span> parameter represents the fraction of the aquifer material comprised of natural organic carbon in the low-k in uncontaminated areas. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix.</p>
-<p>Although based on limited data, 0.0002 - 0.10 for low-k zones is a likely range. But some sites may be higher or lower. Some examples are shown below:</p>
+<p>The <span class="math inline">\(f_{oc}\)</span> parameter represents the fraction of the aquifer material comprised of natural organic carbon in low-k zones. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix. A representative value to use if no site-specific data is <strong>0.002</strong>.</p>
+<p>Although based on limited data, <span class="math inline">\(f_{oc}\)</span> of 0.0002 – 0.10 for low-k zones is a likely range, but some sites may be higher or lower. Some examples are shown below:</p>
 <ul>
-<li><p>At the Moffatt Field site, the foc of the clay fraction foc was about 0.0066 (Roberts <em>et al.</em>, 1990).</p></li>
+<li><p>At the Moffatt Field site, the <span class="math inline">\(f_{oc}\)</span> of the clay fraction was about 0.0066 (Roberts <em>et al.</em>, 1990).</p></li>
 <li><p>Domenico and Schwartz (1990) report these values:</p>
 <ul>
 <li>silt (Wildwood Ontario): 0.00102</li>
 <li>from Oconee River sediment: Coarse silt: 0.029; Medium silt: 0.02; Fine silt: 0.0226</li>
 </ul></li>
 <li><p>Chapman and Parker (2005) report a <span class="math inline">\(f_{oc}\)</span> of glaciolacustrine aquitard composed of varved silts and clays: 0.0024 to 0.00104 with an average of 0.00054.</p></li>
-<li><p>Adamson (2012) reports <span class="math inline">\(f_{oc}\)</span> = 0.001 for a clay layer in Jacksonville Florida and foc values for silts at the MMR site in Massachusetts ranging from &lt;0.0005 to 0.0022 (median value = 0.0014) for one core using a Leco carbon analyzer; a second core had foc values &lt; 0.005 for 10 samples and two samples with 0.00067 and 0.00084 (gram per gram). Values for <span class="math inline">\(f_{oc}\)</span> using Walkley-Black wet oxidation method were generally higher by a factor of 2 to 3.</p></li>
+<li><p>Adamson (2012) reports <span class="math inline">\(f_{oc}\)</span> = 0.001 for a clay layer in Jacksonville Florida and <span class="math inline">\(f_{oc}\)</span> values for silts at the MMR site in Massachusetts ranging from &lt;0.0005 to 0.0022 (median value = 0.0014) for one core using a Leco carbon analyzer; a second core had <span class="math inline">\(f_{oc}\)</span> values &lt; 0.005 for 10 samples and two samples with 0.00067 and 0.00084 (gram per gram). Values for <span class="math inline">\(f_{oc}\)</span> using Walkley-Black wet oxidation method were generally higher than ASTM method by a factor of 2 to 3.</p></li>
 <li><p>Values ranging from 0 to 0.078 have been reported for silts at F.W. Warren site in Wyoming, with a median value of 0.</p></li>
 </ul>
 <p><strong>Soil Bulk Density in Transmissive Zone</strong></p>
 <p>This parameter is the density of the saturated transmissive zone (referred to as “soil”), excluding soil moisture. Although this value can be measured in the lab, in most cases estimated values are used. A value of 1.7 g/mL is used frequently for unconsolidated media.</p>
 <p>Data are derived either from an analysis of soil samples at a geotechnical lab or more commonly, application of estimated values such as 1.7 g/mL (equal to kg/liter).</p>
 <p><strong>Soil Bulk Density in Low-k Zone</strong></p>
-<p>This parameter is the density of the saturated low k zone (referred to as “soil”), excluding soil moisture. Although this value can be measured in the lab, in most cases estimated values are used. A value of 1.7 g/mL is used frequently for unconsolidated media. Representative values for specific geologic media are shown below (Lovanh <em>et al.</em>, 2000; derived from Domenico and Schwartz, 1990):</p>
+<p>This parameter is the density of soil in the saturated low k zone (referred to as “soil”), excluding soil moisture. Although this value can be measured in the lab, in most cases estimated values are used. A value of <strong>1.5 g/mL</strong> is used frequently for low-k unconsolidated media. Representative values for specific geologic media are shown below (Lovanh <em>et al.</em>, 2000; derived from Domenico and Schwartz, 1990):</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -506,33 +501,45 @@ K_d = K_{oc} \cdot f_{oc}
 </tbody>
 </table>
 <p><strong>Retardation in the Transmissive Zone</strong></p>
-<p>Transmissive zones represent the primary groundwater flow domain and typically consist of sands, gravels, or fractured media. Retardation factors in transmissive zones are commonly lower than those in low‑k units due to lower organic carbon content and higher effective porosity. Transmissive-zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2026) are shown in Table 2.</p>
-<p>Table 2. Transmissive-zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025) <img src="./Figure_Appdx_5.1_2.png" class="img-fluid" alt="Retardation" width="350"></p>
+<p>Transmissive zones represent the primary groundwater flow domain and typically consist of sands, gravels, or fractured media. Retardation factors in transmissive zones are commonly lower than those in low‑k units due to lower organic carbon content and higher effective porosity. Calculated retardation factors (R) using <span class="math inline">\(K_{oc}\)</span>’s from Brusseau’s (2024) Figure 1 (18 laboratory studies) are shown at the far right hand column below assuming <span class="math inline">\(f_{oc}\)</span> = 0.001, bulk density = 1.7 kg/L, and total porosity of 0.30.</p>
+<p><em>Table 5.1.1.2. Representative retardation factors for transmissive units for 11 PFAAs based on default aquifer properties. (Source: Brusseau (2024) Figure 1, based on 18 laboratory studies).</em></p>
+<p><img src="./Figure_Appdx_5.1_1_2.png" class="img-fluid" alt="Brusseau Transmissive Retardation" width="350"></p>
+<p>Transmissive-zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2026) are shown in Table 5.1.2.</p>
+<p><em>Table 5.1.2. Transmissive-zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025).</em></p>
+<p><img src="./Figure_Appdx_5.1_2.png" class="img-fluid" alt="Stockwell Transmissive Retardation" width="350"></p>
 <p><strong>RETARDATION IN LOW‑K UNITS</strong></p>
-<p>Low‑k units are characterized by reduced permeability and often elevated organic carbon content relative to transmissive zones. As a result, retardation factors in low‑k units may be equal to or greater than those in transmissive zones. Although site-specific data remain limited, several studies suggest enhanced sorption in low‑k materials.</p>
-<p>REMFluor-MD requires separate retardation factors for low‑k units to properly simulate matrix diffusion, back-diffusion, and long-term plume persistence. Low‑k zone retardation factors are calculated using the same governing equations as transmissive zones but with material-specific values for bulk density, porosity, and fraction organic carbon.</p>
-<p>Low-k retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025) are shown in Table 3.</p>
-<p>Table 3. Low-k zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025) <img src="./Figure_Appdx_5.1_3.png" class="img-fluid" alt="Retardation Low K" width="350"></p>
+<p>Low‑k units are characterized by reduced permeability and often elevated organic carbon contents relative to transmissive zones. As a result, retardation factors in low‑k units may be equal to or greater than those in transmissive zones. Although site-specific data remain limited, several studies suggest enhanced sorption in low‑k materials.</p>
+<p>REMFluor-MD requires separate retardation factors for low‑k units to properly simulate matrix diffusion, back-diffusion, and long-term plume persistence. Low‑k zone retardation factors are calculated using the same governing equations as transmissive zones but with material-specific values for bulk density, porosity, and fraction of organic carbon. Calculated retardation factors (R) using <span class="math inline">\(K_{oc}\)</span>’s from Brusseau’s (2024) Figure 1 (18 laboratory studies) are shown at the far right hand column below assuming <span class="math inline">\(f_{oc}\)</span> = 0.002, bulk density = 1.5 kg/L, and total porosity of 0.50.</p>
+<p><em>Table 5.1.3. Representative low-k unit retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025).</em></p>
+<p><img src="./Figure_Appdx_5.1_3.png" class="img-fluid" alt="Brusseau Low-k Retardation" width="350"></p>
+<p>Low-k retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025) are shown in Table 5.1.3.2.</p>
+<p><em>Table 5.1.3.2. Low-k zone retardation factors for PFAS derived from a modeling study of one PFAS research site (Stockwell et al., 2025).</em></p>
+<p><img src="./Figure_Appdx_5.1_3_2.png" class="img-fluid" alt="Stockwell Low-k Retardation" width="350"></p>
 <p><strong>Required Input Parameters</strong></p>
 <p>Separate parameter values are specified for transmissive and low‑k zones, including:</p>
 <ul>
 <li><p>Soil bulk density</p></li>
-<li><p>Fraction organic carbon</p></li>
-<li><p>Soil total porosity (in some models the effective porosity is assumed to be close enough to use in retardation factor calculations</p></li>
+<li><p>Fraction of organic carbon</p></li>
+<li><p>Soil total porosity (in some models the effective porosity is assumed to be close enough to use in retardation factor calculations)</p></li>
 <li><p>Organic carbon partitioning coefficient (<span class="math inline">\(K_{oc}\)</span>)</p></li>
 </ul>
-<p>Default values may be applied where site-specific measurements are unavailable; however, measured values are preferred when possible due to the strong sensitivity of retardation to foc and <span class="math inline">\(K_{oc}\)</span>.</p>
+<p>Default values may be applied where site-specific measurements are unavailable; however, measured values are preferred when possible due to the strong sensitivity of retardation to <span class="math inline">\(f_{oc}\)</span> and <span class="math inline">\(K_{oc}\)</span>.</p>
 <p><strong>Role in REMFluor-MD Transport Simulation</strong></p>
 <p>Retardation factors directly affect advective transport velocities by reducing the effective groundwater velocity experienced by PFAS. In REMFluor-MD, retardation in both transmissive and low‑k domains controls mass storage, delayed breakthrough, and long-term rebound behavior. Accurate specification of retardation factors is therefore essential for realistic simulation of PFAS plume evolution and persistence.</p>
 <p><strong>REFERENCES</strong></p>
-<p>Brusseau, M. L. (2024). Field versus laboratory measurements of PFAS sorption by soils and sediments. Journal of Hazardous Materials Advances, 16, Article 100508.</p>
+<p>Adamson, D.T., 2012. GSI Environmental Inc., Houston, Texas. Personal communication.</p>
+<p>Brusseau, M. L. (2024). Field versus laboratory measurements of PFAS sorption by soils and sediments. <em>Journal of Hazardous Materials Advances</em>, 16, Article 100508. <a href="https://doi.org/10.1016/j.hazadv.2024.100508" class="uri">https://doi.org/10.1016/j.hazadv.2024.100508</a></p>
+<p>Chapman, S. W., &amp; Parker, B. L. (2005). Plume persistence due to aquitard back diffusion following dense nonaqueous phase liquid source removal or isolation. <em>Water Resources Research</em>, 41(12), W12411. <a href="https://doi.org/10.1029/2005WR004224" class="uri">https://doi.org/10.1029/2005WR004224</a></p>
 <p>Domenico, P. A., &amp; Schwartz, F. W. (1997). <em>Physical and chemical hydrogeology</em> (2nd ed.). John Wiley &amp; Sons.</p>
+<p>Karickhoff, S. W. (1984). Organic pollutant sorption in aquatic systems. <em>Journal of Hydraulic Engineering</em>, 110(6), 707–735.</p>
+<p>Koerner, R. M. (1984). <em>Construction and geotechnical methods in foundation engineering</em>. McGraw-Hill.</p>
 <p>Lovanh, N., Y. Zhang, R.C. Heathcote, and P.J.J. Alvarez, 2000. “Guidelines to Determine Site-Specific Parameters for Modeling the Fate and Transport of Monoaromatic Hydrocarbons in Groundwater”, report submitted to the Iowa Comprehensive Petroleum Underground Storage Tank Fund Board, University of Iowa, Iowa City, Iowa.</p>
-<p>Luthy, R., G.R. Aiken, M.L. Brusseau, S.D. Cunningham, P.M. Gschwend, J.J. Pignatello, M. Reinhard, S.J. Traina, W.J. Weber, Jr., J.C. Westall.(1997). Sequestration of Hydrophobic Organic Contaminants by Geosorbents. Environmental Science &amp; Technology 1997, 31 (12) , 3341-3347</p>
-<p>Nendza, M., Kosfeld, V., &amp; Schlechtriem, C. (2025). Consolidated octanol/water partition coefficients: Combining multiple estimates from different methods to reduce uncertainties in log&nbsp;KOW. Environmental Sciences Europe, 37(1), 44. https://doi.org/10.1186/s12302-025-01072-2</p>
-<p>Rayne, S., &amp; Forest, K. (2009). Congener specific organic carbon normalized soil and sediment-water partitioning coefficients for the C1 through C8 perfluorinated alkylsulfonic and alkylcarboxylic acids. <em>Nature Precedings</em>, 1–1.</p>
-<p>Schwarzenbach, R.P., P.M. Gschwend, D.M. Imboden. (2002). Environmental Organic Chemistry, Wiley. ISBN:9780471350538, DOI:10.1002/0471649643.</p>
-<p>Stockwell, E. B., Adamson, D. T., Gamlin, J. D., Kulkarni, P. R., Singh, A., Falta, R. W., &amp; Newell, C. J. (2026). Modeling <em>per</em>- and polyfluoroalkyl substance precursor transformation in groundwater at a well-characterized site. <em>Journal of Contaminant Hydrology</em>, <em>276</em>, 104766.</p>
+<p>Luthy, R., G.R. Aiken, M.L. Brusseau, S.D. Cunningham, P.M. Gschwend, J.J. Pignatello, M. Reinhard, S.J. Traina, W.J. Weber, Jr., J.C. Westall. (1997). Sequestration of Hydrophobic Organic Contaminants by Geosorbents. <em>Environmental Science &amp; Technology</em>, 31(12), 3341–3347.</p>
+<p>Nendza, M., Kosfeld, V., &amp; Schlechtriem, C. (2025). Consolidated octanol/water partition coefficients: Combining multiple estimates from different methods to reduce uncertainties in log KOW. <em>Environmental Sciences Europe</em>, 37(1), 44. <a href="https://doi.org/10.1186/s12302-025-01072-2" class="uri">https://doi.org/10.1186/s12302-025-01072-2</a></p>
+<p>Rayne, S., &amp; Forest, K. (2009). Congener specific organic carbon normalized soil and sediment-water partitioning coefficients for the C1 through C8 perfluorinated alkylsulfonic and alkylcarboxylic acids. <em>Nature Proceedings</em>, 1–1. <a href="https://doi.org/10.1038/npre.2009.3011.1" class="uri">https://doi.org/10.1038/npre.2009.3011.1</a></p>
+<p>Roberts, P.V., G.D. Hopkins, D.M. Mackay, and L. Semprini, 1990. Field Evaluation of In Situ Biodegradation of Chlorinated Ethenes, 1. Methodology and Field Site Characterization, <em>Ground Water</em>, 28(4), 591–604.</p>
+<p>Schwarzenbach, R.P., P.M. Gschwend, D.M. Imboden. (2002). <em>Environmental Organic Chemistry</em>, Wiley. ISBN: 9780471350538, DOI: 10.1002/0471649643.</p>
+<p>Stockwell, E. B., Adamson, D. T., Gamlin, J. D., Kulkarni, P. R., Singh, A., Falta, R. W., &amp; Newell, C. J. (2026). Modeling <em>per</em>- and polyfluoroalkyl substance precursor transformation in groundwater at a well-characterized site. <em>Journal of Contaminant Hydrology</em>, 276, 104766. <a href="https://doi.org/10.1016/j.jconhyd.2025.104766" class="uri">https://doi.org/10.1016/j.jconhyd.2025.104766</a></p>
 
 
 

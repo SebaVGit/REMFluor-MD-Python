@@ -2,23 +2,23 @@
 title: "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)"
 ---
 
-See these Appendices for more info:
+See these Appendices for more information:
 
-- **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_**
+- **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_** for more information.
 
-- **_Appendix 10.1 PFAS Longevity Paper_**
+- **_Appendix 9.2 PFAS Longevity Paper_**
 
 ## PSB Freundlich Exponent "a"
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **PSB FREUNDLICH EXPONENT "a"** |
-| --- | --- |
-| Description | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in Permeable Sorption Barrier (PSB):<br><br>q = K<sub>f</sub> c<sup>a</sup><br><br>Here, q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), K<sub>f</sub> is the Freundlich capacity parameter, and a is the Freundlich exponent. |
-| Units | (-) |
-| Typical Values | Typical values of "a" for long-chained PFAS range from 0.2 to 0.5.<br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. for these three PFAAs:<br><span class="bullet-item">• PFOS "a" = 0.33</span><span class="bullet-item">• PFOA "a" = 0.25</span><span class="bullet-item">• PFHxS "a" = 0.24</span><span class="bullet-item">• 6:2 FtS "a" = 0.28</span><br>More detailed methods to estimate the Freundlich "a" for these and other PFAS are presented in **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_** |
-| Source of Data | Users can either use these default estimates or use values of "a" they derived themselves. |
-| How to Enter Data | Enter directly. |
+| **Parameter** | **PSB Freundlich Exponent "a"** |
+|---|---|
+| **Units** | (-) |
+| **Description** | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in a Permeable Sorption Barrier (PSB), a PFAS Enhanced Retention (PER) technology (Newell et al., 2022; Newell et al., 2024):<br><br>X~s~=f~cac~K~f~ c^a^<br><br>Here, *X~s~* is the PFAS mass sorbed to CAC per mass of dry soil in a unit volume of aquifer material (e.g., mg/kg or ug/kg), *C* is the aqueous concentration (e.g., mg/L or ug/L), *f~cac~* is the mass fraction of injected CAC in the formation, *K~f~* is the Freundlich capacity parameter (e.g., (mg/kg)(mg/L)^-a^ or (ug/kg)(ug/L)^-a^), and ***a* is the Freundlich exponent<b> (dimensionless)</b>.** |
+| **Typical Values** | Typical values of "*a*" for long-chained PFAS range from 0.2 to 0.5.<br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. (2022) for these three PFAAs:<br>&bull; PFOS "a" = 0.33 <br>&bull; PFOA "a" = 0.25 <br>&bull; PFHxS "a" = 0.24 <br>&bull; 6:2 FtS "a" = 0.28 <br>More detailed methods to estimate the Freundlich "a" for these and other PFAS are presented in ***[Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms that can be accessed via this button:]***<br><br>![Step9_1](Step9_1.png)<br><br>*A simple screening method to estimate longevity from Newell et al., 2024 "Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater" is provided in this button.*<br><br>![Step9_2](Step9_2.png)<br><br>![Step9_3](Step9_3.png)<br><br> |
+| **Source Of Data** | Users can either use these default estimates or user-defined values. |
+| **How To Enter Data** | Enter directly. |
 
 </div>
 
@@ -26,13 +26,13 @@ See these Appendices for more info:
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **PSB FREUNDLICH "K<sub>f</sub>"** |
-| --- | --- |
-| Description | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in Permeable Sorption Barrier (PSB):<br><br>q = K<sub>f</sub> c<sup>a</sup><br><br>Here, q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), K<sub>f</sub> is the Freundlich capacity parameter, and a is the Freundlich exponent. |
-| Units | (-) |
-| Typical Values | Typical values of "K<sub>f</sub>" for long-chained PFAS range from 0.2 to 0.5.<br><br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. (2022) for these three PFAAs:<span class="bullet-item">• PFOS "K<sub>f</sub>" = 12,000 (mg/kg) / (mg/L)</span><span class="bullet-item">• PFOA "K<sub>f</sub>" = 580 (mg/kg) / (mg/L)</span><span class="bullet-item">• PFHxS "K<sub>f</sub>" = 1,240 (mg/kg) / (mg/L)</span><span class="bullet-item">• 6:2 FtS "K<sub>f</sub>" = 3,900 (mg/kg) / (mg/L)</span><br>More detailed methods to estimate the Freundlich "K<sub>f</sub>" for these and other PFAS are presented in **_Appendix 9.1 Modeling Sorption In CAC Barriers with Freundlich Isotherms_** |
-| Source of Data | Users can either use these default estimates or use values of "a" they derived themselves. |
-| How to Enter Data | Enter directly. |
+| **Parameter** | **PSB Freundlich "K<sub>f</sub>"** |
+|---|---|
+| **Units** | (ug/kg)(ug/L)^-a^ |
+| **Description** | PFAS sorption to Colloidal Activated Carbon (CAC) is nonlinear, and Freundlich isotherms are most often used to describe sorption in Permeable Sorption Barrier (PSB):<br><br>X~s~=f~cac~K~f~ c^a^<br><br>Here, *X~s~* is the mass sorbed to CAC per mass of dry soil (e.g., ug/kg), *C* is the aqueous concentration (e.g., ug/L), ***K~f~* is the Freundlich capacity parameter**, *f~cac\ ~*is the mass fraction of CAC added to the formation (e.g., (mg/kg)(mg/L)^-a^ or (ug/kg)(ug/L)^-a^), and *a* is the Freundlich exponent. |
+| **Typical Values** | NOTE: ug (micrograms) are required for all mass-base units in the model.<br><br>The units of *K~f~* depend on the exponent *a*. REMFluor-MD uses units in terms of ug/L and ug/kg, so if *K~f\ ~*is given in (mg/kg)(mg/L)^-a^, it must be converted.to units of (ug/kg)(ug/L)^-a^. The *K~f~* conversion to go from mg concentration units to ug Kf units is:<br>$$K_{f(ug)} = (1000)^{1 - a}K_{f(mg)}$$<br>For screening type modeling, literature defaults have been incorporated in the interface from Carey et al. (2022) for these four PFAAs:<br><br>&bull; PFOS „K~f~" = 1,230,000 $\frac{(ug/kg)}{{(ug/L)}^{0.33}}$<br><br>&bull; PFOA "K~f~" = 103,000 $\frac{(ug/kg)}{{(ug/L)}^{0.25}}$<br><br>&bull; PFHxS "K~f~" = 236,000$\ \frac{(ug/kg)}{{(ug/L)}^{0.24}}$<br><br>&bull; 6:2 FtS "K~f~" =980,000 $\frac{(ug/kg)}{{(ug/L)}^{0.28}}$<br><br>More detailed methods to estimate the Freundlich "*K~f~*" for these and other PFAS are presented in ***[Appendix 9.1 Modeling Sorption in CAC Barriers with Freundlich Isotherms]***. |
+| **Source Of Data** | Users can either use these default estimates or user-defined values. |
+| **How To Enter Data** | Enter directly. |
 
 </div>
 
@@ -40,13 +40,27 @@ See these Appendices for more info:
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **YEAR PSB BARRIER INSTALLED** |
-| --- | --- |
-| Description | This is the year that a PSB was installed to control a PFAS plume. |
-| Units | (-) |
-| Typical Values | The first PSB for PFAS was installed in mid 2010s. REMFluor-MD can be used to evaluate PSB installed any time in the future. |
-| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
-| How to Enter Data | Enter directly. |
+| **Parameter** | **Year PSB Barrier Installed** |
+|---|---|
+| **Units** | (-) |
+| **Description** | This is the year that a PSB was installed to control a PFAS plume. |
+| **Typical Values** | The first PSB for PFAS was installed in the mid-2010s. REMFluor-MD can be used to evaluate a PSB installed any time in the future. |
+| **Source Of Data** | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| **How To Enter Data** | Enter directly. |
+
+</div>
+
+## PSB Distance From Source
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PSB Distance From Source** |
+|---|---|
+| **Units** | ft (or m). |
+| **Description** | This is the distance downgradient that a PSB has been installed. |
+| **Typical Values** | For source control PSBs: 1-10 m<br>For mid-plume PSBs: 200 to 800 m<br>For edge-of-plume PSBs: 400 to 1,600 m |
+| **Source Of Data** | Based on remediation design team PSB options. |
+| **How To Enter Data** | Enter directly. |
 
 </div>
 
@@ -54,13 +68,13 @@ See these Appendices for more info:
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **TOTAL WIDTH OF PSB IN X-DIRECTION** |
+| **Parameter** | **Total Width of PSB in X-Direction** |
 | --- | --- |
-| Description | This is defined here as the width of a PSB in the direction of groundwater flow (see figure below for PSB terminology used with REMFluor-MD). |
-| Units | (-) |
-| Typical Values | Newell et al. (2025) reports barrier widths for PSB's constructed using Colloidal Activated Carbon (CAC) 17 PSBs, proving these ranges:<span class="bullet-item">• Minimum: 1.9 meters</span><span class="bullet-item">• Median: 4 meters</span><span class="bullet-item">• Maximum: 10 meters</span><img src="Step9_1.png" alt="PSB terminology" style="max-width: 100%; margin: 10px 0;"><br>See **_Appendix 10.1 PFAS Longevity Paper_** for more info. |
-| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
-| How to Enter Data | Enter directly. |
+| **Units** | ft (or m). |
+| **Description** | This is defined here as the width of a PSB in the direction of groundwater flow (see figure below for PSB terminology used with REMFluor-MD). |
+| **Typical Values** | Newell et al. (2025) (Appendix 9.2 for free download) reports barrier widths for 17 PSB's constructed using Colloidal Activated Carbon (CAC), providing these ranges:<br>&bull; Minimum: 1.9 m <br>&bull; Median: 4 m <br>&bull; Maximum: 10 m <br><br>![Step9_4](Step9_4.png)<br><br>See ***[Appendix 9.2 PFAS Longevity Paper]*** for more information via free download. |
+| **Source Of Data** | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| **How To Enter Data** | Enter directly. |
 
 </div>
 
@@ -68,13 +82,27 @@ See these Appendices for more info:
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **PSB LOADING "f<sub>cac</sub>"** |
-| --- | --- |
-| Description | This is defined here carbon‐to‐soil ratio also known as the fraction of Colloidal Activated Carbon CAC in soil (f<sub>CAC</sub>), expressed as dry weight in percent. An f<sub>cac</sub> value of 0.24% means that about 2.4 pounds of CAC have been injected per 1,000 pounds of dry soil in the injection zone. This is also equivalent to 1 pound of CAC being injected into about 420 pounds of dry soil.<br><br>(Note dry soil is used in the definition even though the PSB injection zone is in groundwater). |
-| Units | (-) |
-| Typical Values | Newell et al. (2025) reports f<sub>cac</sub>'s for PSB's constructed using Colloidal Activated Carbon (CAC) 17 PSBs, proving these ranges:<span class="bullet-item">• Minimum f<sub>cac</sub>: 0.06 (%)</span><span class="bullet-item">• Median f<sub>cac</sub>: 0.24 (%)</span><span class="bullet-item">• Maximum f<sub>cac</sub>: 0.50 (%)</span><br>See **_Appendix 10.1 PFAS Longevity Paper_** for more info. |
-| Source of Data | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
-| How to Enter Data | Enter directly. |
+| **Parameter** | **PSB Loading "f<sub>cac</sub>"** |
+|---|---|
+| **Units** | Percent mass fraction. |
+| **Description** | This is the mass fraction of Colloidal Activated Carbon (CAC) in soil ( f~cac~ ), expressed as dry weight in percent. A f~cac~ value of 0.24% means that about 2.4 pounds of CAC have been injected per 1,000 pounds of dry soil in the injection zone. This is equivalent to 1 pound of CAC being injected into about 420 pounds of dry soil.<br>(Note dry soil is used in the definition even though the PSB injection zone is in groundwater.) |
+| **Typical Values** | Newell et al. (2025) Appendix 9.2 for free download) reports f~cac~'s for 17 PSB's constructed using Colloidal Activated Carbon (CAC), providing these ranges:<br>&bull; Minimum f~cac~ : 0.06 (%) <br>&bull; Median f~cac~ : 0.24 (%) <br>&bull; Maximum f~cac~ : 0.50 (%) <br>See ***[Appendix 9.2 PFAS Longevity Paper]*** for more info. via free download. |
+| **Source Of Data** | Based on cases being evaluated for Feasibility Studies or other remediation alternatives or PSB design studies. |
+| **How To Enter Data** | Enter directly. |
+
+</div>
+
+## Number of Grid Cells in X-Direction in the PSB
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **Number of grid cells in x-direction in the PSB** |
+|---|---|
+| **Units** | Number of Cells. |
+| **Description** | To model the transport of PFAS through a PSB, the width of the grid cells in the x-direction have to be smaller in the PSB zone than the zone where PFAS are flowing through natural aquifer materials. |
+| **Typical Values** | You can choose up to 20 grid cells to represent the width of the PSB in the model (i.e., parallel to the direction of groundwater flow). To determine which to enter in the model, we recommend starting with a value of 20 grid cells, and you can try to reduce this to see if the longevity prediction changes - if it does change significantly, then use the number of 20 grid cells even if it slows down the simulation. |
+| **Source Of Data** | Based on Dr. Falta's experience with running REMFluor-MD. |
+| **How To Enter Data** | Enter directly. |
 
 </div>
 

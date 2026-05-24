@@ -180,13 +180,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+ <span class="menu-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_2.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</span></a>
+ <span class="menu-text">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -198,7 +198,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_4_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</span></a>
+ <span class="menu-text">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -358,22 +358,21 @@ window.Quarto = {
 </header>
 
 
-<p>Contributors: Stockwell, Newell</p>
+<p><em>Contributors: Stockwell, Newell</em></p>
 <p><strong>OVERVIEW</strong></p>
-<p>As of 2025, modeling transformation of PFAS precursors to PFAAs is still experimental and typically needs extensive site characterization data including non-target analysis to identify key precursors that are present in the plume. Therefore, at most sites modeling precursor transformation will not be possible. However, Stockwell et al.&nbsp;(2026) have developed a general method for modeling precursor transformation in REMFluor-MD that uses non-target analytical results to provide a high-level approximation of the style of precursor transformation effects (as opposed to a rigorous exact simulation of known processes).</p>
-<p>Note two key factors if you are considering using this method:</p>
+<p>As of 2025, modeling transformation of PFAS precursors to PFAAs is still experimental and typically needs extensive site characterization data including non-target analysis to identify key precursors that are present in the plume. Therefore, at most sites modeling precursor transformation will not be possible. However, Stockwell et al.&nbsp;(2026) have developed a general method for modeling precursor transformation in REMFluor-MD that uses non-target analytical results to provide a high-level approximation of the style of precursor transformation effects (as opposed to a rigorous exact simulation of known processes). Note two key factors if you are considering using this method:</p>
 <ol type="1">
-<li><p>You will need to have non-target PFAS analytical data, which means a much larger range of analytical parameters besides the 40 parameters in USEPA Method 1633 (potentially 100 or more different PFAS species as indicated by Adamson et al., 2020). ** If you only have Method 1633 data, do not try to model precursor transformation.**</p></li>
-<li><p>The methodology in Stockwell et al.&nbsp;(2026) is still** in the exploratory stage**, and there are no generally accepted practices for modeling precursors at PFAS sites as of the year 2026.</p></li>
-<li><p><strong>Quick Start</strong>: Go to “Modeling PFAS Precursor Transformation In REMFluor-MD” Section below.</p></li>
+<li><p>You will likely need to have non-target PFAS analytical data, which means a much larger range of analytical parameters besides the 40 parameters in USEPA Method 1633 (potentially 100 or more different PFAS species as indicated by Adamson et al., 2020). <strong>If you only have Method 1633 data, do not try to model precursor transformation.</strong></p></li>
+<li><p>The methodology in Stockwell et al.&nbsp;(2026) is still <strong>in the exploratory stage</strong>, and there are no generally accepted practices for modeling precursors at PFAS sites as of 2026.</p></li>
+<li><p><strong>Quick Start:</strong> Go to “Modeling PFAS Precursor Transformation In REMFluor-MD” section below.</p></li>
 </ol>
 <p><strong>IN SITU PFAS PRECURSOR TRANSFORMATION</strong></p>
-<p>PFAS precursors can be subject to a variety of in situ abiotic and biotic reactions that result in the formation of PFAAs.</p>
+<p>PFAS precursors can be subject to a variety of in situ abiotic and biotic reactions that produce PFAAs.</p>
 <ul>
-<li><p><em>Abiotic Transformation: </em>Hydrolysis, photolysis, and oxidation have been shown to cause abiotic transformations of precursors in soil and water under natural environmental conditions. Abiotic transformations may produce PFAAs, intermediate compounds that are further transformed to PFAAs, or intermediate compounds that are not further transformed (ITRC 2022).</p></li>
+<li><p><em>Abiotic Transformation:</em> Hydrolysis, photolysis, and oxidation have been shown to cause abiotic transformations of precursors in soil and water under natural environmental conditions. Abiotic transformations may produce PFAAs, intermediate compounds that are further transformed to PFAAs, or intermediate compounds that are not further transformed (ITRC 2022).</p></li>
 <li><p><em>Biotic Transformation:</em> Significant literature exists providing evidence of aerobic biotransformation of precursors (ITRC 2022). Few studies have been published providing evidence of anaerobic biotransformation of precursors, and the significance of anaerobic precursor biotransformation is uncertain (ITRC 2022). Weber et al.&nbsp;(2017) noted that anoxic conditions at a site in Cape Cod may have reduced or eliminated in situ transformation of precursors to PFAAs.</p></li>
 </ul>
-<p>REMFluor-MD can simulate transformation of one parent compound to one degradation product. Therefore, to be able to model precursor transformation in REMFluor-MD, a key simplifying assumption is to group precursors based on their potential transformation to specific PFAAs. Potential precursors for each PFAA can be defined as follows, similar to the approach taken by Ruyle et al.&nbsp;(2023) and formalized in Stockwell et al., 2026):</p>
+<p>REMFluor-MD can simulate transformation of one parent compound to one degradation product. Therefore, to be able to model precursor transformation, a key simplifying assumption is to group precursors based on their potential transformation to specific PFAAs. Potential precursors for each PFAA can be defined as follows, similar to the approach by Ruyle et al.&nbsp;(2023) and formalized in Stockwell et al., 2026):</p>
 <ol type="1">
 <li><p>“PFOS-able” precursors are PFSA precursors with 8 fully fluorinated carbons</p></li>
 <li><p>“PFOA-able” precursors are PFCA precursors with 7 or 8 fully fluorinated carbons</p></li>
@@ -381,6 +380,23 @@ window.Quarto = {
 <li><p>“PFBS-able” precursors are PFSA precursors with 4 fully fluorinated carbons</p></li>
 </ol>
 <p>This simplifying assumption is based on previous studies that show that PFSA precursor transformation generally yields PFSAs with the same chain length, whereas PFCA precursor transformation typically yields PFCAs with the same or n-1 chain length (Butt et al., 2014; Choi et al., 2022; Dasu et al., 2012, 2013; Dinglasan et al., 2004; Dong et al., 2023; Ruyle et al., 2023; Sharifan et al., 2021; Wang et al., 2009; Yan et al., 2024; Yin et al., 2018). Although select PFCA precursors have been shown to yield n-2, n-3, or n-4 chain lengths (Yan et al., 2024), PFCA precursors with longer than an 8-carbon chain have not been commonly identified in Site-specific groundwater samples.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Can I model precursor transformation with only Method 1633 data?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Can I model precursor transformation with only Method 1633 data?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using the Stockwell et al.&nbsp;precursor classification approach, the PFAS precursors measured by EPA Method 1633 can be grouped according to the perfluoroalkyl acids (PFAAs) they are known to form through environmental transformation.</p>
+<p>Method 1633 PFOS precursors include sulfonamide- and sulfonamidoethanol-based compounds such as FOSA, MeFOSA, EtFOSA, MeFOSE, and EtFOSE, which originate from the historical electrochemical fluorination (ECF)-derived POSF chemistry used in legacy AFFF and consumer products, and can degrade through oxidative and biotic pathways to perfluorooctane sulfonate (PFOS).</p>
+<p>Method 1633 PFOA precursors primarily include fluorotelomer-derived compounds, most notably 8:2 fluorotelomer sulfonate (8:2 FTS), which degrades via stepwise oxidation to perfluorooctanoic acid (PFOA) and other C8 perfluorocarboxylates.</p>
+<p>Some fluorotelomer precursors transform predominantly to shorter-chain PFAAs rather than PFOA. These include 4:2 FTS and 6:2 FTS, which commonly yield C4 and C6 perfluoroalkyl carboxylates, respectively (most notably perfluorobutanoic acid (PFBA) and perfluorohexanoic acid (PFHxA)) along with related chain-length homologues during degradation.</p>
+<p>Following the Stockwell classification framework, grouping these Method 1633 analytes by their ultimate PFAA transformation products provides a practical basis for interpreting EPA Method 1633 datasets in terms of precursor sources and likely long-term formation of regulated terminal PFAS such as PFOS and PFOA. At the research site modeled by Stockwell et al.&nbsp;(2026), these Method 1633 precursors collectively represented over 80% of the total target and non-target precursors that transform to PFOS and PFOA, but accounted for 0% of the identified PFHxS precursors (unpublished data), highlighting an important gap in Method 1633 coverage for the PFHxS precursor pathway.</p>
+</div>
+</div>
 <p><strong>PFAS Precursor Transformation Rates</strong></p>
 <p>PFAS precursor transformation rates are currently poorly characterized. Based on 15 aqueous film forming foam (AFFF) microbial biotransformation laboratory studies compiled by Choi et al.&nbsp;(2022), source release + dissolved/first-step precursor transformation half-lives ranged from less than 1 day to 1,860 days (5 years) in soil, sludge, and sediment. These precursor transformation rates represent the concentration reduction of the precursor due to the release of sorbed precursors and the biodegradation of precursors in the dissolved phase. Choi et al.&nbsp;(2022) noted that variable test conditions likely led to the highly variable transformation rates, and there were no correlations between PFAS chemistries and transformation rates. Similarly, Yan et al.&nbsp;(2024) compiled existing PFAS transformation data from lab studies and noted that transformation rates vary depending on the precursor structure, such that certain individual steps in the microbial transformation of different precursors are likely to be rate-limiting.</p>
 <p>Minimal data exist on field studies of precursor transformation rates. Adamson et al.&nbsp;(2020) indicated a source release + dissolved/end-product precursor transformation conversion rate of 0.3-1.8% per year, which corresponds to a half-life of 28-126 years (transformation rate constant of 0.0055 to 0.0252 per year). These precursor transformation rates represent all of the step-wise transformation rates of precursors through intermediates to terminal PFAAs due to the release of sorbed precursors and the biodegradation of precursors in the dissolved phase. Gefell et al.&nbsp;(2022) modeled dissolved-phase precursor transformation to PFOA in hypothetical groundwater using a dissolved/end-product precursor transformation half-life of 27 days (transformation rate constant of 0.026 per day), which represents complete precursor transformation due to biodegradation of a mix of fluorotelomer precursors in the dissolved phase. In addition, Gefell et al.&nbsp;(2022) defined a “bulk system half-life” of 2.74 years (transformation rate constant of 0.25 per year), which is a source release + dissolved/end-product transformation rate that represents complete precursor transformation due to the release of sorbed precursors and the biodegradation of precursors in the dissolved phase. Ruyle et al.&nbsp;(2023) modeled biotransformation of Electrochemical Fluorination (ECF)-based precursors to PFAAs at a field site using source release + dissolved/end-product transformation rate constants of 0.0004 to 0.0021 per year (half-lives of 340-1600 years), which represent complete precursor transformation due to release of sorbed precursors and the biodegradation of all relevant precursors in the dissolved phase.</p>
@@ -388,11 +404,10 @@ window.Quarto = {
 <p><strong>PFAS Precursor Transformation Yields</strong></p>
 <p>The transformation yield is the mass of degradation product created by first order decay of one unit of the parent component. Precursor transformation yields are calculated based on molecular weight ratios using the following equation:</p>
 <p><span class="math display">\[
-\text{Transformation Yield}
-= \frac{\mathrm{MW}_{\text{PFAA}}}{\mathrm{MW}_{\text{Precursors}}}
+\text{Transformation Yield} = \frac{\mathrm{MW}_{\text{PFAA}}}{\mathrm{MW}_{\text{Precursors}}}
 \]</span></p>
-<p>Where <span class="math inline">\(MW_{PFAA}\)</span> is the molecular weight of the PFAA, and <span class="math inline">\(MW_{Precursors}\)</span> is the average molecular weight of the respective precursors. For the PFOA model only, the calculated precursor yield can then be divided by two to account for precursor transformation to PFAAs other than PFOA (specifically shorter-chain PFCAs), as has been observed in other studies (Dasu et al., 2013; Dong et al., 2023; Hamid et al., 2020; Wang et al., 2009).</p>
-<p><strong>PFAS Precursor Analysis: </strong>Thousands of PFAS compounds exist, with varied structural characteristics. A single method to quantify all PFAS compounds in a sample does not exist; however, several techniques have been developed that employ indirect measurement to assess the range of PFAS compounds in a sample. These techniques are considered qualitative, range in commercial availability, have not undergone multi-laboratory validation, and are not yet standardized through a published USEPA method (ITRC 2022). As stated by ITRC (2022), the five primary techniques are:</p>
+<p>Where <span class="math inline">\(\mathrm{MW}_{\text{PFAA}}\)</span> is the molecular weight of the PFAA, and <span class="math inline">\(\mathrm{MW}_{\text{Precursors}}\)</span> is the average molecular weight of the respective precursors. For the PFOA model only, the calculated precursor yield can then be divided by two to account for precursor transformation to PFAAs other than PFOA (specifically shorter-chain PFCAs), as has been observed in other studies (Dasu et al., 2013; Dong et al., 2023; Hamid et al., 2020; Wang et al., 2009).</p>
+<p><strong><em>PFAS Precursor Analysis:</em></strong> Thousands of PFAS compounds exist, with varied structural characteristics. A single method to quantify all PFAS compounds in a sample does not exist; however, several techniques have been developed that employ indirect measurement to assess the range of PFAS compounds in a sample. These techniques are considered qualitative, range in commercial availability, have not undergone multi-laboratory validation, and are not yet standardized through a published USEPA method (ITRC 2022). As stated by ITRC (2022), the five primary techniques are:</p>
 <ul>
 <li><p>The total oxidizable precursor (TOP) assay measures PFAA precursors or polyfluorinated compounds that can be converted to PFAAs.</p></li>
 <li><p>Particle-induced gamma-ray emission (PIGE) spectroscopy measures elemental fluorine isolated on a thin surface.</p></li>
@@ -439,25 +454,24 @@ window.Quarto = {
 <ul>
 <li>Acknowledge and quantify uncertainties related to simplifying assumptions and data limitations by performing sensitivity analyses on key input data, including PFAA-able precursor decay rates.</li>
 </ul>
-<p>An example of inputs for an experimental PFHxS-able precursor to PFHxS REMFluor-MD model run is shown in shown in Stockwell et al.&nbsp;(2025).</p>
+<p>An example of inputs for an experimental PFHxS-able precursor to PFHxS REMFluor-MD model run is shown in Stockwell et al.&nbsp;(2025).</p>
 <p><strong>REFERENCES</strong></p>
-<p>Adamson, D. T., Nickerson, A., Kulkarni, P. R., Higgins, C. P., Popovic, J., Field, J., Rodowa, A., Newell, C., DeBlanc, P., &amp; Kornuc, J. J. (2020). Mass-Based, Field-Scale Demonstration of PFAS Retention within AFFF-Associated Source Areas. <em>Environmental Science &amp; Technology</em>, <em>54</em>(24), 15768–15777.</p>
-<p>Butt, C. M., Muir, D. C. G., &amp; Mabury, S. A. (2014). Biotransformation pathways of fluorotelomer‐based polyfluoroalkyl substances: A review. <em>Environmental Toxicology and Chemistry</em>, <em>33</em>(2), 243–267.</p>
-<p>Choi, Y. J., Helbling, D. E., Liu, J., Olivares, C. I., &amp; Higgins, C. P. (2022). Microbial biotransformation of aqueous film-forming foam derived polyfluoroalkyl substances. <em>Science of The Total Environment</em>, <em>824</em>, 153711.</p>
-<p>Dasu, K., Liu, J., &amp; Lee, L. S. (2012). Aerobic Soil Biodegradation of 8:2 Fluorotelomer Stearate Monoester. <em>Environmental Science &amp; Technology</em>, <em>46</em>(7), 3831–3836.</p>
-<p>Dasu, K., Liu, J., &amp; Lee, L. S. (2012). Aerobic Soil Biodegradation of 8:2 Fluorotelomer Stearate Monoester. <em>Environmental Science &amp; Technology</em>, <em>46</em>(7), 3831–3836.</p>
-<p>Dinglasan, M. J. A., Ye, Y., Edwards, E. A., &amp; Mabury, S. A. (2004). Fluorotelomer Alcohol Biodegradation Yields Poly- and Perfluorinated Acids. <em>Environmental Science &amp; Technology</em>, <em>38</em>(10), 2857–2864.</p>
-<p>Dong, S., Yan, P.-F., Liu, C., Manz, K. E., Mezzari, M. P., Abriola, L. M., Pennell, K. D., &amp; Cápiro, N. L. (2023). Assessing aerobic biotransformation of 8:2 fluorotelomer alcohol in aqueous film-forming foam (AFFF)-impacted soils: Pathways and microbial community dynamics. <em>Journal of Hazardous Materials</em>, <em>446</em>, 130629.</p>
-<p>Gefell, M. J., Huang, H., Opdyke, D., Gustafson, K., Vlassopoulos, D., McCray, J. E., Best, S., &amp; Carey, M. (2022). Modeling PFAS Fate and Transport in Groundwater, with and Without Precursor Transformation. <em>Groundwater</em>, <em>60</em>(1), 6–14.</p>
-<p>Hamid, H., Li, L. Y., &amp; Grace, J. R. (2020). Aerobic biotransformation of fluorotelomer compounds in landfill leachate-sediment. <em>Science of The Total Environment</em>, <em>713</em>, 136547.</p>
-<p>Interstate Technology Regulatory Council (ITRC). (2022). <em>PFAS — Per- and Polyfluoroalkyl Substances</em>.</p>
-<p>Ruyle, B. J., Thackray, C. P., Butt, C. M., LeBlanc, D. R., Tokranov, A. K., Vecitis, C. D., &amp; Sunderland, E. M. (2023). Centurial Persistence of Forever Chemicals at Military Fire Training Sites. <em>Environmental Science &amp; Technology</em>, acs.est.3c00675.</p>
-<p>Sharifan, H., Bagheri, M., Wang, D., Burken, J. G., Higgins, C. P., Liang, Y., Liu, J., Schaefer, C. E., &amp; Blotevogel, J. (2021). Fate and transport of per- and polyfluoroalkyl substances (PFASs) in the vadose zone. <em>Science of The Total Environment</em>, <em>771</em>, 145427.</p>
-<p>Stockwell, E. B., Adamson, D. T., Gamlin, J. D., Kulkarni, P. R., Singh, A., Falta, R. W., &amp; Newell, C. J. (2026). Modeling <em>per</em>- and polyfluoroalkyl substance precursor transformation in groundwater at a well-characterized site. <em>Journal of Contaminant Hydrology</em>, <em>276</em>, 104766.</p>
-<p>Wang, N., Szostek, B., Buck, R. C., Folsom, P. W., Sulecki, L. M., &amp; Gannon, J. T. (2009). 8-2 Fluorotelomer alcohol aerobic soil biodegradation: Pathways, metabolites, and metabolite yields. <em>Chemosphere</em>, <em>75</em>(8), 1089–1096.</p>
-<p>Weber, A. K., Barber, L. B., LeBlanc, D. R., Sunderland, E. M., &amp; Vecitis, C. D. (2017). Geochemical and Hydrologic Factors Controlling Subsurface Transport of Poly- and Perfluoroalkyl Substances, Cape Cod, Massachusetts. <em>Environmental Science &amp; Technology</em>, <em>51</em>(8), 4269–4279.</p>
-<p>Yan, P.-F., Dong, S., Pennell, K. D., &amp; Cápiro, N. L. (2024). A review of the occurrence and microbial transformation of per- and polyfluoroalkyl substances (PFAS) in aqueous film-forming foam (AFFF)-impacted environments. <em>Science of The Total Environment</em>, <em>927</em>, 171883.</p>
-<p>Yin, T., Te, S. H., Reinhard, M., Yang, Y., Chen, H., He, Y., &amp; Gin, K. Y.-H. (2018). Biotransformation of Sulfluramid (N-ethyl perfluorooctane sulfonamide) and dynamics of associated rhizospheric microbial community in microcosms of wetland plants. <em>Chemosphere</em>, <em>211</em>, 379–389.</p>
+<p>Adamson, D. T., Nickerson, A., Kulkarni, P. R., Higgins, C. P., Popovic, J., Field, J., Rodowa, A., Newell, C., DeBlanc, P., &amp; Kornuc, J. J. (2020). Mass-Based, Field-Scale Demonstration of PFAS Retention within AFFF-Associated Source Areas. <em>Environmental Science &amp; Technology</em>, 54(24), 15768–15777. <a href="https://doi.org/10.1021/acs.est.0c04472" class="uri">https://doi.org/10.1021/acs.est.0c04472</a></p>
+<p>Butt, C. M., Muir, D. C. G., &amp; Mabury, S. A. (2014). Biotransformation pathways of fluorotelomer‐based polyfluoroalkyl substances: A review. <em>Environmental Toxicology and Chemistry</em>, 33(2), 243–267. <a href="https://doi.org/10.1002/etc.2407" class="uri">https://doi.org/10.1002/etc.2407</a></p>
+<p>Choi, Y. J., Helbling, D. E., Liu, J., Olivares, C. I., &amp; Higgins, C. P. (2022). Microbial biotransformation of aqueous film-forming foam derived polyfluoroalkyl substances. <em>Science of The Total Environment</em>, 824, 153711. <a href="https://doi.org/10.1016/j.scitotenv.2022.153711" class="uri">https://doi.org/10.1016/j.scitotenv.2022.153711</a></p>
+<p>Dasu, K., Liu, J., &amp; Lee, L. S. (2012). Aerobic Soil Biodegradation of 8:2 Fluorotelomer Stearate Monoester. <em>Environmental Science &amp; Technology</em>, 46(7), 3831–3836. <a href="https://doi.org/10.1021/es203978g" class="uri">https://doi.org/10.1021/es203978g</a></p>
+<p>Dinglasan, M. J. A., Ye, Y., Edwards, E. A., &amp; Mabury, S. A. (2004). Fluorotelomer Alcohol Biodegradation Yields Poly- and Perfluorinated Acids. <em>Environmental Science &amp; Technology</em>, 38(10), 2857–2864. <a href="https://doi.org/10.1021/es0350177" class="uri">https://doi.org/10.1021/es0350177</a></p>
+<p>Dong, S., Yan, P.-F., Liu, C., Manz, K. E., Mezzari, M. P., Abriola, L. M., Pennell, K. D., &amp; Cápiro, N. L. (2023). Assessing aerobic biotransformation of 8:2 fluorotelomer alcohol in aqueous film-forming foam (AFFF)-impacted soils: Pathways and microbial community dynamics. <em>Journal of Hazardous Materials</em>, 446, 130629. <a href="https://doi.org/10.1016/j.jhazmat.2022.130629" class="uri">https://doi.org/10.1016/j.jhazmat.2022.130629</a></p>
+<p>Gefell, M. J., Huang, H., Opdyke, D., Gustafson, K., Vlassopoulos, D., McCray, J. E., Best, S., &amp; Carey, M. (2022). Modeling PFAS Fate and Transport in Groundwater, with and Without Precursor Transformation. <em>Groundwater</em>, 60(1), 6–14. <a href="https://doi.org/10.1111/gwat.13152" class="uri">https://doi.org/10.1111/gwat.13152</a></p>
+<p>Hamid, H., Li, L. Y., &amp; Grace, J. R. (2020). Aerobic biotransformation of fluorotelomer compounds in landfill leachate-sediment. <em>Science of The Total Environment</em>, 713, 136547. <a href="https://doi.org/10.1016/j.scitotenv.2020.136547" class="uri">https://doi.org/10.1016/j.scitotenv.2020.136547</a></p>
+<p>Interstate Technology Regulatory Council (ITRC). (2022). <em>PFAS — Per- and Polyfluoroalkyl Substances</em>. <a href="https://pfas-1.itrcweb.org/" class="uri">https://pfas-1.itrcweb.org/</a></p>
+<p>Ruyle, B. J., Thackray, C. P., Butt, C. M., LeBlanc, D. R., Tokranov, A. K., Vecitis, C. D., &amp; Sunderland, E. M. (2023). Centurial Persistence of Forever Chemicals at Military Fire Training Sites. <em>Environmental Science &amp; Technology</em>. <a href="https://doi.org/10.1021/acs.est.3c00675" class="uri">https://doi.org/10.1021/acs.est.3c00675</a></p>
+<p>Sharifan, H., Bagheri, M., Wang, D., Burken, J. G., Higgins, C. P., Liang, Y., Liu, J., Schaefer, C. E., &amp; Blotevogel, J. (2021). Fate and transport of per- and polyfluoroalkyl substances (PFASs) in the vadose zone. <em>Science of The Total Environment</em>, 771, 145427. <a href="https://doi.org/10.1016/j.scitotenv.2021.145427" class="uri">https://doi.org/10.1016/j.scitotenv.2021.145427</a></p>
+<p>Stockwell, E. B., Adamson, D. T., Gamlin, J. D., Kulkarni, P. R., Singh, A., Falta, R. W., &amp; Newell, C. J. (2026). Modeling <em>per</em>- and polyfluoroalkyl substance precursor transformation in groundwater at a well-characterized site. <em>Journal of Contaminant Hydrology</em>, 276, 104766. <a href="https://doi.org/10.1016/j.jconhyd.2025.104766" class="uri">https://doi.org/10.1016/j.jconhyd.2025.104766</a></p>
+<p>Wang, N., Szostek, B., Buck, R. C., Folsom, P. W., Sulecki, L. M., &amp; Gannon, J. T. (2009). 8-2 Fluorotelomer alcohol aerobic soil biodegradation: Pathways, metabolites, and metabolite yields. <em>Chemosphere</em>, 75(8), 1089–1096. <a href="https://doi.org/10.1016/j.chemosphere.2009.01.033" class="uri">https://doi.org/10.1016/j.chemosphere.2009.01.033</a></p>
+<p>Weber, A. K., Barber, L. B., LeBlanc, D. R., Sunderland, E. M., &amp; Vecitis, C. D. (2017). Geochemical and Hydrologic Factors Controlling Subsurface Transport of Poly- and Perfluoroalkyl Substances, Cape Cod, Massachusetts. <em>Environmental Science &amp; Technology</em>, 51(8), 4269–4279. <a href="https://doi.org/10.1021/acs.est.6b05573" class="uri">https://doi.org/10.1021/acs.est.6b05573</a></p>
+<p>Yan, P.-F., Dong, S., Pennell, K. D., &amp; Cápiro, N. L. (2024). A review of the occurrence and microbial transformation of per- and polyfluoroalkyl substances (PFAS) in aqueous film-forming foam (AFFF)-impacted environments. <em>Science of The Total Environment</em>, 927, 171883. <a href="https://doi.org/10.1016/j.scitotenv.2024.171883" class="uri">https://doi.org/10.1016/j.scitotenv.2024.171883</a></p>
+<p>Yin, T., Te, S. H., Reinhard, M., Yang, Y., Chen, H., He, Y., &amp; Gin, K. Y.-H. (2018). Biotransformation of Sulfluramid (N-ethyl perfluorooctane sulfonamide) and dynamics of associated rhizospheric microbial community in microcosms of wetland plants. <em>Chemosphere</em>, 211, 379–389. <a href="https://doi.org/10.1016/j.chemosphere.2018.07.157" class="uri">https://doi.org/10.1016/j.chemosphere.2018.07.157</a></p>
 
 
 

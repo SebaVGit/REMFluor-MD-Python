@@ -2,205 +2,216 @@
 title: "APPENDIX 9.1  MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS"
 ---
 
-Contributors: Werth, Carey, Newell
+*Contributors: Werth, Carey, Newell*
 
 **OVERVIEW**
 
-Sorption of per- and polyfluoroalkyl substances (PFAS) to colloidal activated carbon (CAC) is nonlinear and is most commonly described using Freundlich isotherms:
+Sorption of per- and polyfluoroalkyl substances (PFAS) to colloidal activated carbon (CAC) is nonlinear and is most commonly described using the Freundlich isotherm:
 
 $$
-q = K_f\, c^a \tag{1}
+q = f_{cac}\, K_f\, C^a \tag{1}
 $$
 
-where q is the sorbed concentration (e.g., mg/kg), c is the aqueous concentration (e.g., mg/L), $K_{f}$ is the Freundlich capacity parameter, and a is the Freundlich exponent..
+where q is the sorbed concentration in soil (e.g., mg/kg), $f_{cac}$ is the fraction of CAC in soil (g/g), C is the aqueous concentration (e.g., mg/L), $K_f$ is the Freundlich capacity parameter in (mg/kg)(mg/L)$^{-a}$, and a is the Freundlich exponent (dimensionless). PFAS retardation coefficients (R) in a CAC barrier may be estimated for the Freundlich isotherm using
 
-Freundlich isotherm values for several common PFAS and commercial CAC products are summarized in Attachment A, Table A9-1. In REMFluor‑MD, default sorption parameters are based on laboratory studies in which PFAS mixtures from AFFF‑impacted groundwater were sorbed to the CAC product PlumeStop®. These mixture‑based isotherms are preferred because they partially account for competitive sorption and dissolved organic matter (DOM) effects that reduce PFAS sorption and barrier longevity. Isotherms derived from NaCl‑amended water and other CAC products are included for comparison.
+$$
+R = 1 + \frac{\rho_b}{\theta}\, f_{cac}\, K_f\, a\, C^{a-1} \tag{1a}
+$$
 
-REMFluor‑MD allows users to directly input site‑specific Freundlich parameters. A primary objective of the model is to estimate CAC barrier longevity, defined as the time required for PFAS concentrations at the downgradient edge of the barrier to reach compound‑specific drinking water standards (Newell et al., 2025). Accurate selection of Freundlich parameters is therefore critical to reliable longevity estimates.
+where $\rho_b$ is the soil dry bulk density (kg/L) and $\theta$ is porosity (L/L).
 
-**GENERAL RECOMMENDATIONS TO GET “$K_{f}$ “ AND “a” FOR MODELING CAC BARRIERS**
+Freundlich isotherm values for several common PFAS and commercial CAC products are summarized in Attachment A, Table A9.1.1. In REMFluor‑MD, default sorption parameters are based on laboratory studies (Carey et al., 2022) in which PFAS mixtures from AFFF‑impacted groundwater were sorbed to the CAC product PlumeStop®. These mixture‑based isotherms are preferred because they partially account for competitive sorption and dissolved organic matter (DOM) effects that reduce PFAS sorption and barrier longevity.
 
-Whenever possible, Freundlich isotherms derived from experiments using real PFAS mixtures and site groundwater should be used instead of single‑compound laboratory isotherms. Mixture‑based studies partially capture competitive sorption among PFAS and interactions with dissolved organic matter, both of which can substantially reduce sorption affinity and CAC barrier longevity (Carey et al., 2022).
+REMFluor‑MD allows users to directly input site‑specific Freundlich parameters to simulate PFAS adsorption in a PSB. A primary objective of the model is to estimate CAC barrier (i.e., PSB) longevity, defined as the time required for PFAS concentrations at the downgradient edge of the barrier to reach compound‑specific drinking water standards (Newell et al., 2025). Accurate selection of Freundlich parameters is therefore critical to reliable longevity estimates.
 
-Isotherms developed using simple electrolyte solutions often overestimate PFAS sorption and therefore overpredict barrier longevity. The influence of DOM is illustrated by laboratory comparisons (Figure 1) showing that PFOS sorption from groundwater is nearly an order of magnitude lower than sorption measured in single‑species laboratory solutions. These effects should be considered explicitly when selecting Freundlich parameters for modeling.
+**GENERAL RECOMMENDATIONS TO GET "$K_{f}$" AND "a" FOR MODELING CAC BARRIERS**
 
-![](./Figure_Appdx_9.1_1.png){fig-alt="DOm on PFAS" width=600px}
+Whenever possible, Freundlich isotherms derived from batch test experiments using real PFAS mixtures and site groundwater should be used instead of single‑compound laboratory isotherms. Mixture‑based studies partially capture competitive sorption among PFAS and interactions with dissolved organic matter and other co-occurring organic chemicals which can substantially reduce sorption affinity and CAC barrier longevity (Carey et al., 2022).
 
-Figure 1.  Effects of DOM on PFAS sorption to a commercial CAC 
-(reproduced with permission from Carey et al., 2022)
+Isotherms developed using simple electrolyte solutions often overestimate PFAS sorption relative to field-scale conditions and therefore overpredict barrier longevity. The influence of DOM is illustrated by laboratory comparisons (Figure 9.1.1) showing that PFOS sorption in a groundwater sample from an AFFF-impacted site is nearly an order of magnitude lower than sorption measured in single‑species laboratory solutions. These effects should be considered explicitly when selecting Freundlich parameters for modeling.
+
+![](./Figure_Appdx_9.1_1.png){fig-alt="DOM on PFAS" width=600px}
+
+*Figure 9.1.1. Effects of DOM on PFAS sorption to a commercial CAC (reproduced with permission from Carey et al., 2022). For specific PFAS, "-GW" lines are lower (e.g., have less sorption) than lines without "-GW" (where laboratory water was used to make synthetic solutions for isotherm determination).*
 
 **WHICH PFAS TO MODEL TO ESTIMATE CAC BARRIER LONGEVITY?**
 
-The first decision point when modeling CAC barrier longevity is which of the PFAS should be modeled in REMFluor-MD.   Two key considerations are 1) the relative “exceedance magnitude” of different PFAAs as proxy for individual risk in groundwater from each of the key PFAAs; and 2) competitive sorption effects where long-chain PFAAs can dislodge sorbed short-chain PFAAs and cause them to travel through a CAC barrier faster than what might be expected.  These two interrelated factors are discussed in more detail below.  Note these methods have been developed from AFFF site data, and that some of selection criteria below may not be relevant at other types of PFAS sites.
+The first decision point when modeling CAC barrier longevity is which of the PFAS should be modeled in REMFluor-MD. Two key considerations are 1) the relative "exceedance magnitude" of different PFAAs as proxy for individual risk in groundwater from each of the key PFAAs; and 2) competitive sorption effects where long-chain PFAAs can dislodge sorbed short-chain PFAAs and cause them to travel through a CAC barrier faster than what might be expected. These two interrelated factors are discussed in more detail below. Note these methods have been developed from AFFF site data, and that some of the selection criteria below may not be relevant at other types of PFAS sites.
 
-**“Exceedance Magnitude” Points to Modeling PFOS, PFOA, PFHxS**
+**"Exceedance Magnitude" Points to Modeling PFOS, PFOA, PFHxS**
 
 Selection of PFAS compounds for CAC barrier modeling should be guided by two factors: (1) exceedance magnitude relative to regulatory criteria, and (2) competitive sorption behavior within CAC barriers.
 
-Exceedance magnitude quantifies how much a PFAS concentration exceeds its regulatory standard and serves as a proxy for relative risk. Analysis of 22 AFFF‑impacted sites (Kulkarni et al., 2025) shows that three long‑chain PFAS (PFOS, PFOA, and PFHxS) account for approximately 99% of exceedance magnitude across sites (Table 1, Figure 2). Short‑chain PFAS such as PFHxA, PFBS, and PFBA typically contribute less than 2% of exceedance‑based risk under current federal standards.
+Exceedance magnitude quantifies how much a PFAS concentration exceeds its regulatory standard and serves as a proxy for relative risk. Analysis of 22 AFFF‑impacted sites (Kulkarni et al., 2025) shows that three long‑chain PFAS (PFOS, PFOA, and PFHxS) account for approximately 99% of exceedance magnitude across sites (Table 9.1.1, Figure 9.1.2). Short‑chain PFAS such as PFHxA, PFBS, and PFBA typically contribute less than 2% of exceedance‑based risk under current federal standards.
 
-Accordingly, REMFluor‑MD modeling at AFFF sites should **focus on PFOS, PFOA, and PFHxS (and potentially PFNA where relevant**). This approach captures the vast majority of regulatory risk while avoiding unnecessary complexity associated with explicitly modeling short‑chain PFAS that are not primary risk drivers.
+Accordingly, REMFluor‑MD modeling at AFFF sites should **focus on PFOS, PFOA, and/or PFHxS (and potentially PFNA where relevant)**. This approach captures the vast majority of regulatory risk while avoiding unnecessary complexity associated with explicitly modeling short‑chain PFAS that are not primary risk drivers.
 
-Table 1.  Distribution of PFAA Exceedance Magnitude at 22 AFFF sites (Kulkarni et al, 2025).
 
-![](./Figure_Appdx_9.1_2.png){fig-alt="PFAA exceedance" width=600px}
+*Table 9.1.1. Distribution of PFAA Exceedance Magnitude at 22 AFFF sites (Kulkarni et al., 2025). Key point: PFOS, PFOA, and PFHxS account for the vast majority of the groundwater "exceedance magnitude," which serves as a general indicator of potential risk to users relying on the groundwater for drinking water.*
 
-Figure 2.  Distribution of Individual Site Relative Exceedance Magnitude.  Bars show the median value of dataset per constituent, and each dot represents an individual site out of 22 sites (Kulkarni et al., 2025).
+*Distribution of PFAA Exceedance Magnitude at 22 AFFF Groundwater Sites*
+
+|         | PFOS Exc. % | PFOA Exc. % | PFHxS Exc. % | PFOS+PFOA+PFHxS Exc. % |
+|---------|-------------|-------------|--------------|------------------------|
+| Max     | 86%         | 80%         | 81%          | 100%                   |
+| 75th %  | 73%         | 22%         | 49%          | 100%                   |
+| Median  | 62%         | 7%          | 23%          | 99%                    |
+| 25th %  | 19%         | 2%          | 19%          | 98%                    |
+| Min     | 0.8%        | 1%          | 0.4%         | 76%                    |
+
+*Note: Exc. = exceedance.*
+
 ![](./Figure_Appdx_9.1_3.png){fig-alt="Distribution of Site Exceedance" width=600px}
+
+*Figure 9.1.2. Distribution of Individual Site Relative Exceedance Magnitude. Bars show the median value of dataset per constituent, and each dot represents an individual site out of 22 sites (Kulkarni et al., 2025). Key point: PFOS, PFOA, and PFHxS account for the vast majority of the groundwater "exceedance magnitude," which serves as a general indicator of potential risk to users relying on the groundwater for drinking water.*
 
 **COMPETITIVE SORPTION EFFECTS OVERVIEW**
 
-Competitive sorption occurs when multiple PFAS compete for finite sorption sites on CAC. Long‑chain PFAS (PFOS, PFOA, PFHxS) sorb much more strongly than short‑chain compounds and can displace them from CAC surfaces. As a result, short‑chain PFAS may break through CAC barriers much earlier than long‑chain PFAS, even when all compounds enter the barrier simultaneously.
+Competitive sorption occurs when multiple PFAS compete for a finite number of sorption sites on CAC. Long-chain PFAS (e.g., PFOS, PFOA, PFHxS) sorb much more strongly than short-chain compounds and can displace them from CAC surfaces. As a result, short-chain PFAS may break through CAC barriers earlier than long-chain PFAS, even when all compounds enter the barrier simultaneously.
 
-REMFluor‑MD does not explicitly simulate dynamic competitive sorption. However, this limitation is mitigated because the PFAS that control regulatory risk and barrier longevity are the long‑chain compounds that dominate sorption. Among these, PFOA typically controls CAC barrier longevity due to its weaker sorption relative to PFOS and PFHxS. Modeling studies and field data indicate that PFOA is the first of the regulated long‑chain PFAS to break through CAC barriers at most AFFF sites.
+REMFluor-MD does not explicitly simulate dynamic competitive sorption. However, this limitation is partially mitigated because the PFAS that most strongly influence regulatory risk and barrier longevity are typically the long-chain compounds that dominate sorption. Among these, PFOA often controls CAC barrier longevity because it sorbs less strongly than PFOS and PFHxS and therefore may break through earlier. Field data and modeling studies indicate that PFOA is frequently the first of the regulated long-chain PFAS to reach breakthrough at AFFF sites, although site-specific concentration ratios can alter this behavior. For example, if PFHxS concentrations substantially exceed those of PFOA, PFHxS may instead control barrier longevity. REMFluor-MD can be used to simulate each compound separately to confirm which species controls longevity at a given site.
 
-For sites where short‑chain PFAS are of regulatory concern, more complex models capable of explicitly simulating competitive sorption may be required, or conservative assumptions regarding short‑chain breakthrough should be applied.
+For sites where short-chain PFAS are of regulatory concern, more complex models that explicitly simulate competitive sorption may be warranted. Alternatively, conservative assumptions regarding short-chain breakthrough should be applied.
 
-**TIERED APPROACH FOR SELECTING FREUNDLICH ISOTHERMS**
+**Key Points:** REMFluor-MD does not simulate competitive displacement processes, such as strongly sorbing PFAS (e.g., PFOS) displacing more weakly sorbing PFAS (e.g., PFBS) from CAC surfaces. This has two general implications:
 
-**Tier 1:  Use General Literature Values for “$K_{f}$“and “a” for Three PFAS**
+1. Because PFOA and PFHxS are commonly present at elevated concentrations at AFFF sites, and because their sorption strength is lower than PFOS, one of these species typically controls CAC barrier longevity.
 
-For screening‑level analyses, REMFluor‑MD users should apply Freundlich parameters reported by Carey et al. (2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater (Table 2).
+2. Predictions for short-chain PFAS are subject to greater uncertainty due to potential competitive displacement effects. Conservative assumptions are therefore recommended when modeling short-chain PFAS transport through CAC barriers.
 
-Table 2.  Recommended Freundlich values for planning / screening level 
-CAC modeling in REMFluor-MD (Carey et al., 2022)
+**TIERED APPROACH FOR SELECTING FREUNDLICH ISOTHERMS FOR CAC BARRIERS**
 
-| PFAA   | Source Type | Type of CAC | <span style="color: red;">K<sub>f</sub> (mg/g/L)</span> | <span style="color: red;">a</span>    |
-|--------|-------------|-------------|------------------------|------|
-| PFOS   | AFFF        | PlumeStop   | <span style="color: red;">12,000</span>                 | <span style="color: red;">0.33</span> |
-| PFOA   | AFFF        | PlumeStop   | <span style="color: red;">580</span>                    | <span style="color: red;">0.25</span> |
-| PFHxS  | AFFF        | PlumeStop   | <span style="color: red;">1,240</span>                  | <span style="color: red;">0.24</span> |
+Simulation of PFAS movement through CAC barriers requires Freundlich sorption parameters ($K_f$ and a) for each compound included in the model. These parameters can be developed using three tiers of increasing effort and accuracy, from simple screening-level estimates to comprehensive site-specific characterization.
 
+**Tier 1: Use General Literature Values for "$K_{f}$" and "a" for Three PFAS**
 
-As noted above, competitive sorption effects on PFAS longevity can be partially accounted for by using isotherms developed in lab that used a specific PFAS mixture, groundwater, and CAC rather than individual PFAS isotherms conducted using tap water.   
+For screening‑level analyses, REMFluor‑MD users should apply Freundlich parameters reported by Carey et al. (2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater (Table 9.1.2).
 
-**Tier 2a:  Use More Site-Specific Literature Values for “Kf “and “a” for PFAS**
+*Table 9.1.2. Recommended Freundlich values for planning / screening level CAC modeling in REMFluor-MD (Carey et al., 2022).*
 
-As researchers continue to publish Freundlich isotherms derived from different groundwater types, REMFluor-MD users gain the ability to select isotherms developed under conditions that most closely match their site. Users should compare their site's groundwater characteristics to the groundwater used in published laboratory studies and select isotherms from the most similar conditions. Key characteristics to match include: 
+| PFAA   | Source Type | Type of CAC | <span style="color: red;">$K_f$ (mg/kg)(mg/L)<sup>-a</sup></span> | <span style="color: red;">a</span> |
+|--------|-------------|-------------|--------------------------------------------------------------------|-----|
+| PFOS   | AFFF        | PlumeStop   | <span style="color: red;">12,000</span>                            | <span style="color: red;">0.33</span> |
+| PFOA   | AFFF        | PlumeStop   | <span style="color: red;">580</span>                               | <span style="color: red;">0.25</span> |
+| PFHxS  | AFFF        | PlumeStop   | <span style="color: red;">1,240</span>                             | <span style="color: red;">0.24</span> |
 
-1. PFAS concentrations and compound profiles (which PFAAs are present and at what levels), 
+As noted above, competitive sorption effects on PFAS longevity can be partially accounted for by using isotherms developed in lab that used a specific PFAS mixture, groundwater, and CAC rather than individual PFAS isotherms conducted using tap water.
 
-2. Groundwater geochemistry parameters such as total dissolved solids, total organic carbon, and divalent cation concentrations (e.g., calcium and magnesium), 
+**Tier 2a: Use More Site-Specific Literature Values for "$K_f$" and "a" for PFAS**
 
-3. The type of CAC used in the lab study vs. the actual site. This site-specific isotherm selection approach improves model accuracy compared to using a single 'universal' isotherm for all sites.  
+As researchers continue to publish Freundlich isotherms derived from different groundwater types, REMFluor-MD users gain the ability to select isotherms developed under conditions that most closely match their site. Users should compare their site's groundwater characteristics to the groundwater used in published laboratory studies and select isotherms from the most similar conditions. Key characteristics to match include:
 
-A compilation of published Freundlich isotherms for PFAS sorption to CAC, current as of late 2025, is provided in Attachment A, Table A9.1. to assist users in selecting appropriate parameters for their site conditions.
+1. PFAS concentrations and compound profiles (which PFAAs are present and at what levels),
 
-**Tier 2b:  Apply Simplified Handling of PFAS Short-Chain and Precursor Sorption**
+2. Concentrations of co-occurring organic chemicals and/or natural organic matter (DOC) in groundwater,
 
-Use of measured isotherms for short-chain and precursor PFAS are always preferred, especially those using a site specific PFAS mixture, groundwater, and CAC.  However, such isotherms are often not available because short-chain PFAS often represent a lower risk in groundwater and are less studied, and because short-chain PFAS may be present at very low concentrations relative to other PFAS in a site specific mixture.  In the absence of such data, possible approaches include:  
+3. Groundwater geochemistry parameters such as total dissolved solids, total organic carbon, and divalent cation concentrations (e.g., calcium and magnesium),
 
-1. Assume no or limited sorption of short-chain PFAS to the CAC barrier and then assess the downgradient risk
+4. The type of CAC used in the lab study vs. the actual site. This site-specific isotherm selection approach improves model accuracy compared to using a single 'universal' isotherm for all sites.
 
-2. Use a measured isotherm for the shortest-chain PFAA available as a surrogate (as long as it is not a single-specie isotherm)
+A compilation of published Freundlich isotherms for PFAS sorption to CAC, current as of late 2025, is provided in Attachment A, Table A9.1.1 to assist users in selecting appropriate parameters for their site conditions.
+
+**Tier 2b: Apply Simplified Handling of PFAS Short-Chain and Precursor Sorption**
+
+Use of measured isotherms for short-chain and precursor PFAS are always preferred, especially those using a site specific PFAS mixture, groundwater, and CAC. However, such isotherms are often not available because short-chain PFAS often represent a lower risk in groundwater and are less studied, and because short-chain PFAS may be present at very low concentrations relative to other PFAS in a site specific mixture. In the absence of such data, possible approaches include:
+
+1. Assume no or limited sorption of short-chain PFAAs to the CAC barrier and then assess the downgradient risk
+
+2. Use a measured isotherm for a site-specific PFAS mixture in groundwater for the short-chain PFAA which is controlling downgradient risk (as long as it is not a single-species isotherm)
 
 3. Use the PAPT model (described below) to predict short-chain PFAS sorption to CAC based on isotherms measured for longer-chain PFAS to the same CAC.
 
-The first assumption is most appropriate for precursors with large aqueous solubility values (e.g., >10⁻¹ mol/L).  The second assumption appears most appropriate when the aqueous solubility value for a short-chain or precursor PFAS is within 20% of that for the measured PFAS.  While not perfect, these options provide practical pathways for incorporating short-chain and precursor dynamics into remediation modeling.
+The first assumption is most appropriate for short-chain sulfonates and carboxylates. If there is a risk, then a more sophisticated approach is warranted to evaluate the CAC barrier longevity for short-chain PFAAs. While not perfect, these options provide practical pathways for incorporating short-chain and precursor dynamics into remediation modeling.
 
-**Tier 3a:  Site-Specific Lab-Based Isotherm Testing for PFAS**
+**Tier 3a: Site-Specific Lab-Based Isotherm Testing for PFAS**
 
-For sites where the most accurate barrier longevity predictions are required, practitioners can obtain site-specific Freundlich isotherms (similar to ones shown in Figure 1) through commercial laboratory testing services. Companies such as SiREM (2025) (Ontario, Canada) and others offer sorptive media isotherm testing specifically designed to determine the capacity of CAC or other sorptive media to adsorb PFAS under site-specific conditions. The process involves sending groundwater samples, soil samples, and the specific CAC product being considered for barrier installation to the laboratory, where technicians conduct controlled batch reactor studies to develop customized isotherm parameters. These laboratory studies expose the actual CAC material to the site's groundwater chemistry and PFAS mixture, generating Freundlich constants ($K_{f}$ and n values) that reflect the real-world competitive sorption effects and geochemical interactions specific to that site. While this approach requires additional time and cost compared to using literature-derived isotherms, it provides the highest level of confidence for barrier design and longevity predictions, particularly at high-value sites, sites with unusual groundwater chemistry, or sites where regulatory compliance margins are narrow. The resulting site-specific isotherms can be directly input into REMFluor-MD, eliminating uncertainty about whether published isotherm values adequately represent site conditions.
+For sites where the most accurate barrier longevity predictions are required, practitioners can obtain site-specific Freundlich isotherms (similar to ones shown in Figure 9.1.1) through commercial laboratory testing services. Companies such as SiREM (2025) (Ontario, Canada and Knoxville, Tennessee) and others offer sorptive media isotherm testing specifically designed to determine the capacity of CAC or other sorptive media to adsorb PFAS under site-specific conditions. The process involves sending groundwater samples to the laboratory. The laboratory will conduct controlled batch reactor studies to develop customized isotherm parameters based on a site-specific groundwater sample containing PFAS and other chemicals. These laboratory studies expose the actual CAC material to the site's groundwater chemistry and PFAS mixture, generating Freundlich constants ($K_f$ and a values) that reflect real-world competitive sorption effects and geochemical interactions specific to that site. While this approach requires some additional time and cost compared to using literature-derived isotherms, it provides the highest level of confidence for barrier design and longevity predictions, particularly at high-value sites, sites with unusual groundwater chemistry, or sites where regulatory compliance margins are narrow. A small investment in this type of site-specific bench-scale testing may provide a high level of return with respect to potential remediation cost savings and increased stakeholder confidence in the remedy. The resulting site-specific isotherms can be directly input into REMFluor-MD, eliminating uncertainty about whether published isotherm values adequately represent site conditions.
 
-**Tier 3b:  Predict Single-Species Freundlich Isotherms for PFAS sorption to CAC**
+**Tier 3b: Predict Single-Species Freundlich Isotherms for PFAS sorption to CAC**
 
-No methods have been reliably established to predict single-species Freundlich isotherms for PFAS sorption to CACs.  However, the Polanyi Adsorption Potential Theory (PAPT) was used to estimate Freundlich isotherms for PFAS sorption to granular activated carbon with some success, and represents a possible approach for predicting Freundlich isotherm parameters for PFAS sorption to CAC.  The method requires measured Freundlich isotherms for one or more representative PFAS on the selected CAC (Burkhardt et al., 2023).
+No methods have been reliably established to predict single-species Freundlich isotherms for PFAS sorption to CACs. However, the Polanyi Adsorption Potential Theory (PAPT) was used to estimate Freundlich isotherms for PFAS sorption to granular activated carbon with some success, and represents a possible approach for predicting Freundlich isotherm parameters for PFAS sorption to CAC. The method requires measured Freundlich isotherms for one or more representative PFAS on the selected CAC (Burkhardt et al., 2023).
 
 $$
 K_f = \rho W_o \exp\left(\frac{BRT \ln(C_s \times 1000)}{V_m}\right) \tag{2}
 $$
 
 $$
-n_f = \frac{BRT}{V_m} \tag{3}
+n_f = \frac{BRT}{V_m} \quad \text{(unitless)} \tag{3}
 $$
 
-Here, ρ is the liquid density (g/cm3), $c_{s}$ is the aqueous solubility (mg/l), and $V_{m}$ is the PFAS molar volume (cm³/mol); the latter two inputs represent individual PFAS physio chemical characteristics and values for selected PFAS are presented in the Attachment A, Table A9.2. Here, $W_{o} (μl/g) is the adsorption saturation limit and B (ml/cal) characterizes the change in adsorption affinity with adsorption potential; these two inputs represent carbon characteristics. Also, R is the ideal gas constant (1.986 cal/(mol-K)) and T is the temperature (K).  
+Here, $\rho$ is the liquid density (g/cm³), $C_s$ is the aqueous solubility (mg/L), and $V_m$ is the PFAS molar volume (cm³/mol); the latter two inputs represent individual PFAS physiochemical characteristics and values for selected PFAS are presented in the Attachment A, Table A9.1.2. Here, $W_o$ (μL/g) is the adsorption saturation limit and B (mL/cal) characterizes the change in adsorption affinity with adsorption potential; these two inputs represent carbon characteristics. Also, R is the ideal gas constant (1.986 cal/(mol·K)) and T is the temperature (K).
 
-The PAPT assumes that the adsorption potential of the sorbent (e.g., carbon) is directly related to the volume of sorbate it can uptake in its pores. A sorbate’s adsorption potential is quantitated through the ratio of its aqueous solubility and its maximum adsorption volume with a given sorbent. As the adsorption potential and volume remain the same with a specified sorbent at a given sorbate concentration, an estimate of another similar sorbate’s adsorption can be approximated from its molar volume and solubility.  
+The PAPT assumes that the adsorption potential of the sorbent (e.g., carbon) is directly related to the volume of sorbate it can uptake in its pores. A sorbate's adsorption potential is quantitated through the ratio of its aqueous solubility and its maximum adsorption volume with a given sorbent. As the adsorption potential and volume remain the same with a specified sorbent at a given sorbate concentration, an estimate of another similar sorbate's adsorption can be approximated from its molar volume and solubility.
 
-To implement, single sorbate isotherms for two or more PFAS are first used to obtain single values of Wo and B by transforming Equations (2) and (3) to Equations (4) to (6).
-
-$$
-x = \frac{\text{Adsorption Potential}}{\text{Molar Volume}} = \frac{RT}{V_m} \ln\left(\frac{C_s}{c} \times 10^3\right)
-$$
+To implement, single sorbate isotherms for two or more PFAS are first used to obtain single values of $W_o$ and B by transforming Equations (2) and (3) to Equations (4) to (6).
 
 $$
-\ln(y) = \ln(\text{Volume Adsorbed}) = \ln\left(\frac{q}{\rho}\right)
+x = \frac{\text{Adsorption Potential}}{\text{Molar Volume}} = \frac{RT}{V_m} \ln\left(\frac{C_s}{c} \times 10^3\right) \tag{4}
 $$
 
 $$
-\ln(y) = B \cdot x + \ln(W_o)
+\ln(y) = \ln(\text{Volume Adsorbed}) = \ln\left(\frac{q}{\rho}\right) \tag{5}
 $$
 
+$$
+\ln(y) = B \cdot x + \ln(W_o) \tag{6}
+$$
 
-The variables c (µg/L) and q (µg/mg) are equilibrium concentration and adsorption data point pairs acquired from an isotherm for a given CAC. Values x and ln(y) for the measured single sorbate isotherms are plotted together to obtain single values of Wo and B. These same values of Wo and B are then used to predict single sorbate Freundlich parameter values from Equations (2) and (3) for other PFAS. An example calculation is shown in the Attachment  A, Table A9.3.  
+The variables c (µg/L) and q (µg/mg) are equilibrium concentration and adsorption data point pairs acquired from an isotherm for a given CAC. Values x and ln(y) for the measured single sorbate isotherms are plotted together to obtain single values of $W_o$ and B. These same values of $W_o$ and B are then used to predict single sorbate Freundlich parameter values from Equations (2) and (3) for other PFAS.
 
-Two shortcomings of the PAPT are that it does not consider contributions from electrostatic interactions between charged head groups in PFAS molecules and the CAC surface (Higgins and Luthy, 2007), and it assumes all PFAS have access to the same distribution of pores. The former assumption is expected to be approximately met for longer-chain PFAS, and when solution pH and ionic strength values remain relatively constant.  The latter assumption is expected to be approximately met for similar chain length PFAS.  This means greater prediction errors are expected for PFAS isotherms when their chain lengths deviate from those used to determine Wo and B.
+Two shortcomings of the PAPT are that it does not consider contributions from electrostatic interactions between charged head groups in PFAS molecules and the CAC surface (Higgins and Luthy, 2007), and it assumes all PFAS have access to the same distribution of pores. The former assumption is expected to be approximately met for longer-chain PFAS, and when solution pH and ionic strength values remain relatively constant. The latter assumption is expected to be approximately met for similar chain length PFAS. This means greater prediction errors are expected for PFAS isotherms when their chain lengths deviate from those used to determine $W_o$ and B.
 
-It is important to note that the PAPT model has only been used to predict Freundlich isotherms for individual PFAS alone in solution on GAC, based on measured Freundlich isotherms for one or more other PFAS alone in solution on the same GAC.  It has not been used to predict Freundlich isotherms for individual PFAS in a mixture based on measured Freundlich isotherms for one or more other PFAS in the same mixture and on the same GAC.  
+It is important to note that the PAPT model has only been used to predict Freundlich isotherms for individual PFAS alone in solution on GAC, based on measured Freundlich isotherms for one or more other PFAS alone in solution on the same GAC. It has not been used to predict Freundlich isotherms for individual PFAS in a mixture based on measured Freundlich isotherms for one or more other PFAS in the same mixture and on the same GAC.
 
 **SUMMARY**
 
-For screening‑level analyses, REMFluor‑MD users should apply Freundlich parameters reported by Carey et al. (2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater.
+For screening‑level analyses, REMFluor‑MD users should apply the Tier 1 Freundlich parameters reported by Carey et al. (2022) for PFOS, PFOA, and PFHxS sorption to PlumeStop® CAC using AFFF‑impacted groundwater. Tier 2 and Tier 3 methods are for users who want more detailed Freundlich parameters for PSB design data.
 
 **REFERENCES**
 
-Burkhardt, J. B., Cadwallader, A., Pressman, J. G., Magnuson, M. L., Williams, A. J., Sinclair, G., & Speth, T. F. (2023). Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon. Journal of Water Process Engineering, 53, 103691. .
+Burkhardt, J. B., Cadwallader, A., Pressman, J. G., Magnuson, M. L., Williams, A. J., Sinclair, G., & Speth, T. F. (2023). Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon. *Journal of Water Process Engineering*, 53, 103691. <https://doi.org/10.1016/j.jwpe.2023.103691>
 
-Carey, G. R., McGregor, R., Pham, A. L.-T., Sleep, B., & Hakimabadi, S. G. (2019). Evaluating the longevity of a PFAS in situ colloidal activated carbon remedy. Remediation Journal, 29(2), 17–31. 
+Carey, G. R., McGregor, R., Pham, A. L.-T., Sleep, B., & Hakimabadi, S. G. (2019). Evaluating the longevity of a PFAS in situ colloidal activated carbon remedy. *Remediation Journal*, 29(2), 17–31. <https://doi.org/10.1002/rem.21593>
 
-Carey, G. R., Hakimabadi, S. G., Singh, M., McGregor, R., Woodfield, C., Van Geel, P. J., & Pham, A. L.-T. (2022). Longevity of colloidal activated carbon for in situ PFAS remediation at AFFF-contaminated airport sites. Remediation Journal, 33(1), 3–23. 
+Carey, G. R., Hakimabadi, S. G., Singh, M., McGregor, R., Woodfield, C., Van Geel, P. J., & Pham, A. L.-T. (2022). Longevity of colloidal activated carbon for in situ PFAS remediation at AFFF-contaminated airport sites. *Remediation Journal*, 33(1), 3–23. <https://doi.org/10.1002/rem.21741>
 
-Carey, G. R., Anderson, R. H., Van Geel, P., McGregor, R., Soderberg, K., Danko, A., Hakimabadi, S. G., Pham, A. L.-T., & Rebeiro-Tunstall, M. (2024). Analysis of colloidal activated carbon alternatives for in situ remediation of a large PFAS plume and source area. Remediation Journal, 34(1), e21772. 
+Carey, G. R., Anderson, R. H., Van Geel, P., McGregor, R., Soderberg, K., Danko, A., Hakimabadi, S. G., Pham, A. L.-T., & Rebeiro-Tunstall, M. (2024). Analysis of colloidal activated carbon alternatives for in situ remediation of a large PFAS plume and source area. *Remediation Journal*, 34(1), e21772. <https://doi.org/10.1002/rem.21772>
 
-Higgins, C. P., & Luthy, R. G. (2007). Modeling Sorption of Anionic Surfactants onto Sediment Materials: An a priori Approach for Perfluoroalkyl Surfactants and Linear Alkylbenzene Sulfonates. Environmental Science & Technology, 41(9), 3254–3261. 
+Higgins, C. P., & Luthy, R. G. (2007). Modeling Sorption of Anionic Surfactants onto Sediment Materials: An a priori Approach for Perfluoroalkyl Surfactants and Linear Alkylbenzene Sulfonates. *Environmental Science & Technology*, 41(9), 3254–3261. <https://doi.org/10.1021/es062449j>
 
-Kulkarni, P. R., Andrzejczyk, N. E., Gavaskar, A., Cartwright, A., Adamson, D. T., Cook, J., & Newell, C. J. (2025). Characteristics of aqueous film forming foam (AFFF) sites impacted with per- and polyfluoroalkyl substances (PFAS): A 37-site study. Water Research, 285, 124124. 
+Kulkarni, P. R., Andrzejczyk, N. E., Gavaskar, A., Cartwright, A., Adamson, D. T., Cook, J., & Newell, C. J. (2025). Characteristics of aqueous film forming foam (AFFF) sites impacted with per- and polyfluoroalkyl substances (PFAS): A 37-site study. *Water Research*, 285, 124124. <https://doi.org/10.1016/j.watres.2025.124124>
 
-Molé, R. A., Velosa, A. C., Carey, G. R., Liu, X., Li, G., Fan, D., Danko, A., & Lowry, G. V. (2024). Groundwater solutes influence the adsorption of short-chain perfluoroalkyl acids (PFAA) to colloidal activated carbon and impact performance for in situ groundwater remediation. Journal of Hazardous Materials, 474, 134746. 
+Molé, R. A., Velosa, A. C., Carey, G. R., Liu, X., Li, G., Fan, D., Danko, A., & Lowry, G. V. (2024). Groundwater solutes influence the adsorption of short-chain perfluoroalkyl acids (PFAA) to colloidal activated carbon and impact performance for in situ groundwater remediation. *Journal of Hazardous Materials*, 474, 134746. <https://doi.org/10.1016/j.jhazmat.2024.134746>
 
-National Ground Water Association. (2017). Groundwater and PFAS: State of knowledge and practice.  
+National Ground Water Association. (2017). *Groundwater and PFAS: State of knowledge and practice*. <http://www.ngwa.org/pubs/Documents/bookstore/pfas-doc-section1-overview.pdf>
 
-Newell, C. J., Smith, W. B., Kearney, K., Clay, S., Javed, H., Carey, G. R., Richardson, S. D., & Werth, C. J. (2025). Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater. Remediation Journal, 35(3), e70017.  (Open Access)
+Newell, C. J., Smith, W. B., Kearney, K., Clay, S., Javed, H., Carey, G. R., Richardson, S. D., & Werth, C. J. (2025). Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater. *Remediation Journal*, 35(3), e70017. <https://doi.org/10.1002/rem.70017> (Open Access)
 
-SIREM. (2025).  SiREM Provides Products and Services for Monitoring and Remediating PFAS.  
+SIREM. (2025). *SiREM Provides Products and Services for Monitoring and Remediating PFAS*. <https://www.siremlab.com/sorption-treatability-studies/>
 
-Yu, Q., Zhang, R., Deng, S., Huang, J., & Yu, G. (2009). Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study. *Water Research*, *43*(4), 1150–1158. 
-
+Yu, Q., Zhang, R., Deng, S., Huang, J., & Yu, G. (2009). Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study. *Water Research*, 43(4), 1150–1158. <https://doi.org/10.1016/j.watres.2008.12.001>
 
 
 ## ATTACHMENT A. FREUNDLICH ISOTHERM DATA AND EXAMPLES
 
-### Table A9.1. Default Freundlich Parameter Values for Individual PFAS
+### Table A9.1.1. Default Freundlich Parameter Values for Individual PFAS
 
-Default Freundlich parameter values (K<sub>f</sub> and α) for individual PFAS using site-specific PFAS mixtures and groundwater and a commercial CAC. **Values bold in red** are used as defaults in REMFluor-MD.
+Default Freundlich parameter values ($K_f$ and α) for individual PFAS using site-specific PFAS mixtures and groundwater and a commercial CAC.
 
-<div style="overflow-x: auto;">
+| PFAS   | CAC       | Solution                       | $K_f$ (mg/kg)/(mg/L)<sup>a</sup> | a    | R<sup>1</sup>  | Source                |
+|--------|-----------|--------------------------------|----------------------------------|------|----------------|-----------------------|
+| PFOS   | PlumeStop | AFFF-impacted groundwater      | 12,000                           | 0.33 | 415,000        | Carey et al. (2022)   |
+| PFOA   | PlumeStop | AFFF-impacted groundwater      | 580                              | 0.25 | 46,000         | Carey et al. (2022)   |
+| PFHxS  | PlumeStop | AFFF-impacted groundwater      | 1,240                            | 0.24 | 108,000        | Carey et al. (2022)   |
+| 6:2 FtS| PlumeStop | AFFF-impacted groundwater      | 3,900                            | 0.28 | 228,000        | Carey et al. (2022)   |
 
-| PFAS       | CAC               | Solution                          | K<sub>f</sub> <br> (mg/kg)/(mg/L)<sup>α</sup> | α   | K<sub>d</sub><br>(L/g) @C=500ppb | R          | Source                   |
-|------------|-------------------|-----------------------------------|-----------------|------|------------------|------------|----------------------------|
-| <span style="color:red;font-weight:bold;">PFOS</span> | PlumeStop        | AFFF mixture in groundwater        | <span style="color:red;font-weight:bold;">12,000</span>  | <span style="color:red;font-weight:bold;">0.33</span>  | 89,300       | 44.7×10<sup>6</sup>  | Carey et al. (2022)     |
-| <span style="color:red;font-weight:bold;">PFOA</span> | PlumeStop        | AFFF mixture in groundwater        | <span style="color:red;font-weight:bold;">580</span>     | <span style="color:red;font-weight:bold;">0.25</span>  | 5,490        | 2.74×10<sup>6</sup> | Carey et al. (2022)     |
-| PFOA       | Intraplex®, Germany | NaCl sol’n @pH 7.5                | 83,600          | 0.15 | 1.07×10<sup>6</sup>   | 534×10<sup>6</sup>     | Molé et al. (2024)        |
-| <span style="color:red;font-weight:bold;">PFHxS</span> | PlumeStop        | AFFF mixture in groundwater        | <span style="color:red;font-weight:bold;">1,240</span>   | <span style="color:red;font-weight:bold;">0.24</span>  | 12,100      | 6.04×10<sup>6</sup>  | Carey et al. (2022)     |
-| PFHxA      | Intraplex®, Germany | NaCl sol’n @pH 7.5                | 32,900          | 0.26 | 302,000            | 151×10<sup>6</sup>     | Molé et al. (2024)        |
-| <span style="color:red;font-weight:bold;">6:2 FtS</span>    | PlumeStop        | AFFF mixture in groundwater        | <span style="color:red;font-weight:bold;">3,900</span>           | <span style="color:red;font-weight:bold;">0.28</span> | 33,700             | 16.9×10<sup>6</sup>    | Molé et al. (2024)        |
-| PFPeA      | Intraplex®, Germany | NaCl sol’n @pH 7.5                | 27,600          | 0.52 | 116,000            | 58.2×10<sup>6</sup>    | Molé et al. (2024)        |
-| PFBA       | Intraplex®, Germany | NaCl sol’n @pH 7.5                | 7,920           | 0.64 | 23,300             | 11.6×10<sup>6</sup>    | Molé et al. (2024)        |
-| PFBS       | Intraplex®, Germany | NaCl sol’n @pH 7.5                | 41,100          | 0.32 | 315,000            | 157×10<sup>6</sup>     | Molé et al. (2024)        |
-| HFPO-DA (GenX) | Intraplex®, Germany | NaCl sol’n @pH 7.5           | 44,900          | 0.3  | 365,000            | 183×10<sup>6</sup>     | Molé et al. (2024)        |
-
-</div>
-
-<p style="font-size:0.95em">
-R = 1 + ρ<sub>b</sub>K<sub>d</sub>/θ, with f<sub>cac</sub>=0.002&nbsp;g-carb/g-sed (fraction CAC), ρ<sub>b</sub>=1500&nbsp;g-sed/L (bulk density), θ=0.3 (porosity)
-</p>
+<sup>1</sup> R is estimated using $f_{cac}$=0.002 g-carb/g-sed (fraction CAC), $\rho_b$=1.5 kg-sed/L (bulk density), $\theta$=0.3 (porosity), and a PFAS concentration in the CAC barrier equal to 1×10<sup>−6</sup> mg/L (i.e., 1 ng/L).
 
 ---
 
-### Table A9.2. Example pK<sub>a</sub>, Density, and Aqueous Solubility Values of Selected PFAAs and Precursors
+### Table A9.1.2. Example pK<sub>a</sub>, Density, and Aqueous Solubility Values of Selected PFAAs and Precursors
 
-| PFAS        | CAS #      | # C-F | pK<sub>a</sub><sup>1</sup> | M.W.<br>(g/mol) | Density<sup>2</sup><br>(g/cm<sup>3</sup>) | Solubility<sup>6</sup><br>(mol/L) | Log K<sub>ow</sub><sup>3</sup> |
+| PFAS        | CAS #      | # C-F | pK<sub>a</sub><sup>1</sup> | M.W.<br>(g/mol) | Density<sup>2</sup><br>(g/cm<sup>3</sup>) | Solubility<sup>1</sup><br>(mol/L) | Log K<sub>ow</sub><sup>3</sup> |
 |-------------|------------|-------|-----------|-------------|-------------------------|--------------------------|------------|
 | PFbA        | 375-22-4   | 3     | -0.21     | 213.99      | 1.55                    | 2.09E-03                 | 2.82       |
 | PFPeA       | 2706-90-3  | 4     | -0.80     | 263.98      | 1.65                    | 4.57E-04                 | 3.43       |
@@ -235,21 +246,10 @@ R = 1 + ρ<sub>b</sub>K<sub>d</sub>/θ, with f<sub>cac</sub>=0.002&nbsp;g-carb/g
 | MeFOSE<sup>i</sup>   | 24448-09-7  | 8   | 6.16             | 556.99 | 1.76       | 1.48E-06         |            |
 | EtFOSE<sup>i</sup>   | 1691-99-2   | 8   | 5.42             | 571.01 | 1.76       | 2.63E-07         |            |
 
-<sup>6</sup> Solubility units as reported (usually at 25°C)<br>
-<sup>g</sup> Gaussian estimated<br>
-<sup>d</sup> Data estimated / default<br>
-<sup>i</sup> Isomer-specific or precursor<br>
-<sup>j</sup> Structure confirmation needed
+**Footnote references:**
 
-**REFERENCES**
+1. OPERA values used per: Yu, Q., Zhang, R., Deng, S., Huang, J., and Yu, G. (2009). Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study. *Water Research*, 43(4), 1150–1158. <https://doi.org/10.1016/j.watres.2008.12.001>.
 
-1. OPERA values used per: Q. Yu, R. Zhang, S. Deng, J. Huang, and G. Yu, “Sorption of perfluorooctane sulfonate and perfluorooctanoate on activated carbons and resin: Kinetic and isotherm study,” *Water Research*, vol. 43, no. 4, pp. 1150–1158, Mar. 2009, doi: [10.1016/j.watres.2008.12.001](https://doi.org/10.1016/j.watres.2008.12.001).
+2. TEST values used per: Burkhardt, J. B., et al. (2023). Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon. *Journal of Water Process Engineering*, 53, 103691. <https://doi.org/10.1016/j.jwpe.2023.103691>.
 
-2. TEST values used per: J. B. Burkhardt et al., “Polanyi adsorption potential theory for estimating PFAS treatment with granular activated carbon,” *Journal of Water Process Engineering*, vol. 53, p. 103691, Jul. 2023, doi: [10.1016/j.jwpe.2023.103691](https://doi.org/10.1016/j.jwpe.2023.103691).
-
-3. National Ground Water Association. "Groundwater and PFAS: State of knowledge and practice." Waterville, OH, USA (2017).
-
----
-
-### Table A9.3. (To be completed)
-
+3. National Ground Water Association. (2017). *Groundwater and PFAS: State of knowledge and practice*. Waterville, OH, USA.

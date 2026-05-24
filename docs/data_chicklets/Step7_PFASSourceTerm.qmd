@@ -4,18 +4,19 @@ title: "Step 7: PFAS Source Term"
 
 See **_Appendix 7.1 REMFluor-MD Source Concentrations_** for more info.
 
-## Initial Source Concentration
+## Source Concentration
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **INITIAL SOURCE CONCENTRATION** |
-| --- | --- |
-| Description | Initial source zone concentration when the simulation starts. |
-| Units | μg/L |
-| Typical Values | 0.01 to 1000 μg/L. |
-| Source of Data | <span class="bullet-item">• This concentration represents the concentration in a vertical plane source leaving the source and forming the plume.</span><span class="bullet-item">• The user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.</span><span class="bullet-item">• One practical approach for selecting the representative source concentration is to evaluate plume maps with concentration contours and identify a modeled source-plane width that appears to capture approximately 75% or more of the high-concentration zone leaving the source area.</span><span class="bullet-item">• There are three general options for modeling a PFAS source in groundwater in units of ng/L or μg/L over time are to use:</span><span style="display: block; padding-left: 3em; text-indent: -1.5em; margin: 0;">1. A simple constant source term (this is the only selection for the ("Simple Version").</span><span style="display: block; padding-left: 3em; text-indent: -1.5em; margin: 0;">2. A flexible source term where users enter their own concentration vs. time ("Detailed Version").</span><span style="display: block; padding-left: 3em; text-indent: -1.5em; margin: 0;">3. A tool to upload concentration data from models such as PFAS-leach ("Detailed Version").</span><br><br>See **_Appendix 7.1 REMFluor-MD Source Concentrations_** for more info. |
-| How to Enter Data | Enter directly. |
+| **Parameter** | **Source Concentration** |
+|---|---|
+| **Units** | µg/L. |
+| **Description** | Source zone concentration when the simulation starts (Simple Version) or source concentrations over time (Detailed Version). |
+| **Typical Values** | 0.01 to 10,000 µg/L. |
+| **Source Of Data** | &bull; This concentration represents the concentration in a vertical plane source leaving the source and forming the plume.<br>&bull; The user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.<br>&bull; One practical approach for selecting the representative source concentration is to evaluate **plume maps with concentration contours** and identify a source-plane width that appears to capture **approximately 75% or more of the high-concentration zone** leaving the source area.<br>&bull; There are three general options for modeling a PFAS source in groundwater in units of µg/L <b>over time:</b><br>1.  A simple constant source term that is constant over time (this is the only selection for the "Simple Version"). <br>2. A tool to upload concentration data from the PFAS-LEACH model ("Detailed Version" only).  <br><br>![Step7_1](Step7_1.png)<br><br>3.  A flexible source term where the user enters their own concentration vs. time ("Detailed Version" only). <br>See *[Appendix 7.1 REMFluor-MD Source Concentrations]* for more information. |
+| **How To Enter Data** | 1\) Enter directly into the first row, then select Option 1 "Assume Constant" to autofill the rest of the rows with the same value.<br>2\) Select Option 2 "Upload PFAS Concentrations from PFAS-LEACH" to link a PFAS-LEACH output file and autofill the rows with data from PFAS-LEACH.<br>3\) Enter directly into each row. |
 
+</div>
 </div>
 
 <style>

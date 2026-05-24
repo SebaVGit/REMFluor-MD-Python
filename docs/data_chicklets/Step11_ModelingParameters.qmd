@@ -8,27 +8,14 @@ title: "Step 11: Modeling Parameters"
 
 | **Parameter** | **TIMESTEP SIZE** |
 | --- | --- |
-| Description | Finite difference modeling parameter. |
+| Description | Finite difference modeling parameter. <br><br>![Step11_1](Step11_1.png)<br><br>|
 | Units | yr. |
 | Typical Values | 0.01 to 1 yr. |
-| Source of Data | A rule of thumb is to make sure the timestep size is smaller than:<br>(X-Direction cell size) ÷ (groundwater Darcy velocity) |
+| Source of Data | A rule of thumb is to make sure the timestep size is smaller than:<br>(X-Direction cell size) ÷ (groundwater Darcy velocity).<br>TVD (default), upstream weight (second option) radio button. |
 | How to Enter Data | Enter directly. |
 
 </div>
 
-## Maximum Number of Iterations
-
-<div style="overflow-x: auto;">
-
-| **Parameter** | **MAXIMUM NUMBER OF ITERATIONS** |
-| --- | --- |
-| Description | Finite difference modeling parameter. The maximum number of Gauss Siedell iterations to prevent an endless convergence loop. |
-| Units | Unitless. |
-| Typical Values | 100-500. |
-| Source of Data | Trial and error. If the simulation doesn't converge, sometimes it can help to increase the number of iterations (but not often). |
-| How to Enter Data | Enter directly. |
-
-</div>
 
 ## Convergence Tolerance
 
@@ -36,9 +23,9 @@ title: "Step 11: Modeling Parameters"
 
 | **Parameter** | **CONVERGENCE TOLERANCE** |
 | --- | --- |
-| Description | Finite difference modeling parameter. Convergence tolerance during the Gauss Siedell iteration. |
-| Units | ug/L or mg/L or kg/m³. |
-| Typical Values | Typically, 5 - 8 orders of magnitude lower than the source concentration. |
+| Description | Finite difference modeling parameter. Convergence tolerance during the Gauss Siedell iteration. See screen shot above for entry pop up box. |
+| Units | ug/L. |
+| Typical Values | Typically, 5 - 8 orders of magnitude lower than the initial source concentration. If this value is too small, the model may not converge. |
 | Source of Data | Take the (**INITIAL SOURCE CONCENTRATION**) and divide by 10,000,000. |
 | How to Enter Data | Enter directly. |
 
@@ -51,72 +38,42 @@ title: "Step 11: Modeling Parameters"
 | **Parameter** | **SEE RESULTS EVERY** |
 | --- | --- |
 | Description | Time interval over which to plot results. |
-| Units | yrs. |
-| Typical Values | |
-| Source of Data | |
+| Units | Number of time-steps. |
 | How to Enter Data | Enter directly. |
 
 </div>
 
 ## Input Screen Option Buttons
 
-### Next Step: Show Graph
+<br><br>![Step11_2](Step11_2.png)<br><br>
+
+### Run Model
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **NEXT STEP: SHOW GRAPH** |
+| **Parameter** | **RUN MODEL** |
 | --- | --- |
-| Description | Proceeds to the results of the modeling analysis. |
+| Description | Runs single model based on the parameters you have setup. |
 
 </div>
 
-### Show Previous Data
+### Run Model with Auto-Calibration
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **SHOW PREVIOUS DATA** |
+| **Parameter** | **RUN MODEL WITH AUTO-CALIBRATION** |
 | --- | --- |
-| Description | Shows the output for previously run analysis. |
+| Description | Navigates to the section where you need to setup the calibration parameters. |
 
 </div>
 
-### Return to Main Screen
+### Authors
 
 <div style="overflow-x: auto;">
 
-| **Parameter** | **RETURN TO MAIN SCREEN** |
+| **Parameter** | **AUTHORS** |
 | --- | --- |
-| Description | Returns to the REMFluor-MD Main Screen. |
-
-</div>
-
-### New Site/Clear Data
-
-<div style="overflow-x: auto;">
-
-| **Parameter** | **NEW SITE/CLEAR DATA** |
-| --- | --- |
-| Description | Clears ALL data in the Toolkit memory banks. Use this button to start a new project. |
-
-</div>
-
-### Save/Export Data
-
-<div style="overflow-x: auto;">
-
-| **Parameter** | **SAVE/EXPORT DATA** |
-| --- | --- |
-| Description | Saves all model data. DO NOT ADD ANY EXTENSIONS TO FILE NAME WHEN SAVING. |
-
-</div>
-
-### Paste Example
-
-<div style="overflow-x: auto;">
-
-| **Parameter** | **PASTE EXAMPLE** |
-| --- | --- |
-| Description | Clears ALL data in the Toolkit memory banks and pastes an example dataset.<br>The example dataset used in REMFluor-MD is obtained from Tutorial 7 of the original REMChlor model. |
+| Description | Lists name of the authors and their affiliations. |
 
 </div>
 
@@ -126,7 +83,148 @@ title: "Step 11: Modeling Parameters"
 
 | **Parameter** | **LOAD DATA** |
 | --- | --- |
-| Description | Loads data files saved through the Toolkit. DO NOT EDIT ANY TOOLKIT FILES. Editing files may cause the Toolkit to crash. |
+| Description | Loads data files saved in the specified folder through the Toolkit. DO NOT EDIT ANY TOOLKIT FILES. Editing files may cause the Toolkit to crash. |
+
+</div>
+
+### Save Data
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **SAVE DATA** |
+| --- | --- |
+| Description | Saves all model data to a specified folder. DO NOT ADD ANY EXTENSIONS TO FILE NAME WHEN SAVING. |
+
+</div>
+
+### Clear All Data
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CLEAR ALL DATA** |
+| --- | --- |
+| Description | Clears ALL data in the Toolkit memory banks. Use this button to start a new project. |
+
+</div>
+
+### Paste Example
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **PASTE EXAMPLE** |
+| --- | --- |
+| Description | Clears ALL data in the Toolkit memory banks and pastes an example dataset (simple or detailed).<br>The example dataset used in REMFluor-MD is obtained from Tutorial 7 of the original REMFluor model. |
+
+</div>
+
+
+
+## REMFluor-MD Results
+
+### Output Screens
+
+<br><br>![Step11_3](Step11_3.png)<br><br>
+
+### Run Model
+
+### Concentration in T-Zone vs. Distance in X-Direction
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CONCENTRATION IN T-ZONE VS. DISTANCE IN X-DIRECTION** |
+| --- | --- |
+| Description | Concentration in the transmissive zone vs. distance in the x-direction. The user may scroll down the various "Time", "Y", and "Z" values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Concentration in T-Zone vs. Distance from Bottom of Model
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CONCENTRATION IN T-ZONE VS. DISTANCE FROM BOTTOM OF MODEL** |
+| --- | --- |
+| Description | Concentration in the transmissive zone vs. distance from the bottom of the model. The user may scroll down the various "Time", "X", and "Y" values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>Note that if only one "Z" cell is modeled, then the output will be in terms of a single point for each component rather than a line.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Concentration in T-Zone vs. Time
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CONCENTRATION IN T-ZONE VS. TIME** |
+| --- | --- |
+| Description | Concentration in the transmissive zone vs. the simulated time. The user may scroll down the various "X", "Y", and "Z" values in the boxes to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Concentration vs. Time in Observation Well
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CONCENTRATION VS. TIME IN OBSERVATION WELL** |
+| --- | --- |
+| Description | Concentration vs. the simulated time in an observation well specified on the input screen. Graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Mass Discharge vs. Time in T-Zone
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **MASS DISCHARGE VS. TIME IN T-ZONE** |
+| --- | --- |
+| Description | Mass discharge vs. time in the transmissive zone. The user may scroll down the various "X" values in the box to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Mass vs. Time in T-Zone
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **MASS VS. TIME IN T-ZONE** |
+| --- | --- |
+| Description | Mass vs. time in the transmissive zone. Graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Mass vs. Time in Low-K Zone
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **MASS VS. TIME IN LOW-K ZONE** |
+| --- | --- |
+| Description | Mass vs. time in the low-k zone. Graphs for individual components may be turned on and off using the check boxes under "Select Component". The "Total" option displays the sum of all the individual components.<br>The user may use the LogLinear button to see the results on a semi-log plot. |
+
+</div>
+
+### Calculate T-Zone Mass Discharge
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CALCULATE T-ZONE MASS DISCHARGE** |
+| --- | --- |
+| Description | The user may calculate the mass discharge at any X and Time by entering the desired inputs in the white cells to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided inputs are rounded down to the closest X and Timestep in the model. |
+
+</div>
+
+### Calculate Mass
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **CALCULATE MASS** |
+| --- | --- |
+| Description | The user may calculate the mass at any Time in both the low-k and transmissive zones by entering the desired input in the white cell to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided input is rounded down to the closest Timestep in the model. |
+
+</div>
+
+
+## REMFluor-MD Output Files
+
+<div style="overflow-x: auto;">
+
+| **Parameter** | **REMFLUOR-MD OUTPUT FILES** |
+| --- | --- |
+| Description | REMFluor-MD outputs text files created by the FORTRAN model code may be viewed externally. The files are generated in the same folder as the REMFluor-MD software. If a simulation is saved by the User, all output files associated with that simulation are moved to the location selected by the User. Output files include:<br>• <b>Discharge.out</b> – mass discharge output. Data is output as:<br>&emsp;&emsp;○ Time (yrs), X-direction location (m),<br>&emsp;&emsp;○ Mass discharge for component 1 (kg/yr),<br>&emsp;&emsp;○ Mass discharge for component 2 (kg/yr),<br>&emsp;&emsp;○ Mass discharge for component 3 (kg/yr), and<br>&emsp;&emsp;○ Mass discharge for component 4 (kg/yr).<br>• <b>Obs_well#.out</b> – observation well output for well number # (1-7). Data is output as:<br>&emsp;&emsp;○ Time (yrs),<br>&emsp;&emsp;○ Concentration of component 1 (g/L),<br>&emsp;&emsp;○ Concentration of component 2 (g/L),<br>&emsp;&emsp;○ Concentration of component 3 (g/L), and<br>&emsp;&emsp;○ Concentration of component 4 (g/L).<br>• <b>Plume_mass.out</b> – plume mass output in both the low-k and transmissive zones. Data is output as:<br>&emsp;&emsp;○ Time (yrs),<br>&emsp;&emsp;○ Mass of component 1 in the low-k zone (kg),<br>&emsp;&emsp;○ Mass of component 1 in the transmissive zone (kg),<br>&emsp;&emsp;○ Mass of component 2 in the low-k zone (kg),<br>&emsp;&emsp;○ Mass of component 2 in the transmissive zone (kg),<br>&emsp;&emsp;○ Mass of component 3 in the low-k zone (kg),<br>&emsp;&emsp;○ Mass of component 3 in the transmissive zone (kg),<br>&emsp;&emsp;○ Mass of component 4 in the low-k zone (kg),<br>&emsp;&emsp;○ Mass of component 4 in the transmissive zone (kg).<br>• <b>REMFluor-MD.out</b> – concentration in the transmissive zone. Data is output as:<br>&emsp;&emsp;○ Time (yrs),<br>&emsp;&emsp;○ X-direction location (m),<br>&emsp;&emsp;○ Y-direction location (m),<br>&emsp;&emsp;○ Z-direction location (m),<br>&emsp;&emsp;○ Concentration for component 1 (g/L),<br>&emsp;&emsp;○ Concentration for component 2 (g/L),<br>&emsp;&emsp;○ Concentration for component 3 (g/L),<br>&emsp;&emsp;○ Concentration for component 4 (g/L). |
 
 </div>
 
@@ -153,14 +251,27 @@ table tr:nth-child(1) th {
   background-color: #d3d3d3;
 }
 
+table {
+  table-layout: fixed;
+}
+
+/* Quarto inserts <col style="width:50%"> per column — override those */
+table col:first-child {
+  width: 28.57% !important;
+}
+
+table col:nth-child(2) {
+  width: 71.43% !important;
+}
+
 table th:first-child,
 table td:first-child {
-  width: 25%;
+  width: 28.57% !important;
 }
 
 table th:nth-child(2),
 table td:nth-child(2) {
-  width: 75%;
+  width: 71.43% !important;
 }
 
 /* Indent bullet points and their continuation lines */

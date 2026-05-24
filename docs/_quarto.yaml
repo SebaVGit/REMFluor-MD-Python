@@ -57,7 +57,22 @@ website:
       contents:
         - section: "Appendices"
           contents:
-            - auto: appendix/*
+            - href: appendix/appendix_2_1.qmd
+            - href: appendix/appendix_2_2.qmd
+            - href: appendix/appendix_3_1.qmd
+            - href: appendix/appendix_4_1.qmd
+            - href: appendix/appendix_4_2.qmd
+            - href: appendix/appendix_5_1.qmd
+            - href: appendix/appendix_5_2.qmd
+            - href: appendix/appendix_5_3.qmd
+            - href: appendix/appendix_6_1.qmd
+            - href: appendix/appendix_7_1.qmd
+            - href: appendix/appendix_8_1.qmd
+            - href: appendix/appendix_9_1.qmd
+            - href: appendix/appendix_9_2.qmd
+            - href: appendix/appendix_10_1.qmd
+            - href: appendix/appendix_11_1.qmd
+            - href: appendix/appendix_11_2.qmd
         - section: "Data Chicklets"
           contents:
             - href: data_chicklets/Step1_SystemUnits.qmd

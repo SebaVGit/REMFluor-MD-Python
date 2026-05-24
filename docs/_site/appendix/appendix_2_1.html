@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION – Docs</title>
+<title>APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME – Docs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -141,7 +141,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -179,7 +179,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+ <span class="menu-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -338,9 +338,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</h1>
+<h1 class="title">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</h1>
 </div>
 
 
@@ -357,61 +357,76 @@ window.Quarto = {
 </header>
 
 
+<p><em>Contributors: Hort, Falta, Singh</em></p>
 <p><strong>FINITE-DIFFERENCE GRID STRUCTURE AND CELL SIZE SELECTION</strong></p>
 <p>REMFluor-MD employs a structured, three-dimensional finite-difference grid to represent advective–dispersive transport with matrix diffusion in groundwater systems. Model discretization is defined independently in the longitudinal (x), transverse (y), and vertical (z) directions. The selection of model dimensions and corresponding cell sizes directly controls numerical accuracy, computational stability, and the ability of the model to reproduce physically meaningful dispersion behavior.</p>
 <p><strong>Model Domain Dimensions</strong></p>
 <p>The overall extent of the model domain is specified by three parameters describing the extent of the modeled system:</p>
 <p><em>Model Size in the Direction of Groundwater Flow (X Direction)</em></p>
-<p>The x-direction represents the primary direction of groundwater flow. The model length should generally extend from the source area to the furthest downgradient monitoring location or to a potential receptor such as a surface-water body or water-supply well. Typical values range from 1 to 10,000 ft (0.3 to 3,000 m), depending on plume length and site-specific hydrogeologic conditions.</p>
+<p>The x-direction represents the primary direction of groundwater flow. The model length should generally extend from the source area to the farthest downgradient monitoring location or to a potential receptor such as a surface-water body or water-supply well. Typical values range from 1 to 10,000 ft (0.3 to 3,000 m), depending on plume length and site-specific hydrogeologic conditions.</p>
 <p><em>Model Width Perpendicular to Flow (Y Direction)</em></p>
-<p>The y-direction defines the lateral extent of the modeled plume. The model is symmetric about y = 0, with equal width on either side of the centerline. Typical values range from 10 to 1,000 ft (3 to 300 m). Plume maps are commonly used to define this dimension.</p>
+<p>The y-direction defines the lateral extent of the modeled plume. The model is symmetric about y = 0, with equal width on either side of the centerline. Typical values range from 10 to 1,000 ft (3 to 300 m). Plume maps are commonly used to define this dimension. Generally the model width should be at least as wide as the downgradient plume; or use a simple rule that the model width should be about 2X as wide as the source width.</p>
 <p><em>Model Depth Below the Water Table (Z Direction)</em></p>
 <p>The z-direction represents the vertical thickness of the modeled saturated interval below the water table. Typical values range from 1 to 60 ft (0.3 to 20 m), based on plume cross sections, screened intervals, or known stratigraphy.</p>
-<p><strong>Default Finite-Difference Grid Configuration</strong></p>
+<p><strong>Default Finite-Difference Grid Configuration – Detailed Model</strong></p>
 <p>REMFluor-MD provides a default finite-difference discretization intended to be suitable for most screening- and intermediate-level applications.</p>
-<p>The maximum number of cells in the model in the X, Y, Z directions are:</p>
+<p>The maximum number of cells in the model in the X, Y, and Z directions are:</p>
 <ul>
-<li>Maximum number of cells in the X-direction: <strong>2,000 cells</strong></li>
-<li>Maximum number of cells in the Y-direction (on either side of Y = 0): <strong>100 cells</strong><br>
-<em>(i.e., the model width cannot exceed 200 cells in total)</em></li>
-<li>Maximum number of cells in the Z-direction: <strong>50 cells</strong></li>
+<li>Maximum number of cells in the X-direction is <strong>2,000 cells</strong> (X is in the direction of groundwater flow)</li>
+<li>Maximum number of cells in the Y-direction on either side of Y = 0 is <strong>100 cells</strong> (i.e., the model width cannot be more than 200 cells wide). Minimum number of cells in the Y-direction is <strong>5 cells</strong>.</li>
+<li>Maximum number of cells in the Z-direction is <strong>50 cells</strong></li>
 </ul>
-<p>The default uniform cell sizes are:</p>
+<p>The default uniform grid cells for the model are defined this way:</p>
 <ul>
-<li><strong>Δx:</strong> 2 m (or 5 ft), depending on units selected</li>
-<li><strong>Δy:</strong> 2 m (or 5 ft), depending on units selected</li>
-<li><strong>Δz:</strong> 2 m (or 5 ft), depending on units selected</li>
+<li><strong>Δx = 5 m (or 10 ft)</strong> (depending on which units are selected)
+<ul>
+<li>Number of cells in X-direction = Model Length ÷ 5 meters (or 10 ft)</li>
+</ul></li>
+<li><strong>#y cells = 5 cells</strong> in the Y-direction (model is symmetric about y = 0, so this gives 5 cells in the +y direction)</li>
+<li><strong>#z cells = 10 cells</strong> in the Z-direction</li>
 </ul>
-<p>All cell sizes must be greater than zero. <strong>Users may override the default values by selecting the option to enter user-defined grid cell sizes in the x, y, and z directions, but they must follow the rule below for the cell size in the x-direction:</strong></p>
-<p><strong>Relationship Between Cell Size and Dispersivity</strong></p>
-<p>A key requirement in REMFluor-MD is the relationship between longitudinal dispersivity and the finite-difference cell size in the x-direction. The cell size in the x-direction that is used has to be small enough so that the <em>longitudinal dispersivity<strong> (<em><span class="math inline">\(\alpha_\mathrm{L}\)</span>)</em> </strong>is greater than one-half of the x-direction cell size:</em> <span class="math display">\[
-\alpha_{\mathrm{L}} &gt; \frac{\Delta x}{2}
-\]</span></p>
-<p>This constraint arises from the numerical solution scheme used to calculate advective flux. REMFluor-MD uses a finite-difference upstream weighting method for advection. This approach introduces numerical dispersion equivalent to a longitudinal dispersivity of one-half the x-direction cell size. If a user-specified dispersivity is smaller than this value, it is effectively ignored. If a larger dispersivity is specified, the numerical dispersivity is subtracted from the entered value so that the total effective dispersivity matches the intended physical parameter. This correction improves agreement with exact analytical solutions.</p>
+<p>All cell sizes must be greater than zero. <strong>Users may override the default values by selecting the option to enter user-defined grid cell sizes in the x, y, and z directions, but they must follow the rule below for the cell size in the x-direction.</strong> <br><br><img src="Figure_Appdx_2.1_1.png" class="img-fluid" alt="Figure_Appdx_2.1_1"><br><br></p>
+<p><strong>Default Finite-Difference Grid Configuration – Simple Model</strong></p>
+<p>For the simple version of REMFluor-MD, everything is the same except there are only five grid cells in the Y-direction so that only centerline plume concentrations can be modeled.</p>
 <p><strong>PRACTICAL EXAMPLES</strong></p>
 <p>Consider a default model with the following configuration:</p>
 <ul>
-<li>Model size in the x-direction: <strong>2,000 meters long</strong></li>
-<li>Longitudinal dispersivity (<span class="math inline">\(\alpha_\mathrm{L}\)</span>): <strong>1 meter</strong></li>
-<li>Default cell size (Δx): <strong>2 meters</strong></li>
-<li>One-half of Δx: <strong>1 meter</strong> (which is not greater than <span class="math inline">\(\alpha_\mathrm{L}\)</span>)</li>
+<li>Model size in the x-direction = <strong>2,000 meters long</strong></li>
+<li>Default <strong>Δx = 5 m</strong></li>
+<li>You will have <strong>400 cells</strong> in the X-direction</li>
 <li>No problem!</li>
 </ul>
-<p>In this case, the default discretization provides adequate resolution for dispersivity representation. For longer domains or smaller dispersivity values, user-defined cell sizes are required.</p>
-<p>Then consider a model where the grid cell configuration must be changed</p>
-<ul>
-<li>Model size in the x-direction is <strong>10,000 meters long</strong>, with <strong><span class="math inline">\(\alpha_\mathrm{L}\)</span> = 3.2 meters</strong>.</li>
-<li>Default <strong>Δx = 2 m</strong>.</li>
-<li>The number of required cells in the x-direction is <strong>5,000</strong>, which exceeds the 2,000 cell size limit described above.</li>
-<li>The user presses the <em>“Optional: Enter user defined size of grid cells”</em> button and changes <strong>Δx = 5 m</strong>. The calculated number of cells in the x-direction is now <strong>2,000</strong> and within the model limits.</li>
-<li>This results in <strong><span class="math inline">\(\frac{\Delta x}{2}\)</span> = 2.5 meters</strong>, which is less than the dispersivity of <strong>3.2 meters</strong>.</li>
-<li>No problem!</li>
-</ul>
-<p>Note the model will still run if <span class="math inline">\(\frac{\Delta x}{2} \geq \alpha_\mathrm{L}\)</span>, but the model will use <span class="math inline">\(\frac{\Delta x}{2}\)</span> as the longitudinal dispersivity, not the <span class="math inline">\(\alpha_\mathrm{L}\)</span> value you entered.</p>
 <p><strong>Vertical Discretization Constraint</strong></p>
 <p>The number of grid cells in the z-direction is limited by design. The ratio of model depth to vertical cell size must not exceed 50 total cells. If the model depth is increased or finer vertical resolution is required, the vertical cell size must be adjusted accordingly.</p>
-<p><strong>Implications for Model Setup</strong></p>
-<p>Cell size selection in REMFluor-MD directly influences the representation of longitudinal dispersion, plume spreading, and mass transfer between transmissive and low-permeability zones. Users should verify that the chosen grid resolution is consistent with site-scale dispersivity estimates, plume dimensions, and the intended level of model accuracy.</p>
+<p><strong>Effect of Cell Number on Run Time</strong></p>
+<p>The model run time is directly affected by the total number of cells in the computational grid. Each cell requires calculations during the simulation, so as the number of cells increases, the computational demand and running time also increase.</p>
+<p>The total number of cells can be calculated as:</p>
+<p><span class="math display">\[
+\text{Total cells} = (\text{Number of cells in X}) \times (\text{Number of cells in Y}) \times (\text{Number of cells in Z})
+\]</span></p>
+<p>To ensure efficient model performance, it is recommended to limit the total number of cells to approximately <strong>1,000 or fewer</strong>. Keeping the cell count within this range typically results in a run time of <strong>about 1 minute or less</strong> for a standard simulation. Exceeding this limit may significantly increase computational time.</p>
+<p>Balancing <strong>grid resolution</strong> and <strong>run time</strong> is important: finer grids provide more spatial detail but require more cells, while coarser grids reduce computational effort but may oversimplify spatial variability. Users should adjust the number of cells in each direction (X, Y, Z) carefully to optimize both model accuracy and efficiency.</p>
+<p><strong>Numerical Dispersion and Grid Discretization</strong></p>
+<p><strong>Numerical dispersion</strong> is an artificial smearing of solute concentrations that occurs in numerical models, causing the plume to appear more spread out than the true physical process would predict. It is a byproduct of how the transport equations are solved on a discretized grid.</p>
+<p>In groundwater models, numerical dispersion typically occurs when:</p>
+<ul>
+<li>The grid cells are too large relative to the scale of the plume or reactive features.</li>
+<li>The time step is too large relative to the flow velocity (related to a high Courant number).</li>
+</ul>
+<p>To minimize numerical dispersion, careful attention must be given to <strong>cell sizes and time step</strong>. The <strong>Courant number (C)</strong> is a key dimensionless parameter for evaluating numerical stability and dispersion using the ratio of solute transport over a time step to the size of a grid cell.</p>
+<p><span class="math display">\[
+C = \frac{v \cdot \Delta t}{\Delta x}
+\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(v\)</span> = groundwater velocity (length/time)</li>
+<li><span class="math inline">\(\Delta t\)</span> = model time step</li>
+<li><span class="math inline">\(\Delta x\)</span> = cell length in the direction of flow</li>
+</ul>
+<p>Large Courant numbers can lead to numerical instability or excessive dispersion, while keeping C small enough ensures stable, accurate transport calculations and minimizes artificial spreading.</p>
+<p>To confirm the accuracy of the numerical solution, the model should be rerun using refined spatial discretization, smaller time steps, or alternative advection schemes to verify solution convergence, and the results should be compared to ensure they remain essentially unchanged.</p>
+<p><strong>Permeable Sorption Barrier Grid Discretization</strong></p>
+<p>Because REMFluor-MD uses an implicit solution approach rather than an explicit one, it provides flexibility in grid spacing, allowing users to define different cell sizes in the x-direction within the PSB barrier. In principle, the grid spacing in the PSB barrier can be set to other values, provided the Courant number remains sufficiently small. The optimal grid spacing within the PSB barrier is therefore problem specific. In addition, to minimize numerical dispersion near the PSB barrier, grid spacing is reduced approaching the barrier and gradually increased away from it. The code calculates geometric factors to shrink the grid from the model left boundary to the wall and to expand it from the wall end to the model right boundary. This uses the specified number of cells before and after the wall, along with the wall grid spacing. Based on the cases examined to date, grid spacings on the order of 0.5 to 1 m have performed well, with no observed benefit from using finer discretization.</p>
 
 
 

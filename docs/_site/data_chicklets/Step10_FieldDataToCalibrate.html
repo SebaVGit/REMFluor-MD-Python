@@ -324,6 +324,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#analyte" id="toc-analyte" class="nav-link" data-scroll-target="#analyte">Analyte</a></li>
   <li><a href="#concentration" id="toc-concentration" class="nav-link" data-scroll-target="#concentration">Concentration</a></li>
   <li><a href="#units" id="toc-units" class="nav-link" data-scroll-target="#units">Units</a></li>
+  <li><a href="#machine-calibration-input-screen-for-simple-model" id="toc-machine-calibration-input-screen-for-simple-model" class="nav-link" data-scroll-target="#machine-calibration-input-screen-for-simple-model">Machine Calibration Input Screen for Simple Model:</a></li>
+  <li><a href="#machine-calibration-input-screen-for-detailed-model" id="toc-machine-calibration-input-screen-for-detailed-model" class="nav-link" data-scroll-target="#machine-calibration-input-screen-for-detailed-model">Machine Calibration Input Screen for Detailed Model:</a></li>
   </ul>
 </nav>
     </div>
@@ -351,6 +353,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="simple-version" class="level2">
 <h2 class="anchored" data-anchor-id="simple-version">Simple Version</h2>
+<p>Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.</p>
 </section>
 <section id="sample-year" class="level2">
 <h2 class="anchored" data-anchor-id="sample-year">Sample Year</h2>
@@ -369,7 +372,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td>Description</td>
-<td>The year sampled. You may only plug in one sample event for simple version</td>
+<td>The year sampled. You may only plug in one sample event for the Simple Version.</td>
 </tr>
 <tr class="even">
 <td>Units</td>
@@ -490,7 +493,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td>Units</td>
-<td>m or ft</td>
+<td>ft (or m)</td>
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
@@ -507,10 +510,11 @@ ul.task-list li input[type="checkbox"] {
 </tbody>
 </table>
 </div>
-<p><strong>Note:</strong> This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.</p>
 </section>
 <section id="detailed-version" class="level2">
 <h2 class="anchored" data-anchor-id="detailed-version">Detailed Version</h2>
+<p><strong>Note:</strong> This version requires loading the Excel template (CalibrationTemplate.xlsx) that includes two sheets; model location and model data. Use the template formatting as a guide, or create your own Excel file following the same structure. This allows calibration using multiple wells and data points for refined model calibration.</p>
+<p><br><br><img src="Step10_1.png" class="img-fluid" alt="Step10_1"><br><br></p>
 </section>
 <section id="monitoring-well-name-1" class="level2">
 <h2 class="anchored" data-anchor-id="monitoring-well-name-1">Monitoring Well Name</h2>
@@ -529,7 +533,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td>Description</td>
-<td>Name of the monitoring well used in sampling. Must match the well name in the location tab.</td>
+<td>Identifier of the monitoring well used in sampling. Must match the well name in records.</td>
 </tr>
 <tr class="even">
 <td>Units</td>
@@ -545,7 +549,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td>How to Enter Data</td>
-<td>Enter well name matching the location tab</td>
+<td>Enter the well identifier (e.g., MW-01)</td>
 </tr>
 </tbody>
 </table>
@@ -568,11 +572,11 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td>Description</td>
-<td>Horizontal distance from the contamination source to the monitoring well.</td>
+<td>Horizontal distance from the source along the centerline to the monitoring well.</td>
 </tr>
 <tr class="even">
 <td>Units</td>
-<td>m or ft</td>
+<td>ft (or m)</td>
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
@@ -584,7 +588,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td>How to Enter Data</td>
-<td>Enter horizontal distance from source</td>
+<td>Enter the distance along centerline (e.g., 150)</td>
 </tr>
 </tbody>
 </table>
@@ -611,7 +615,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td>Units</td>
-<td>m or ft</td>
+<td>ft (or m)</td>
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
@@ -650,7 +654,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td>Units</td>
-<td>m or ft</td>
+<td>ft (or m)</td>
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
@@ -689,7 +693,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td>Units</td>
-<td>m or ft</td>
+<td>ft (or m)</td>
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
@@ -816,6 +820,10 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="units">Units</h2>
 <div style="overflow-x: auto;">
 <table class="caption-top table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 69%">
+</colgroup>
 <thead>
 <tr class="header">
 <th><strong>PARAMETER</strong></th>
@@ -833,7 +841,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td>Typical Values</td>
-<td>Example: µg/L</td>
+<td>µg/L is the only unit allowed at this time.</td>
 </tr>
 <tr class="even">
 <td>Source of Data</td>
@@ -846,7 +854,14 @@ ul.task-list li input[type="checkbox"] {
 </tbody>
 </table>
 </div>
-<p><strong>Note:</strong> This version requires loading the Excel template (CalibrationTemplate.xlsx) that includes all model location and model data information. Use the template formatting as a guide, or create your own Excel file following the same structure. This allows for spatially resolved calibration using multiple wells and data points for refined model calibration.</p>
+</section>
+<section id="machine-calibration-input-screen-for-simple-model" class="level2">
+<h2 class="anchored" data-anchor-id="machine-calibration-input-screen-for-simple-model">Machine Calibration Input Screen for Simple Model:</h2>
+<p><br><br><img src="Step10_2.png" class="img-fluid" alt="Step10_2"><br><br></p>
+</section>
+<section id="machine-calibration-input-screen-for-detailed-model" class="level2">
+<h2 class="anchored" data-anchor-id="machine-calibration-input-screen-for-detailed-model">Machine Calibration Input Screen for Detailed Model:</h2>
+<p><br><br><img src="Step10_3.png" class="img-fluid" alt="Step10_3"><br><br></p>
 <style>
 table {
   border-collapse: collapse;

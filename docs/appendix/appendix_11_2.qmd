@@ -1,0 +1,206 @@
+---
+title: "APPENDIX 11.2 CHANGING NUMERICAL PARAMETERS"
+---
+
+*Contributors: Newell, Falta, Hort*
+
+**OVERVIEW**
+
+The numerical parameters in REMFluor-MD control both the **accuracy** of the solution and the **run time** of the model. For most screening- and intermediate-level applications, the default values provide a conservative and stable starting point:
+
+- Initial time step (Δt): 0.1 years
+
+- Maximum number of Gauss–Seidel iterations: 500
+
+- Convergence tolerance: 1 ng/L
+
+- Output interval ("See Results Every"): 10–20 years
+
+These values are intentionally conservative and are appropriate for most plume-scale simulations using the default grid (e.g., Δx = 5 m or 10 ft).
+
+**IMPROVING SIMULATION ACCURACY**
+
+Accuracy in REMFluor-MD is primarily controlled by:
+
+- Time step (Δt)
+
+- Grid resolution (Δx, Δy, Δz)
+
+- Convergence tolerance
+
+- Verification of numerical stability (Courant number)
+
+A summary of some key actions related to these parameters is provided below.
+
+**1. Reduce the Time Step to Increase Accuracy**
+
+To get accurate output, the time step should satisfy this formula where C (Courant number) should be less than 1.0.
+
+$$
+C = \frac{v \, \Delta t}{\Delta x}
+$$
+
+With a default Δt of 0.1 years, most moderate-velocity groundwater systems will remain stable.
+
+If you need to improve accuracy:
+
+- Reduce Δt from 0.1 years to 0.05 years or 0.02 years.
+
+- This is especially important if:
+
+    - Groundwater velocity is high,
+
+    - Δx is relatively coarse,
+
+    - You are modeling sharp fronts (e.g., near a PSB),
+
+    - Longitudinal dispersivity is small.
+
+Smaller time steps reduce artificial plume smearing and improve representation of steep gradients, but they increase run time proportionally.
+
+**2. Refine the Spatial Grid to Reduce Model Runtimes**
+
+Reducing Δx decreases numerical dispersion. For example:
+
+- Default Δx = 5 m
+
+- Refining to Δx = 2.5 m doubles the number of X-cells and improves resolution of longitudinal dispersion.
+
+However, total cells = (Nx × Ny × Nz). Since run time scales directly with total cells, doubling Nx roughly doubles run time.
+
+For higher accuracy:
+
+- Refine Δx in regions of steep gradients (e.g., near a permeable sorption barrier).
+
+- Keep total cells ideally below ~10,000 when possible.
+
+- Avoid exceeding the 50-cell vertical limit.
+
+In many cases, reducing Δx below ~0.5–1 m in barrier zones does not materially improve results.
+
+**3. Tighten Convergence Tolerance to Increase Accuracy**
+
+**Default: 1 ng/L**
+
+This corresponds to roughly 6 orders of magnitude below a strong PFAS source concentration and is generally sufficient.
+
+For higher precision:
+
+- Reduce to 0.1 ng/L if modeling very low regulatory thresholds.
+
+- Only do this if breakthrough timing or very low-level concentrations are critical.
+
+*Note:* Tightening tolerance increases iteration count and run time.
+
+**4. Increase Maximum Iterations (If Needed)**
+
+**Default: 500 iterations**
+
+This is usually sufficient. Increasing this to 800–1,000 may help convergence in difficult cases, but it rarely improves solution accuracy. It mainly prevents premature stopping.
+
+**REDUCING RUN TIME OVERVIEW**
+
+Run time increases with:
+
+- Total number of cells
+
+- Number of time steps
+
+- Number of Gauss–Seidel iterations required per step
+
+To reduce run time:
+
+**1. Increase Time Step (Carefully)**
+
+Δt can be increased from 0.1 years to:
+
+- 0.2 or 0.25 years, provided the Courant number remains acceptable.
+
+This reduces the number of time steps by half or more.
+
+However:
+
+- Increasing Δt too much increases numerical dispersion.
+
+- Always check that plume shape and breakthrough timing remain similar.
+
+**2. Coarsen the Grid**
+
+If total cells exceed ~10,000:
+
+- Increase Δx (e.g., from 5 m to 10 m).
+
+- Reduce number of Y-cells if lateral detail is unnecessary (but keep at least 5 cells in Y-direction and keep the width in the Y-direction about the width of the downgradient plume or 2× the source width).
+
+- Reduce Z-cells if vertical discretization is not needed; many shallow plumes may only need one layer in the Z-direction.
+
+For screening runs, the simple model (1 Y-cell) dramatically reduces computation time.
+
+**3. Relax Convergence Tolerance**
+
+If 1 ng/L is more precise than necessary:
+
+- Increase to **5 ng/L or 10 ng/L** for faster convergence.
+
+This is appropriate when source concentrations are mg/L and regulatory targets are in µg/L.
+
+**4. Increase Output Interval**
+
+"See Results Every" only affects plotting, not computation, but:
+
+- Increasing from 10 years to 20 years or more reduces output storage and speeds visualization.
+
+**RECOMMENDED WORKFLOW FOR SPEED OPTIMIZATION**
+
+If users adjust parameters to increase run speed:
+
+1. **First run the model with conservative settings**
+
+    - Δt = 0.1 yr
+
+    - Max iterations = 500
+
+    - Convergence tolerance = 1 ng/L
+
+    - Default grid
+
+2. **Create a faster version**
+
+    - Larger Δt
+
+    - Slightly coarser grid
+
+    - Slightly relaxed tolerance
+
+3. **Compare results directly**
+
+    - Plume length
+
+    - Breakthrough timing
+
+    - Peak concentrations
+
+    - Mass removal predictions
+
+If results differ materially (more than a few percent in timing or concentration), revert to the more conservative setup.
+
+**BEST PRACTICE RECOMMENDATION**
+
+When increasing run speed:
+
+Always compare the modified faster run to the original conservative run to confirm that plume shape, breakthrough timing, and concentration magnitudes remain essentially unchanged.
+
+If results change meaningfully, the faster model is introducing numerical dispersion or insufficient convergence and should not be used for decision-level analysis.
+
+**PRACTICAL GUIDANCE SUMMARY**
+
+| Goal               | Recommended Adjustment | Tradeoff               |
+|--------------------|------------------------|------------------------|
+| Improve accuracy   | Reduce Δt              | Longer run time        |
+| Improve accuracy   | Reduce Δx              | More cells             |
+| Improve accuracy   | Tighten tolerance      | More iterations        |
+| Reduce run time    | Increase Δt            | Risk of dispersion     |
+| Reduce run time    | Coarsen grid           | Reduced spatial detail |
+| Reduce run time    | Relax tolerance        | Slight loss of precision |
+
+In practice, the **time step and longitudinal grid spacing** are the two most important parameters controlling both numerical dispersion and computational cost. For most REMFluor-MD applications, the default Δt of 0.1 years and Δx of 5 m provide a good balance between stability, accuracy, and efficiency.

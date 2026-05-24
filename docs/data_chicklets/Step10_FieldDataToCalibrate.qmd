@@ -3,6 +3,8 @@ title: "Step 10: Field Data to Calibrate"
 ---
 
 ## Simple Version
+Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.
+
 
 ## Sample Year
 
@@ -10,7 +12,7 @@ title: "Step 10: Field Data to Calibrate"
 
 | **PARAMETER**     | **SAMPLE YEAR**                                                 |
 | ----------------- | ------------------------------------------------------------------------- |
-| Description       | The year sampled. You may only plug in one sample event for simple version |
+| Description       | The year sampled. You may only plug in one sample event for the Simple Version. |
 | Units             | YEAR                                                                   |
 | Typical Values    | Example: 2020                                                              |
 | Source of Data    | Lab or field record                                                 |
@@ -53,16 +55,18 @@ title: "Step 10: Field Data to Calibrate"
 | **PARAMETER**     | **DISTANCE FROM SOURCE**                                                  |
 | ----------------- | ------------------------------------------------------------------------- |
 | Description       | Horizontal distance from the source along the centerline to the monitoring well. |
-| Units             | m or ft                                                                   |
+| Units             | ft (or m)                                                                   |
 | Typical Values    | Example: 150                                                              |
 | Source of Data    | Field survey / site map                                                   |
 | How to Enter Data | Enter the distance along centerline (e.g., 150)                           |
 
 </div>
 
-**Note:** This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.
 
 ## Detailed Version
+**Note:** This version requires loading the Excel template (CalibrationTemplate.xlsx) that includes two sheets; model location and model data. Use the template formatting as a guide, or create your own Excel file following the same structure. This allows calibration using multiple wells and data points for refined model calibration.
+
+<br><br>![Step10_1](Step10_1.png)<br><br>
 
 ## Monitoring Well Name
 
@@ -70,11 +74,11 @@ title: "Step 10: Field Data to Calibrate"
 
 | **PARAMETER**     | **MONITORING WELL NAME**                                                                    |
 | ----------------- | ------------------------------------------------------------------------------------------- |
-| Description       | Name of the monitoring well used in sampling. Must match the well name in the location tab. |
+| Description       | Identifier of the monitoring well used in sampling. Must match the well name in records. |
 | Units             | Text                                                                                        |
 | Typical Values    | Example: MW-01                                                                              |
 | Source of Data    | Monitoring well records                                                                     |
-| How to Enter Data | Enter well name matching the location tab                                                   |
+| How to Enter Data | Enter the well identifier (e.g., MW-01)    |
 
 </div>
 
@@ -84,11 +88,11 @@ title: "Step 10: Field Data to Calibrate"
 
 | **PARAMETER**     | **DISTANCE FROM SOURCE**                                                  |
 | ----------------- | ------------------------------------------------------------------------- |
-| Description       | Horizontal distance from the contamination source to the monitoring well. |
-| Units             | m or ft                                                                   |
+| Description       | Horizontal distance from the source along the centerline to the monitoring well. |
+| Units             | ft (or m)                                                                   |
 | Typical Values    | Example: 150                                                              |
 | Source of Data    | Field survey / site map                                                   |
-| How to Enter Data | Enter horizontal distance from source                                     |
+| How to Enter Data | Enter the distance along centerline (e.g., 150)                                 |
 
 </div>
 
@@ -99,7 +103,7 @@ title: "Step 10: Field Data to Calibrate"
 | **PARAMETER**     | **MONITORING WELL Y DISTANCE OFF CENTERLINE**          |
 | ----------------- | ------------------------------------------------------ |
 | Description       | Distance of the well from the centerline of the plume. |
-| Units             | m or ft                                                |
+| Units             | ft (or m)                                                |
 | Typical Values    | Example: 5                                             |
 | Source of Data    | Field survey / site map                                |
 | How to Enter Data | Enter distance from the centerline of the plume        |
@@ -113,7 +117,7 @@ title: "Step 10: Field Data to Calibrate"
 | **PARAMETER**     | **DISTANCE FROM MODEL TOP TO SCREEN TOP**                     |
 | ----------------- | ------------------------------------------------------------- |
 | Description       | Depth from model top to top of the well perforation interval. |
-| Units             | m or ft                                                       |
+| Units             | ft (or m)                                                       |
 | Typical Values    | Example: 2.5                                                  |
 | Source of Data    | Field survey / site map                                       |
 | How to Enter Data | Enter depth to top of perforation interval                    |
@@ -127,7 +131,7 @@ title: "Step 10: Field Data to Calibrate"
 | **PARAMETER**     | **DISTANCE FROM MODEL TOP TO SCREEN BOTTOM**                     |
 | ----------------- | ---------------------------------------------------------------- |
 | Description       | Depth from model top to bottom of the well perforation interval. |
-| Units             | m or ft                                                          |
+| Units             | ft (or m)                                                         |
 | Typical Values    | Example: 5.0                                                     |
 | Source of Data    | Field survey / site map                                          |
 | How to Enter Data | Enter depth to bottom of perforation interval                    |
@@ -184,13 +188,18 @@ title: "Step 10: Field Data to Calibrate"
 | ----------------- | --------------------------------------- |
 | Description       | Units used for reporting concentration. |
 | Units             | µg/L                                    |
-| Typical Values    | Example: µg/L                           |
+| Typical Values    | µg/L is the only unit allowed at this time.                          |
 | Source of Data    | Lab analysis                            |
 | How to Enter Data | Enter units                             |
 
 </div>
 
-**Note:** This version requires loading the Excel template (CalibrationTemplate.xlsx) that includes all model location and model data information. Use the template formatting as a guide, or create your own Excel file following the same structure. This allows for spatially resolved calibration using multiple wells and data points for refined model calibration.
+## Machine Calibration Input Screen for Simple Model:
+<br><br>![Step10_2](Step10_2.png)<br><br>
+
+
+## Machine Calibration Input Screen for Detailed Model:
+<br><br>![Step10_3](Step10_3.png)<br><br>
 
 <style>
 table {

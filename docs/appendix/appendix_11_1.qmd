@@ -1,0 +1,41 @@
+---
+title: "APPENDIX 11.1 CALIBRATING THE MODEL"
+---
+
+*Contributors: Singh, Hort, Falta*
+
+**OVERVIEW**
+
+There are two calibration options: **Manual Calibration** or **Auto-Calibration**.
+
+**MANUAL CALIBRATION (TRIAL BY ERROR)**
+
+For the Manual Calibration, follow these general steps:
+
+- Compare model outputs to observed plume data, focusing on matching concentrations and plume length
+
+- Adjust key parameters through multiple model runs, in particular:
+
+    - Source concentration and source mass
+
+    - Hydraulic conductivity and porosity of transmissive zone
+
+    - Retardation factors
+
+    - Decay rates (if any degradation is occurring)
+
+- Iteratively refine parameters to improve match between simulated and observed concentrations
+
+- Focus on matching the overall plume extent and concentration trends rather than exact point values
+
+- Document calibration steps and final parameter set
+
+The Manual Calibration process requires scientific judgment to determine which parameters to adjust. Sensitivity analyses can help identify the most influential parameters. The goal is to achieve a reasonable match to observed data while maintaining physically realistic parameter values. Multiple calibration targets (e.g., concentrations at different distances/times and for different PFAS) should be considered.
+
+**AUTO-CALIBRATION**
+
+Automated calibration methodologies—such as parameter estimation approaches (e.g., PEST) and the implemented **Dynamically Dimensioned Search (DDS;** Tolson, 2007**)** use algorithms to iteratively adjust groundwater model parameters so that simulated outputs closely match observed data. The auto-calibration process begins with **user-defined values for 11 key parameters**, around which permissible parameter ranges are specified. The optimization algorithms then perform thousands of model realizations, systematically adjusting parameter values to minimize the discrepancy between model predictions and observed measurements, as quantified by an **objective function**. For both simple and detailed implementations, the objective function is defined as the **root mean squared logarithmic error (RMSLE)**. RMSLE is calculated using observed concentration data from all monitoring wells, providing a compound-specific, plume-wide measure of goodness-of-fit. Results can be evaluated in the REMFluor-MD Output Dashboard by selecting the analysis type *"Concentration vs. Time at Observation Wells."* Similar to Monte Carlo approaches, the calibration process requires a large number of model runs to identify parameter combinations that achieve an acceptable fit to calibration targets. In the detailed implementation, additional flexibility is provided by allowing observations at individual wells to be weighted, in addition to incorporating expanded time-series data across the monitoring network.
+
+![](./Figure_Appdx_11.1_1.png){fig-alt="11.1" width=600px}
+
+The calibration process starts with a set of initial parameter estimates which are then systematically varied. The sensitivity of the model outputs to changes in parameters is analyzed to direct the optimization process, facilitating the identification of parameter sets that produce the most accurate and realistic simulations. This process not only improves the model's predictive accuracy but also enhances the understanding of the physical processes represented by the model. The DDS methodology implemented for this work is a heuristic global search designed to scale the search space with respect to maximum function evaluations. The algorithm begins with a broad search across all decision variables and progressively reduces the number of perturbed dimensions as iterations proceed, shifting from global exploration to local exploitation. At each iteration, a probabilistically selected subset of parameters is perturbed using a Gaussian distribution, while unselected parameters remain fixed. This dynamic reduction in search dimensionality allows DDS to efficiently navigate large parameter spaces, making it particularly well suited for complex environmental and hydrologic model calibration problems where objective function evaluations are computationally expensive.

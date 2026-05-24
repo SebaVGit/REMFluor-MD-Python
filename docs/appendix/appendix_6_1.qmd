@@ -1,43 +1,45 @@
 ---
-title: "APPENDIX 6.1 GENERAL METHODS FOR ESTIMATING AQUIFER DISPERSIVITY"
+title: "APPENDIX 6.1 METHODS FOR ESTIMATING AQUIFER DISPERSIVITY"
 ---
+
+*Contributors: Newell, Stockwell, Singh*
 
 **OBJECTIVE**
 
 Two methods are presented for estimating longitudinal, transverse, and vertical dispersivities in REMFluor-MD:
 
-1. New Heterogeneity Based Method from Zech et al., 2023.
+1. New heterogeneity-based method from Zech et al. (2023), and
 
 2. Classic methods based on plume length.
 
-**NEW HETEROGENEITY BASED DISPERSIVITY METHOD FROM ZECH ET AL., 2023**
+**NEW HETEROGENEITY-BASED DISPERSIVITY METHOD FROM ZECH ET AL., 2023**
 
 **Overview**
 
-The Zech et al. (2023) paradigm represents a significant advancement in estimating macrodispersivity for groundwater transport modeling by shifting away from the  "universal scaling" approach toward a heterogeneity-based classification system. This methodology classifies aquifers into three categories, weak, medium, and high heterogeneity, based on their depositional environment, sedimentological characteristics, and statistical properties of hydraulic conductivity.
+The Zech et al. (2023) paradigm represents a significant advancement in estimating macrodispersivity for groundwater transport modeling by shifting away from the "universal scaling" approach toward a heterogeneity-based classification system. This methodology classifies aquifers into three categories, weak, medium, and high heterogeneity, based on their depositional environment, sedimentological characteristics, and statistical properties of hydraulic conductivity.
 
 **Step-by-Step Qualitative Classification Process to Estimate Longitudinal Dispersivity ($\alpha_{\mathrm{L}}$)**
 
-1. **Gather Available Geological Information: **Review boring logs and lithologic descriptions; Note grain-size distributions and sorting characteristics; Document presence and extent of different grain-size fractions; Identify depositional environment if possible
+1. **Gather Available Geological Information:** Review boring logs and lithologic descriptions. Note grain-size distributions and sorting characteristics. Document presence and extent of different grain-size fractions. Identify depositional environment if possible.
 
 2. Compare to General Descriptions of Aquifer Heterogeneity: use one of the two sub-methods below:
-    - Sub-method A:  select weak, medium, or strong heterogeneity based on the descriptions in the section below; and/or 
-    - Sub-method B:  Alternatively Compare to Analog Sites: Match lithologic descriptions to Table 1; Look for similar grain-size distributions; consider similar depositional environments
+    - Sub-method A: Select weak, medium, or strong heterogeneity based on the descriptions in the section below; and/or
+    - Sub-method B: Alternatively Compare to Analog Sites: Match lithologic descriptions at a site to Table 6.1.1; Look for similar grain-size distributions; consider similar depositional environments
 
-3. **Assign Preliminary Heterogeneity Class: **although there is some level of arbitrariness, select either weak, medium, or high heterogeneity. 
+3. **Assign Preliminary Heterogeneity Class:** although there is some level of arbitrariness, select either weak, medium, or high heterogeneity.
 
-4. **Select Dispersivity Values: **Use mean values from Zech et al. (2023) Table 1: 
+4. **Select Dispersivity Values:** Use mean values from Zech et al. (2023):
     - Weak Heterogeneity: $\alpha_{\mathrm{L}}$ = <span style="color: red;">1.1 m</span>
     - Medium Heterogeneity: $\alpha_{\mathrm{L}}$ = <span style="color: red;">3.2 m</span>
-    - High Heterogeneity: $\alpha_{\mathrm{L}}$ = <span style="color: red;">7.5 m</span>;
+    - High Heterogeneity: $\alpha_{\mathrm{L}}$ = <span style="color: red;">7.5 m</span>
 
-Consider uncertainty analysis using the reported standard deviations
+Consider uncertainty analysis using the reported standard deviations.
 
-**Or ****If Enough Data,** **Quantit****at****ively Estimate Heterogeneity:**  Alternatively if there are enough hydraulic conductivity (K) measurements (potentially 20+ measurement points), use the quantitative measurement approach below based on the log variance of K (Zech et al., 2023) (see detailed description below).  
+**Or, If Enough Data, Quantitatively Estimate Heterogeneity:** Alternatively, if there are enough hydraulic conductivity (K) measurements (potentially 20+ measurement points), use the quantitative measurement approach below based on the log variance of K (Zech et al., 2023) (see detailed description below).
 
 **Detailed Description of Qualitative Methods**
 
-*Sub-method A:  Select Weak, Medium or High Heterogeneity Using Descriptions*
+*Sub-Method A: Select Weak, Medium or High Heterogeneity Using Descriptions*
 
 <div style="display: flex; flex-wrap: wrap; margin-bottom: 2em; align-items: flex-start;">
 
@@ -103,14 +105,15 @@ Consider uncertainty analysis using the reported standard deviations
 </div>
 </div>
 
-*Sub-Method 2:  Select Weak, Medium or High by Comparing to Analog Sites*
+*Sub-Method B: Select Weak, Medium or High by Comparing to Analog Sites*
 
-More detailed descriptions of 33 aquifers classified by weak, medium, high heterogeneity from Zech et al. (2023) are provided below in Table 1.  “B1” or “B2” refer to Table B1 and B2 in Zech et al., and the “-XX” number is the position in the original table from top to bottom.  (Only intensively and moderately characterized sites are reproduced in Table 1).
+More detailed descriptions of 33 aquifers classified by weak, medium, high heterogeneity from Zech et al. (2023) are provided below in Table 6.1.1. "B1" or "B2" refer to Table B1 and B2 in Zech et al., and the "-XX" number is the position in the original table from top to bottom. (Only intensively and moderately characterized sites are reproduced in Table 6.1.1).
 
-Table 1: Aquifer Material Characteristics by Heterogeneity Class
+*Table 6.1.1. Aquifer Material Characteristics by Heterogeneity Class.*
+
 ![](./Figure_Appdx_6.1_4.png){fig-alt="Aquifer Material" width=700px}
 
-*Sub-methods 1 and 2:  Uncertainty and Professional Judgment*
+*Sub-Methods C: Uncertainty and Professional Judgment*
 
 Zech et al. (2023) acknowledge inherent uncertainty in dispersivity estimation and note this classification system involves "some level of arbitrariness." Practitioners should:
 
@@ -124,19 +127,19 @@ Zech et al. (2023) acknowledge inherent uncertainty in dispersivity estimation a
 
 *Theoretical Basis*
 
-The log-conductivity variance (σ²Y, where Y = ln K) serves as the primary quantitative metric for heterogeneity classification. Zech et al. (2023) provide approximate dividing lines:
+The log-conductivity variance ($\sigma^2_Y$, where $Y = \ln K$) serves as the primary quantitative metric for heterogeneity classification. Zech et al. (2023) provide approximate dividing lines:
 
-- **Weak heterogeneity:** σ²Y < 1
-- **Medium heterogeneity:** 1 < σ²Y < 2
-- **High heterogeneity:** σ²Y > 2
+- **Weak heterogeneity:** $\sigma^2_Y < 1$
+- **Medium heterogeneity:** $1 < \sigma^2_Y < 2$
+- **High heterogeneity:** $\sigma^2_Y > 2$
 
-These boundaries are described as a "rough division" by the authors, acknowledging that the classification involves some professional judgment.  A key question is how to calculate σ²Y.
+These boundaries are described as a "rough division" by the authors, acknowledging that the classification involves some professional judgment. A key question is how to calculate $\sigma^2_Y$.
 
 *Data Requirements*
 
-To calculate σ²Y reliably, practitioners need spatially distributed hydraulic conductivity measurements. Potential data sources include:
+To calculate $\sigma^2_Y$ reliably, practitioners need spatially distributed hydraulic conductivity measurements. Potential data sources include:
 
-- Multiple slug tests across the site 
+- Multiple slug tests across the site
 - Pumping tests at various locations
 - Flowmeter logs or hydraulic profiling in multiple wells
 - Grain-size analyses correlated to K (though this introduces additional uncertainty)
@@ -146,10 +149,10 @@ Note a large number of K values are needed to do this calculation, **potentially
 *Calculation Procedure*
 
 1. **Data Collection:** Obtain hydraulic conductivity measurements (K) at multiple locations and depths within the aquifer.
-2. **Natural Log Transformation:** Convert each K value to log-conductivity: Yi = ln(Ki).
-3. **Calculate Mean Log-Conductivity:** Compute the mean, Ȳ = (1/n) Σ Yi.
-4. **Calculate Log-Conductivity Variance:** Determine variance, σ²Y = (1/(n-1)) Σ (Yi - Ȳ)².
-5. **Classify Heterogeneity:** Compare σ²Y to the threshold values above to assign the appropriate heterogeneity class.
+2. **Natural Log Transformation:** Convert each K value to log-conductivity: $Y_i = \ln(K_i)$.
+3. **Calculate Mean Log-Conductivity:** $\bar{Y} = (1/n) \sum Y_i$.
+4. **Calculate Log-Conductivity Variance:** $\sigma^2_Y = \frac{1}{n-1} \sum (Y_i - \bar{Y})^2$.
+5. **Classify Heterogeneity:** Compare $\sigma^2_Y$ to the threshold values above.
 
 *Important Considerations*
 
@@ -160,22 +163,33 @@ Note a large number of K values are needed to do this calculation, **potentially
 
 *Practical Limitations*
 
-Zech et al. (2023) acknowledge that in many cases, particularly for preliminary assessments, the statistical parameters **σ²Y** (log-conductivity variance**)** and Ih (longitudinal correlation scale) are "generally not available" at most sites.
+Zech et al. (2023) acknowledge that in many cases, particularly for preliminary assessments, the statistical parameters **$\sigma^2_Y$** (log-conductivity variance) and **$I_h$** (longitudinal correlation scale) are "generally not available" at most sites.
 
 **Zech et al. Recommendations for Transverse Dispersity ($\alpha_{\mathrm{T}}$)**
 
-After their re-evaluation of dispersivity data, Zech et al. (2015, 2019) found no clear scale-dependency in transverse dispersivity (αT or “alpha-T” or “alpha-Y”), with values typically ranging from 1% to 10% of the longitudinal dispersivity for the most reliable data sets. However, Zech et al. (2023) provide recommendations for alpha-T at **0.03 to 0.05 meters:**   *“it is preferable to select an absolute value in the range of 3 to 5 cm, at least for aquifers of weak to medium heterogeneity”*
+After their re-evaluation of dispersivity data, Zech et al. (2015, 2019) found no clear scale-dependency in transverse dispersivity ($\alpha_T$ or "alpha-T" or "alpha-Y"), with values typically ranging from 1% to 10% of the longitudinal dispersivity for the most reliable data sets. However, Zech et al. (2023) provide recommendations for alpha-T at **0.03 to 0.05 meters:** *"it is preferable to select an absolute value in the range of 3 to 5 cm, at least for aquifers of weak to medium heterogeneity"*
 
 **Zech et al. Recommendations for Vertical Dispersity ($\alpha_{\mathrm{Z}}$)**
 
-Zech et al. (2023) provide the following recommendation for vertical dispersivity (“alpha-v” or “alpha-z”): 
-**$\alpha_{\mathrm{Z}}$** = 0.1 x **$\alpha_{\mathrm{T}}$**
+Zech et al. (2023) provide the following recommendation for vertical dispersivity ("alpha-v" or "alpha-z"):
+
+$$
+\alpha_{\mathrm{Z}} = 0.1 \times \alpha_{\mathrm{T}}
+$$
+
+Carey et al. (2018) conducted a regression analysis based on a meta study to develop an equation for estimating vertical dispersivity based on hydraulic conductivity:
+
+$$
+\alpha_{\mathrm{Z}} = 0.08 \, K^{-0.16}
+$$
+
+where $\alpha_{\mathrm{Z}}$ is in millimeters and K is in meters per second (m/s).
 
 **SUMMARY**
 
-The Zech et al. (2023) framework provides practitioners with a rational methodology for selecting macrodispersivity values based on aquifer heterogeneity. While quantitative assessment through log-conductivity variance (σ²Y) is preferable when data are available, the authors recognize that "for preliminary assessments, these data are not available and ad hoc values are adopted by practitioners."
+The Zech et al. (2023) framework provides practitioners with a rational methodology for selecting macrodispersivity values based on aquifer heterogeneity. While quantitative assessment through log-conductivity variance ($\sigma^2_Y$) is preferable when data are available, the authors recognize that "for preliminary assessments, these data are not available and ad hoc values are adopted by practitioners."
 
-The geological characterization approach, classifying aquifers based on grain-size proportions and comparing to well-studied analogues, offers a defensible alternative to arbitrary value selection. By examining boring logs and lithologic descriptions and matching them to the material characteristics in Table 1, practitioners can select dispersivity values that better represent actual field conditions than the previously used empirical scaling relationships.
+The geological characterization approach, classifying aquifers based on grain-size proportions and comparing to well-studied analogues, offers a defensible alternative to arbitrary value selection. By examining boring logs and lithologic descriptions and matching them to the material characteristics in Table 6.1.1, practitioners can select dispersivity values that better represent actual field conditions than the previously used empirical scaling relationships.
 
 The approach is inherently uncertain, as reflected in the standard deviations reported for each heterogeneity class. However, this uncertainty is explicitly quantified, allowing for appropriate sensitivity analyses in groundwater transport models. As noted in Zech et al. (2023), the suggested values are "based on a thorough analysis of tens of field experiments" and represent the best available guidance when research site level characterization data are not on hand.
 
@@ -185,11 +199,11 @@ The approach is inherently uncertain, as reflected in the standard deviations re
 
 Conventional practice suggested estimating dispersion based on the expected length (L) of the plume with mathematical relationships such as:
 
-1. Longitudinal Dispersivity = 0.1 * Plume Length (Pickens and Grisak, 1981)
+1. Longitudinal Dispersivity = 0.1 × Plume Length (Pickens and Grisak, 1981)
 
-2. The Xu and Eckstein (1995) relationship is typically presented as a graph relating plume length (the “scale”) to the corresponding estimated longitudinal dispersivity. Users look up their plume length on the x-axis and read off the recommended dispersivity on the y-axis. For example, a plume length of 1,000 meters corresponds to a longitudinal dispersivity of about 10 meters, while a plume length of 10,000 meters corresponds to about 20 meters.  
-  
-![](./Figure_Appdx_6.1_5.png){fig-alt="Xu & Eckstein (1995) Dispersivity vs. Plume Length" width=300px}
+2. The Xu and Eckstein (1995) relationship shown as the curved line on the figure below, where one puts in the plume "scale" (effectively the plume length) and uses the curved line to determine an appropriate longitudinal dispersivity. For example, if your plume length is 1,000 meters, the longitudinal dispersivity is about 10 meters. A plume 10,000 meters long would have a longitudinal dispersivity of about 20 meters.
+
+![](./Figure_Appdx_6.1_5.png){fig-alt="Xu & Eckstein (1995) Dispersivity vs. Plume Length" width=400px}
 
 **Estimating Transverse Dispersivity ($\alpha_{\mathrm{T}}$)**
 
@@ -207,15 +221,16 @@ The classical method (Aziz *et al.*, 1999) typically applies another ratio:
 
 **REFERENCES**
 
-Aziz, C., A. Smith, and C. Newell, 1999. BIOCHLOR Chlorinated Solvent Plume Database. Air Force Center for Environmental Excellence, San Antonio Texas.
+Aziz, C., A. Smith, and C. Newell, 1999. *BIOCHLOR Chlorinated Solvent Plume Database*. Air Force Center for Environmental Excellence, San Antonio, Texas.
 
-Pickens, J.F., and G.E. Grisak, 1981, Scale-Dependent Dispersion in a Stratified Granular Aquifer, *Water Resour. Res.* 17(4): 1191-1211.
+Carey, G. R., McBean, E. A., & Feenstra, S. (2018). Estimating transverse dispersivity based on hydraulic conductivity. *Environmental Technology & Innovation*, 10(2018), 36–45. <https://doi.org/10.1016/j.eti.2018.01.008>
 
-Xu, M. and Y. Eckstein, 1995, Use of Weighted Least-Squares Method in Evaluation of the Relationship Between Dispersivity and Scale, *J. Ground Water* 33(6): 905-908.
+Pickens, J.F., and G.E. Grisak (1981). Scale-Dependent Dispersion in a Stratified Granular Aquifer. *Water Resources Research*, 17(4), 1191–1211.
 
-Zech, A., Attinger, S., Cvetkovic, V., Dagan, G., Dietrich, P., Fiori, A., Rubin, Y., & Teutsch, G. (2015). Is unique scaling of aquifer macrodispersivity supported by field data? *Water Resources Research*, *51*(9), 7662–7679. 
+Xu, M., and Y. Eckstein (1995). Use of Weighted Least-Squares Method in Evaluation of the Relationship Between Dispersivity and Scale. *Ground Water*, 33(6), 905–908.
 
-Zech, A., Attinger, S., Bellin, A., Cvetkovic, V., Dietrich, P., Fiori, A., Teutsch, G., & Dagan, G. (2019). A Critical Analysis of Transverse Dispersivity Field Data. *Groundwater*, *57*(4), 632–639. 
+Zech, A., Attinger, S., Cvetkovic, V., Dagan, G., Dietrich, P., Fiori, A., Rubin, Y., & Teutsch, G. (2015). Is unique scaling of aquifer macrodispersivity supported by field data? *Water Resources Research*, 51(9), 7662–7679. <https://doi.org/10.1002/2015WR017220>
 
-Zech, A., Attinger, S., Bellin, A., Cvetkovic, V., Dagan, G., Dietrich, P., Fiori, A., & Teutsch, G. (2023). Evidence Based Estimation of Macrodispersivity for Groundwater Transport Applications. *Groundwater*, *61*(3), 346–362. 
+Zech, A., Attinger, S., Bellin, A., Cvetkovic, V., Dietrich, P., Fiori, A., Teutsch, G., & Dagan, G. (2019). A Critical Analysis of Transverse Dispersivity Field Data. *Groundwater*, 57(4), 632–639. <https://doi.org/10.1111/gwat.12838>
 
+Zech, A., Attinger, S., Bellin, A., Cvetkovic, V., Dagan, G., Dietrich, P., Fiori, A., & Teutsch, G. (2023). Evidence Based Estimation of Macrodispersivity for Groundwater Transport Applications. *Groundwater*, 61(3), 346–362. <https://doi.org/10.1111/gwat.13252>

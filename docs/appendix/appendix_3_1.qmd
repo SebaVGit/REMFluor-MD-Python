@@ -2,18 +2,16 @@
 title: "APPENDIX 3.1  GROUNDWATER DARCY VELOCITY"
 ---
 
-Contributors:  Newell, Cook
+*Contributors: Newell, Cook, Stockwell*
 
 **TWO TYPES OF GROUNDWATER VELOCITIES**
 
-Groundwater velocity is a key modeling parameter that can be obtained two ways, but it comes in two forms:  1) Darcy velocity, and 2) the seepage velocity:  
+Groundwater velocity is a key modeling parameter that can be obtained two ways, but it comes in two forms: 1) Darcy velocity, and 2) the seepage velocity:
 
 <div style="display: flex; align-items: flex-start; gap: 24px;">
 
 <div style="flex: 2;">
-1. <strong>Darcy velocity</strong>, also known as specific discharge, Darcy flux, or volumetric flux, represents the volumetric flow rate of groundwater per unit total cross-sectional area of the porous medium (including both solids and pores). It is calculated using the expression shown to the right as hydraulic conductivity (K) × hydraulic gradient (“i”; dh/dx) where Q is discharge, A is total area, K is hydraulic conductivity, and i is the hydraulic gradient.
-
-    <strong>REMFluor-MD requires the Darcy velocity (specific discharge) as the model input here</strong>, not seepage velocity, because the seepage velocity is calculated when you enter the effective porosity into the interface.
+1. <strong>REMFluor-MD requires the Darcy velocity (specific discharge, $V_d$) as the model input here.</strong> <strong>Darcy velocity</strong>, also known as specific discharge, Darcy flux, or volumetric flux, represents the volumetric flow rate of groundwater per unit total cross-sectional area of the porous medium (including both solids and pores). It is calculated using the expression to the right as hydraulic conductivity (K) × hydraulic gradient ("i"; dh/dx) where Q is discharge, A is total area, K is hydraulic conductivity, and i is the hydraulic gradient. In <strong>REMFluor-MD</strong> implementation (similar to MODFLOW), Darcy velocity is a bulk, cell-scale quantity derived from intercell fluxes computed across the faces of adjacent model blocks.
 </div>
 <div style="flex: 1; min-width: 100px;">
 <img src="./Figure_Appdx_3.1_1.png" alt="Darcy velocity" width="100px" />
@@ -21,10 +19,24 @@ Groundwater velocity is a key modeling parameter that can be obtained two ways, 
 
 </div>
 
+
 <div style="display: flex; align-items: flex-start; gap: 24px;">
 
 <div style="flex: 2;">
-2. In contrast, <strong>seepage velocity</strong>, also called average linear velocity, pore-water velocity, or interstitial velocity, represents the actual velocity of water moving through the pore spaces and is higher than the Darcy velocity because flow occurs only through the connected porosity. It is calculated using the expression shown, where $n_\mathrm{e}$ is the effective porosity. <strong>Do not enter the seepage velocity into REMFluor-MD;</strong> this parameter is calculated internally.
+
+Figure 3.1.1 illustrates the **REMFluor-MD** implementation with respect to Darcy velocity, volumetric fraction (Volfrac), and effective porosity of transmissive media (e.g., sand) and low-permeability media (e.g., clay). The figure demonstrates that Darcy velocity represents the average volumetric flow per unit area across a model block face rather than a point-scale or seepage velocity, which would require adjustment using effective volumetric fractions. Point-scale velocity represents flow within the transmissive unit and is distinct from the bulk, block-scale Darcy velocity used in the **REMFluor-MD** implementation. It characterizes groundwater movement within the interconnected pore space of transmissive materials and can, for example, be estimated using hydraulic property data derived from slug tests conducted in the transmissive units. For use as a model input, point-scale velocity must be appropriately scaled or converted to an equivalent block-scale representation consistent with the model discretization.
+</div>
+<div style="flex: 1; min-width: 100px;">
+<img src="./Figure_Appdx_3.1_1_1.png" alt="Block-centered representation" width="350px" />
+*Figure 3.1.1. Block-centered representation of bulk Darcy velocity.*
+</div>
+
+</div>
+
+<div style="display: flex; align-items: flex-start; gap: 24px;">
+
+<div style="flex: 2;">
+2. In contrast, <strong>seepage velocity ($V_s$)</strong>, also called average linear velocity, pore-water velocity, or interstitial velocity, represents the actual velocity of water moving through the pore spaces and is higher than the Darcy velocity because flow occurs only through the connected porosity. It is calculated using the expression to the right where $n_\mathrm{e}$ is the effective porosity. <strong>Do not enter the seepage velocity into REMFluor-MD;</strong> this parameter is calculated internally.
 </div>
 <div style="flex: 1; min-width: 100px;">
 <img src="./Figure_Appdx_3.1_2.png" alt="Seepage Velocity" width="100px" />
@@ -36,7 +48,7 @@ Groundwater velocity is a key modeling parameter that can be obtained two ways, 
 
 **Literature Values**
 
-While not suggested for detailed planning, literature values can be used to estimate hydraulic conductivities.  Values used in the previous REMChlor model are shown below:
+While not suggested for detailed planning, literature values can be used to estimate hydraulic conductivities. Values used in the previous REMChlor model are shown below:
 
 - Gravels: $3\times 10^{-2}$ to $3.0$ cm/s
 - Coarse Sand: $9\times 10^{-5}$ to $6\times 10^{-1}$ cm/s
@@ -44,17 +56,13 @@ While not suggested for detailed planning, literature values can be used to esti
 - Fine Sand: $2\times 10^{-5}$ to $2\times 10^{-2}$ cm/s
 - Sand: $1\times 10^{-3}$ to $1$ cm/s
 
-
 (Newell *et al.*, 1996; Domenico and Schwartz, 1990.)
 
-Another source are hydraulic conductivity data compiled for this REMFluor-MD project  of values for all Unified Soil Classification System (USCS) soil types cross-referenced against each other so the relative hydraulic conductivity between the two groundwater can be compared for matrix diffusion purposes (see Appendix 4.1).  These data are shown in Table 1.
+Another source are hydraulic conductivity data compiled for this REMFluor-MD project of values for all Unified Soil Classification System (USCS) soil types cross-referenced against each other so the relative hydraulic conductivity between the two groundwater can be compared for matrix diffusion purposes (see Appendix 4.1). These data are shown in Table 3.1.1.
 
-**Table 1. ** Hydraulic conductivity (K) ratios.   K ratios are shown for every USCS soil pair.  
-Green indicates matrix diffusion is likely to be a factor in groundwater transport and 
-therefore represents a transmissive/low-k interface using a 10X ratio metric.
+*Table 3.1.1. Hydraulic conductivity (K) ratios. K ratios are shown for every USCS soil pair. Green indicates matrix diffusion is likely to be a factor in groundwater transport and therefore represents a transmissive/low-k interface using a 10X ratio metric.*
 
 ![](./Figure_Appdx_3.1_3.png){fig-alt="K Ratios" width=700px}
-
 
 **Slug Tests and Pump Tests**
 
@@ -62,7 +70,7 @@ One of the most common methods to estimate hydraulic conductivity is slug tests.
 
 **Alternative Methods**
 
-The Groundwater Velocity book (Devlin, 2020), developed as part of The Groundwater Project, describes ten alternative ways to estimate groundwater velocity including inter-well tracer tests, in-well techniques, and techniques that involve direct contact with aquifer material. Even when these methods to estimate groundwater velocity are used as a basis for the Darcy’s Law data in the model, the hydraulic conductivity and to a lesser extent the effective porosity are two key initial input parameters that are adjusted to calibrate the model.
+The Groundwater Velocity book (Devlin, 2020), developed as part of The Groundwater Project, describes ten alternative ways to estimate groundwater velocity including inter-well tracer tests, in-well techniques, and techniques that involve direct contact with aquifer material. Even when these methods to estimate groundwater velocity are used as a basis for the Darcy's Law data in the model, the hydraulic conductivity and to a lesser extent the effective porosity are two key initial input parameters that are adjusted to calibrate the model.
 
 **Model Calibration**
 
@@ -72,3 +80,6 @@ This uncertainty makes hydraulic conductivity a key calibration parameter for RE
 
 Devlin, J.F. (2020). <a href="https://doi.org/10.21083/978-1-77470-000-6" target="_blank">Groundwater Velocity</a>. The Groundwater Project.
 
+Domenico, P.A., and F.W. Schwartz (1990). *Physical and Chemical Hydrogeology*. Wiley, New York, New York.
+
+Newell, C.J., J. Gonzales, and R.K. McLeod (1996). *BIOSCREEN Natural Attenuation Decision Support System*. U.S. Environmental Protection Agency, Center for Subsurface Modeling Support, Ada, OK, EPA/600/R-96/087.

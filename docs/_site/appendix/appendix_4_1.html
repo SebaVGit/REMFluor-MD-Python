@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR – Docs</title>
+<title>APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR – Docs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -113,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_4_1.html">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_4_1.html">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -151,13 +151,13 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+ <span class="menu-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_2.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</span></a>
+ <span class="menu-text">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -169,7 +169,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_4_1.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</span></a>
+ <span class="menu-text">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -310,9 +310,9 @@ ul.task-list li input[type="checkbox"] {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_4_1.html">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_4_1.html">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">APPENDIX 4.1. USING THE HETEROGENEITY CALCULATOR</h1>
+<h1 class="title">APPENDIX 4.1 USING THE HETEROGENEITY CALCULATOR</h1>
 </div>
 
 
@@ -329,18 +329,19 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<p><em>Contributors: Newell, Falta, Hort</em></p>
 <p><strong>MATRIX DIFFUSION INPUT PARAMETERS</strong></p>
-<p>Matrix diffusion is likely a key parameter that can slow down the migration of PFAS plumes, and REMFluor-MD is one of the few groundwater transport models that is designed to simulate the impacts of matrix diffusion. There are two separate matrix diffusion elements in REMFluor-MD: 1) the presence of aquitards either above or below or both above and below a transmissive zone; and 2) the presence of low permeability layers and lens within a transmissive zone. REMFluor-MD allows users to select these cases in two ways: 1) qualitatively based on generalized figures showing aquitards and layers and lenses (examples shown in Figure 1), or 2) quantitively be entering the number and thickness of low-permeability soi types found in the contaminant plume interval.</p>
+<p>Matrix diffusion is likely a key parameter that can slow down the migration of PFAS plumes, and REMFluor-MD is one of the few groundwater transport models that is designed to simulate the impacts of matrix diffusion. There are two separate matrix diffusion elements in REMFluor-MD: 1) the presence of aquitards either above or below or both above and below a transmissive zone; and 2) the presence of low-permeability (low-k) layers and lenses within a transmissive zone. REMFluor-MD allows users to select these cases in two ways: 1) qualitatively based on generalized figures showing aquitards and layers and lenses (examples shown in Figure 4.1.1), or 2) quantitively by entering the number and thickness of low-k soil types found in the contaminant plume interval.</p>
 <p><img src="./Figure_Appdx_4.1_1.png" class="img-fluid" alt="Matrix Diffusion" width="700"></p>
-<p><strong>Figure 1. </strong>Two geologic settings for matrix diffusion. Matrix diffusion is likely if the plume age is long, decades and if the aquitard/lenses are thick enough.</p>
-<p>To evaluate matrix diffusion in and out of low permeability layers and lenses, three heterogeneity parameters are needed: 1) Transmissive Zone Volume Fraction (%), 2) Average Diffusion Length (m), and 3) Surface Area of Low-k interfaces (m²) per gridblock. These three parameters are assumed to be uniform across the entire REMFluor-MD modeling domain. The model provides three options to get the three input data:</p>
+<p><em>Figure 4.1.1. Two geologic settings for matrix diffusion. Matrix diffusion is likely if the plume age is long, decades and if the aquitard/lenses are thick enough.</em></p>
+<p>To evaluate matrix diffusion in and out of low-k layers and lenses, three heterogeneity parameters are needed: 1) Transmissive Zone Volume Fraction (%), 2) Average Diffusion Length (m), and 3) Surface Area of Low-k interfaces (m²) per gridblock. These three parameters are assumed to be uniform across the entire REMFluor-MD modeling domain. The model provides three options to get the three input data:</p>
 <ol type="1">
-<li><p>Easiest: A visual estimate of the geologic heterogeneity in low-k lenses, from options of 0%, 20%, 40%, 60%, or 80%. The model stores default values for the three heterogeneity parameters for each option.</p></li>
-<li><p>Moderate: Manual entry of low-k units from up to 100 boring logs for the site (see Figure 1). The model estimates the three heterogeneity parameters from this data.</p></li>
-<li><p>Complex: External calculation, measurement, or estimates of the three heterogeneity parameters followed by manual entry directly in the model.</p></li>
+<li><p><em>Easiest:</em> A visual estimate of the geologic heterogeneity in low-k lenses, from options of 0%, 20%, 40%, 60%, or 80%. The model stores default values for the three heterogeneity parameters for each option.</p></li>
+<li><p><em>Moderate:</em> Manual entry of low-k units from up to 100 boring logs for the site (see Figure 4.1.1). The model estimates the three heterogeneity parameters from this data.</p></li>
+<li><p><em>Complex:</em> External calculation, measurement, or estimates of the three heterogeneity parameters followed by manual entry directly in the model.</p></li>
 </ol>
 <p>For both matrix diffusion elements (aquitards and layers/lenses), a subtle but key question when building a REMFluor-MD model is <strong>whether a geologic interface between two soil types represents a boundary between a transmissive zone and a low-permeability (“low-k”) zone</strong>. This question is crucial for accurately representing matrix diffusion processes in models such as REMFluor-MD (Falta et al., 2018; Farhat et al., 2018).</p>
-<p>REMFluor-MD only supports two soil categories (low-k and transmissive), and a more common approach is to use a relative contrast in hydraulic conductivity (K) ratio between the two soil units to determine if they will support some type of mass transfer between them via diffusion. Appendix 4.2 describes how to determine if a contact between two different soil types. For example, <em>coarse-sand</em> / <em>clay</em> contact would likely represent a constant where significant matrix diffusion occurs. On the other hand a <em>fine-sand</em> to <em>coarse-sand</em> contact is system that is more difficult to assess from a matric diffusion perspective.</p>
+<p>REMFluor-MD only supports two soil categories (low-k and transmissive), and a more common approach is to use a relative contrast in hydraulic conductivity (K) ratio between the two soil units to determine if they will support some type of mass transfer between them via diffusion. Appendix 4.2 describes how to determine if a contact between two different soil types. For example, a <em>coarse-sand</em> / <em>clay</em> contact would likely represent a constant where significant matrix diffusion occurs. On the other hand, a <em>fine-sand</em> to <em>coarse-sand</em> contact is more difficult to assess from a matric diffusion perspective.</p>
 <p><strong>REFERENCES</strong></p>
 <p>Falta R.W., Farhat, S.K., C.J. Newell, and K. Lynch, 2018. REMChlor-MD, developed for the Environmental Security Technology Certification Program (ESTCP) by Clemson University, Clemson, South Carolina and GSI Environmental Inc., Houston, Texas.</p>
 <p>Farhat, S.K., C.J. Newell, R.W. Falta, and K. Lynch, 2018. REMChlor-MD User’s Manual, developed for the Environmental Security Technology Certification Program (ESTCP) by GSI Environmental Inc., Houston, Texas and Clemson University, Clemson, South Carolina.</p>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>APPENDIX 2.2 ESTIMATING THE SOURCE START TIME – Docs</title>
+<title>APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION – Docs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -142,7 +142,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_2.html">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_2.html">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -180,13 +180,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span></a>
+ <span class="menu-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../appendix/appendix_2_2.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</span></a>
+ <span class="menu-text">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -339,9 +339,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_2.html">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/appendix_2_1.html">Appendices</a></li><li class="breadcrumb-item"><a href="../appendix/appendix_2_2.html">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">APPENDIX 2.2 ESTIMATING THE SOURCE START TIME</h1>
+<h1 class="title">APPENDIX 2.2 ESTIMATING THE STARTING YEAR OF THE SIMULATION</h1>
 </div>
 
 
@@ -358,43 +358,136 @@ window.Quarto = {
 </header>
 
 
-<p><strong>TESTHOW TO ESTIMATE WHEN PFAS WAS FIRST RELEASED TO THE SOIL</strong></p>
-<p>REMFluor-MD’s predecessor model, the original REMChlor-MD code, was designed to model chlorinated solvent DNAPL sources and the resulting plumes. However, PFAS sources exhibit significantly different behavior compared to DNAPL sources in terms of their transport through the subsurface and establishment of groundwater contamination. DNAPL, being denser than water and often present as a separate phase, tends to migrate rapidly through the unsaturated zone, potentially reaching groundwater shortly after release. This results in the relatively quick establishment of a significant source concentration in the saturated zone.</p>
-<p>In contrast, PFAS contamination typically originates from surface releases and is transported vertically through the unsaturated zone primarily by dissolved-phase movement in infiltrating water. This process can be much slower, potentially taking years for PFAS to reach groundwater after the initial surface release. The rate of this vertical transport is heavily influenced by factors such as soil properties, depth to groundwater, and recharge rates.</p>
-<p>To address this difference in REMFluor-MD model users have two main approaches when trying to determine the PFAS source start time:</p>
+<p><em>Contributors: Newell, Carey, Cook, Stockwell</em></p>
+<p><strong>WHAT IS THE MODEL STARTING YEAR?</strong></p>
+<p>REMFluor-MD is a groundwater saturated zone model, and therefore does not simulate the migration of PFAS from the original release through the vadose zone to groundwater. Therefore, an analysis of the following two factors may be needed:</p>
 <ol type="1">
-<li><p>The simpler method involves assuming that the travel time through the unsaturated zone is relatively short compared to the overall site history. Given that many PFAS sites involve releases that occurred 30 to 50 years ago, users might reasonably approximate the year PFAS entered groundwater as the same year that PFAS was first used at the site. This is most often determined from site historical records, such as <em>“fire training activities at FTA-1 started in 1972”.</em> As a first-cut approximation, it is often assumed the groundwater impact occurred relatively quickly (the same year that fire training started). This simplification can be appropriate for initial screening-level assessments or when detailed unsaturated zone data is unavailable.</p>
-<p>Gamlin et al.&nbsp;(2024, open access) provides more detail on when different types of Aqueous Film Forming Foams were manufactured (see Figure 1 below). If your site appears to be dominated by the ECF type AFFF (e.g., mostly PFOS), then the earliest release time would be about 1968. For sites dominated by FT type AFFF (in general, mostly PFOA), then the earliest release time would be about 1972. Note the number of new sources of PFOS, PFOA likely went down by 2010s due to the decision to stop production of long-chain PFAAs in 2000. <img src="./Figure_Appdx_2.2_1.png" class="img-fluid" alt="PFAS Manufacture Dates from Gamlin et al. (2024)" width="700"></p></li>
-<li><p>Alternatively, a more sophisticated approach incorporates unsaturated zone modeling. Options include using simple hydrologic methods (see below) or PFAS specific approaches such as ESTCP’s PFAS-Leach Tool (ESTCP, 2025) to estimate the travel time more accurately. This method can provide a more realistic representation of the delay between surface release and groundwater impact, especially for sites with deep water tables or low recharge rates. To inform these models and improve estimates of PFAS flux to groundwater, practitioners can refer to resources like Newell et al.&nbsp;(2023), which offers guidance on estimating recharge rates. This information helps quantify the annual water flux through unsaturated zone PFAS sources, a critical factor in determining contaminant transport to groundwater. By considering these approaches, modelers can better account for the unique characteristics of PFAS transport in the unsaturated zone and more accurately represent source terms in REMFluor-MD simulations.</p></li>
+<li>When was PFAS first released to the vadose zone?</li>
+<li>How long did it take this PFAS to travel through the vadose zone to groundwater?</li>
 </ol>
-<p><strong>SIMPLE METHODS TO ESTIMATE VADOSE ZONE TRAVEL TIME</strong></p>
-<p><strong>Summary</strong></p>
-<p>This memo presents a summary of some simplified methods to estimate the time it takes for a contaminant to travel through the unsaturated (vadose) zone and reach the water table. For REMFluor-MD modeling, the travel time can be important for determining the lag between the initial release date and the date at which the plume begins to spread horizontally through groundwater, rather than vertically down through the unsaturated soil. For these purposes, at least a basic estimate of the unsaturated zone travel time is helpful to decide whether a more in-depth analysis is needed, and to calculate an appropriate start date and time step for the model.</p>
+<p>In summary, the REMFluor-MD starting year for the simulation is when PFAS first entered groundwater in the source zone.</p>
+<p><strong>HOW TO ESTIMATE WHEN PFAS WAS FIRST RELEASED TO THE SOIL</strong></p>
+<p><em>REMFluor-MD vs.&nbsp;REMChlor-MD</em></p>
+<p>Previous groundwater models have primarily focused on dense non-aqueous phase liquids (DNAPLs) such as chlorinated solvents. However, PFAS sources exhibit significantly different behavior compared to LNAPL and DNAPL sources in terms of their transport through the subsurface and establishment of groundwater contamination. DNAPL, being denser than water and often present as a separate phase, tends to migrate rapidly through the unsaturated zone, potentially reaching groundwater shortly after release. This results in the relatively quick establishment of a significant source concentration in the saturated zone.</p>
+<p>In contrast, PFAS contamination typically originates from surface releases and is transported vertically through the unsaturated zone primarily by dissolved-phase movement in infiltrating water. The rate of this vertical transport is heavily influenced by factors such as soil properties, depth to groundwater, and recharge rates.</p>
+<p><em>PFAS Usage History</em></p>
+<p>The first step in estimating a REMFluor-MD model start time is to evaluate the site history and estimate the year the PFAS first likely entered the subsurface (i.e., into surface soils). Given that many PFAS sites involve releases that occurred 30 to 50 years ago, this year is most often determined from site historical records, such as <em>“fire training activities at FTA-1 started in 1972.”</em> When available, site historical records provide the best estimates of when PFAS first likely entered the subsurface at a given location.</p>
+<p><em>General Rules</em></p>
+<p>If no detailed site records are available, then an evaluation of the PFAS site chemistry may provide some additional clues about the date of first PFAA use at a site. Gamlin et al.&nbsp;(2024, open access) provides more detail on when different types of Aqueous Film Forming Foams (AFFFs) were manufactured (see Figure 2.2.1 below). If a site appears to be dominated by the electrochemical fluorination (ECF) type AFFF (e.g., mostly PFOS and PFHxS), then the earliest potential release time would be about 1968. For sites dominated by Fluorotelomer (FT) type AFFF (in general, mostly PFOA and/or shorter chain carboxylates), then the earliest potential release time would be about 1972, but <em>“After 3M, Inc.’s announcement to phase out manufacturing of PFOS-based products in 2000, the primary supply of AFFF became fluorotelomer-based. By 2015, manufacturers of fluorotelomer AFFF replaced long-chain fluorosurfactants with short-chain fluorosurfactants”</em> (Alaska DEC, n.d.). Note the number of new sources of PFOS and PFOA likely went down by the 2010s due to the decision to stop production of long-chain PFAAs in the early 2000s.</p>
+<p><img src="./Figure_Appdx_2.2_1.png" class="img-fluid" alt="Figure 2.2.1. AFFF Timeline (Gamlin et al., 2024)." width="700"></p>
+<p><em>Figure 2.2.1. AFFF Timeline (Gamlin et al., 2024).</em></p>
+<p><strong>Conceptual AFFF PFAS Use/Release Model (1965–2030)</strong></p>
+<p>Table 2.2.1 provides considerations for inferring the most likely AFFF purchase period and source type at a given site based on which PFAS analyte(s) dominate the groundwater or source zone signature. The two key AFFF manufacturing chemistries: i) electrochemical fluorination (ECF, used exclusively by 3M) and ii) fluorotelomerization (FT, used by all other manufacturers) produce fundamentally different PFAS signatures that can be used to attribute releases to specific product generations and purchase periods.</p>
+<p><em>Table 2.2.1. Most likely purchase period for PFAS at sites dominated by a particular PFAS.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dominant Indicator at Site</th>
+<th>AFFF Source Type</th>
+<th>Most Likely Purchase Period</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>PFOS</strong></td>
+<td>ECF (3M Lightwater)</td>
+<td>1965–2002</td>
+<td>PFOS constituted 85–90% of perfluoroalkyl sulfonates in 3M Lightwater, the sole or primary DoD AFFF from 1962 through 2001. PFHxS were typically co-present at ~7–12% as an ECF co-product. Branched isomers (~30% of total PFOS) confirm ECF origin. 3M ceased PFOS production in 2002.</td>
+</tr>
+<tr class="even">
+<td><strong>PFOA</strong></td>
+<td>Long-chain FT AFFF</td>
+<td>2000–2009</td>
+<td>PFOA is the terminal degradation product of 8:2 fluorotelomer precursors used in long-chain FT AFFF formulations (mid-1970s through ~2010). Elevated PFOA relative to PFOS strongly suggests C8 fluorotelomer AFFF as a primary source, particularly after 3M exited the market in 2002. 6:2 FTS is typically co-present as a fluorotelomer marker.</td>
+</tr>
+<tr class="odd">
+<td><strong>PFHxS</strong></td>
+<td>ECF (3M Lightwater)</td>
+<td>1965–2002</td>
+<td>PFHxS is produced exclusively by the ECF process as a co-product of PFOS manufacturing. It is not a product or degradation product of fluorotelomer chemistry. If PFHxS dominates over PFOS at a monitoring point, it may reflect differential transport (PFHxS is more mobile than PFOS) rather than a different source.</td>
+</tr>
+<tr class="even">
+<td><strong>6:2 FTS</strong></td>
+<td>FT AFFF (all generations)</td>
+<td>2000–2019</td>
+<td>6:2 FTS is the diagnostic marker of FT-based AFFF and is not produced by ECF chemistry. If co-present with elevated PFOA, the source is likely long-chain (C8) FT AFFF from the 2000–2009 era. If 6:2 FTS dominates with low PFOA, the source is likely modern short-chain (C6) FT AFFF from the 2010–2019 era.</td>
+</tr>
+<tr class="odd">
+<td><strong>PFHxA</strong></td>
+<td>FT AFFF (esp.&nbsp;C6)</td>
+<td>2005–2024</td>
+<td>PFHxA is the terminal degradation product of 6:2 fluorotelomer precursors. It is not a significant component of legacy ECF formulations. PFHxA tracks 6:2 FTS presence but may appear later due to subsurface precursor transformation (years to possibly decades depending on conditions). Particularly diagnostic of post-2010 C6 FT AFFF where 6:2 precursors dominate.</td>
+</tr>
+</tbody>
+</table>
+<p>The purchase periods above represent AFFF as manufactured, not the date of environmental release. AFFF concentrates have shelf lives of 20+ years, and legacy PFOS-containing stocks remained in active DoD inventories well into the 2020s. The potential lag between purchase and release may vary with site use intensity as shown below:</p>
+<ul>
+<li><strong>High-throughput training sites</strong> (FTAs, burn pads): potentially 1–5 year lag. Rapid turnover from recurring training exercises; purchase period closely approximates release. (Higher confidence).</li>
+<li><strong>Moderate-use sites</strong> (hangars, flight lines, fire/rescue stations): potentially 5–10 year lag. Releases primarily from system testing, maintenance, and occasional emergencies.</li>
+<li><strong>Low-use / emergency-only sites</strong> (weapons storage, petroleum storage, remote installations): potentially 10–20 year lag. Stocks stored for decades; PFAS signature may reflect AFFF manufactured 10–20 years before release. (Lower confidence).</li>
+</ul>
+<p>These stockpile lag estimates are order-of-magnitude approximations based on several lines of evidence. AFFF concentrates carry manufacturer-rated shelf lives of 20+ years under Military Specification (MIL-SPEC) storage requirements, establishing the upper bound for residence time in low-use inventories. At the lower bound, active fire training areas conducted exercises on weekly to monthly schedules, consuming and replenishing AFFF stocks rapidly. For moderate-use facilities, standards require periodic testing and discharge of fixed fire suppression systems in hangars and ARFF vehicles, implying intermediate turnover rates. The plausibility of extended stockpiling is confirmed by DoD reporting that approximately 3 million gallons of legacy AFFF concentrate remained in active inventories in the early 2020s (Liberty Mutual, 2023), and that the U.S. Air Force alone replaced 418,000 gallons of legacy AFFF in fire trucks and stockpiles during 2016–2017, more than a decade after 3M ceased PFOS production (US AFCEC, 2017). While precise site-level throughput data are generally not available in the published literature, these ranges are consistent with the available inventory and procurement evidence.</p>
+<p>Therefore, the estimated release window to the environment could be shifted forward from the purchase period by the appropriate lag. For example, PFOS-dominated signatures at low-use sites could reflect stockpiled ECF AFFF released as early as 1965, or as late as the early 2020s.</p>
+<p><strong>METHODS TO ESTIMATE VADOSE ZONE TRAVEL TIME</strong></p>
+<p>If it is possible to ascertain the approximate year that PFAS were released to the environment at a particular site, then the travel time through the vadose zone to groundwater may need to be assessed. For REMFluor-MD modeling, the travel time can be important for determining the lag between the initial release date and the date at which the plume begins to spread horizontally through groundwater, rather than vertically down through the unsaturated soil. For these purposes, at least a basic estimate of the unsaturated zone travel time is helpful to decide whether a more in-depth analysis is needed, and to calculate an appropriate start date and time step for the model.</p>
+<p>This section presents a summary of some simplified methods to estimate the time it takes for a contaminant to travel through the unsaturated (vadose) zone and reach the water table.</p>
+<p><strong>Fast Travel Time Assumption</strong></p>
+<p>If the PFAS travel time to groundwater is unknown, one option is to assume relatively fast travel time due to the effects of preferential vertical transport pathways. Trying to develop more refined travel time estimates may not be worth the reduction in model uncertainty; sensitivity tests on the model starting time can help resolve this uncertainty.</p>
 <p><strong>SAAT Method Overview</strong></p>
 <p>As presented in Sousa et al.&nbsp;(2013), the simplest available way to estimate the unsaturated zone travel time is the Surface to Aquifer Advection Time (SAAT) method from the Province of Ontario (2006). This method can be accomplished with basic knowledge of the site subsurface, as opposed to the more technical methods in Sousa et al., which require estimations of saturation as a function of depth and pressure head. Using SAAT, the unsaturated zone travel time is approximated as:</p>
 <p><span class="math display">\[
 t_u = \frac{\bar{\theta}\, L}{R}
 \tag{1}
 \]</span></p>
-<p>Where tu is the unsaturated zone travel time (T), <span class="math inline">\(\bar{\theta}\)</span> is the dimensionless average mobile moisture content, L is the depth from the source to the water table (L), and R is the groundwater recharge (L/T). Typical values of are presented in Table 1 below. Estimations of <span class="math inline">\(\bar{\theta}\)</span> for mixed soils can be made using this table; for example, Koch (2015) used the average of the <span class="math inline">\(\bar{\theta}\)</span> values for silt and sand as the <span class="math inline">\(\bar{\theta}\)</span> value for silty sand.</p>
-<p>Table 1. Mobile moisture content estimates for typical soil types, from Koch (2009). <img src="./Figure_Appdx_2.2_2.png" class="img-fluid" alt="Mobile moisture content" width="700"></p>
+<p>Where <span class="math inline">\(t_u\)</span> is the unsaturated zone travel time (T), <span class="math inline">\(\bar{\theta}\)</span> is the dimensionless average mobile moisture content, L is the depth from the source to the water table (L), and R is the groundwater recharge (L/T). Typical values of <span class="math inline">\(\bar{\theta}\)</span> are presented in Table 2.2.2 below. Estimations of <span class="math inline">\(\bar{\theta}\)</span> for mixed soils can be made using this table; for example, Koch (2009) used the average of the <span class="math inline">\(\bar{\theta}\)</span> values for silt and sand as the <span class="math inline">\(\bar{\theta}\)</span> value for silty sand.</p>
+<p><em>Table 2.2.2. Mobile moisture content estimates for typical soil types, from Koch (2009).</em></p>
+<p><img src="./Figure_Appdx_2.2_2.png" class="img-fluid" alt="Mobile moisture content" width="700"></p>
 <p>Meanwhile, there are many methods for calculating groundwater recharge, as outlined in Scanlon et al.&nbsp;(2002). Physical measurements at the site of hydraulic parameters in Darcy’s law, large-scale water balances (from existing long-term data or through installation of lysimeters), and chemical tracer applications are some possible methods mentioned.</p>
 <p><strong>Other Travel Time Methods</strong></p>
-<p>The other simplified model mentioned by Sousa et al.&nbsp;(2013), the “No flow” van Genuchten method, uses the assumption of no-flow conditions in the unsaturated zone to give a simplified estimate for the saturation as a function of depth. This saturation factors into a formula for downward groundwater velocity that can then be integrated to find the travel time.</p>
+<p>Another simplified model mentioned by Sousa et al.&nbsp;(2013), the “No flow” van Genuchten method, uses the assumption of no-flow conditions in the unsaturated zone to give a simplified estimate for the saturation as a function of depth. This saturation factors into a formula for downward groundwater velocity that can then be integrated to find the travel time.</p>
 <p>Szymkiewicz et al.&nbsp;(2018) also provides an approximation for the estimated vadose zone travel time:</p>
 <p><span class="math display">\[
 t_u = \frac{L \, n_e}{\sqrt[3]{R^2 k_s}}
 \tag{2}
 \]</span></p>
 <p>Where <span class="math inline">\(n_\mathrm{e}\)</span> is the effective porosity and <span class="math inline">\(k_s\)</span> is the hydraulic conductivity at saturation, which can both be estimated from literature or soil sample analysis. The parameters involved are very similar to the SAAT method and would require a similar amount of effort.</p>
+<p><strong>PFAS Vadose Zone Models</strong></p>
+<p>Alternatively, a more sophisticated approach incorporates unsaturated zone modeling. Options include using simple hydrologic methods (see below) or PFAS specific approaches such as ESTCP’s PFAS-Leach Tool (ESTCP, 2025) to estimate the travel time more accurately. This method can provide a more realistic representation of the delay between surface release and groundwater impact, especially for sites with deep water tables or low recharge rates. To inform these models and improve estimates of PFAS flux to groundwater, practitioners can refer to resources like Newell et al.&nbsp;(2023), which offers guidance on estimating recharge rates. This information helps quantify the annual water flux through unsaturated zone PFAS sources, a critical factor in determining contaminant transport to groundwater. By considering these approaches, modelers can better account for the unique characteristics of PFAS transport.</p>
 <p><strong>REFERENCES</strong></p>
-<p>ESTCP. (2025). A Comprehensive Decision Support Platform for Predicting PFAS Leaching in Source Zones. Environmental Security and Technology Certification Program Project ER21-5041. Accessed 2 July 2023.</p>
-<p>Gamlin, J., Newell, C. J., Holton, C., Kulkarni, P. R., Skaggs, J., Adamson, D. T., Blotevogel, J., &amp; Higgins, C. P. (2024). Data Evaluation Framework for Refining PFAS Conceptual Site Models. Groundwater Monitoring &amp; Remediation, 44(4), 53–66.</p>
-<p>Koch, J. (2009). Evaluating Regional Aquifer Vulnerability and BMP Performance in an Agricultural Environment Using A Multi-Scale Data Integration Approach. Library and Archives Canada.</p>
-<p>Newell, C. J., Stockwell, E. B., Alanis, J., Adamson, D. T., Walker, K. L., &amp; Anderson, R. H. (2023). Determining groundwater recharge for quantifying PFAS mass discharge from unsaturated source zones. Vadose Zone Journal, 22(4), e20262.</p>
-<p>Scanlon, B. R., Healy, R. W., &amp; Cook, P. G. (2002). Choosing appropriate techniques for quantifying groundwater recharge. <em>Hydrogeology Journal</em>, <em>10</em>(1), 18–39.</p>
-<p>Sousa, M. R., Jones, J. P., Frind, E. O., &amp; Rudolph, D. L. (2013). A simple method to assess unsaturated zone time lag in the travel time from ground surface to receptor. <em>Journal of Contaminant Hydrology</em>, <em>144</em>(1), 138–151.</p>
-<p>Szymkiewicz, A., Gumuła-Kawęcka, A., Potrykus, D., Jaworska-Szulc, B., Pruszkowska-Caceres, M., &amp; Gorczewska-Langner, W. (2018). Estimation of Conservative Contaminant Travel Time through Vadose Zone Based on Transient and Steady Flow Approaches. <em>Water</em>, <em>10</em>(10).</p>
+<p>Alaska Department of Environmental Conservation. (n.d.). <em>Aqueous film forming foam (AFFF)</em>. Division of Spill Prevention and Response, Contaminated Sites Program. <a href="https://dec.alaska.gov/spar/csp/pfas/firefighting-foam/" class="uri">https://dec.alaska.gov/spar/csp/pfas/firefighting-foam/</a></p>
+<p>Buck, R. C., Franklin, J., Berger, U., Conder, J. M., Cousins, I. T., de Voogt, P., … van Leeuwen, S. P. J. (2011). Perfluoroalkyl and polyfluoroalkyl substances in the environment: Terminology, classification, and origins. <em>Integrated Environmental Assessment and Management</em>, 7(4), 513–541.</p>
+<p>ESTCP. (2025). <em>A Comprehensive Decision Support Platform for Predicting PFAS Leaching in Source Zones.</em> Environmental Security and Technology Certification Program Project ER21-5041. <a href="https://serdp-estcp.org/projects/details/7b8e05de-6446-4992-adc2-c7e632972991" class="uri">https://serdp-estcp.org/projects/details/7b8e05de-6446-4992-adc2-c7e632972991</a></p>
+<p>Gamlin, J., Newell, C. J., Holton, C., Kulkarni, P. R., Skaggs, J., Adamson, D. T., Blotevogel, J., &amp; Higgins, C. P. (2024). Data Evaluation Framework for Refining PFAS Conceptual Site Models. <em>Groundwater Monitoring &amp; Remediation</em>, 44(4), 53–66. <a href="https://doi.org/10.1111/gwmr.12666" class="uri">https://doi.org/10.1111/gwmr.12666</a></p>
+<p>Interstate Technology &amp; Regulatory Council (ITRC). (2020). <em>PFAS technical and regulatory guidance document</em>. Washington, DC. <a href="https://pfas-1.itrcweb.org/" class="uri">https://pfas-1.itrcweb.org/</a></p>
+<p>Koch, J. (2009). <em>Evaluating Regional Aquifer Vulnerability and BMP Performance in an Agricultural Environment Using A Multi-Scale Data Integration Approach</em>. Library and Archives Canada.</p>
+<p>Liberty Mutual Insurance. (2023). <em>Firefighting foams, aqueous film-forming foam (AFFF), and PFAS: Environmental and regulatory considerations</em>. <a href="https://business.libertymutual.com/wp-content/uploads/2023/03/67-5662_AFFFWhitepaper_FINAL.pdf" class="uri">https://business.libertymutual.com/wp-content/uploads/2023/03/67-5662_AFFFWhitepaper_FINAL.pdf</a></p>
+<p>Moody, C. A., &amp; Field, J. A. (2000). Perfluorinated surfactants and the environmental implications of their use in fire-fighting foams. <em>Environmental Science &amp; Technology</em>, 34(18), 3864–3870.</p>
+<p>Newell, C. J., Stockwell, E. B., Alanis, J., Adamson, D. T., Walker, K. L., &amp; Anderson, R. H. (2023). Determining groundwater recharge for quantifying PFAS mass discharge from unsaturated source zones. <em>Vadose Zone Journal</em>, 22(4), e20262. <a href="https://doi.org/10.1002/vzj2.20262" class="uri">https://doi.org/10.1002/vzj2.20262</a></p>
+<p>Scanlon, B. R., Healy, R. W., &amp; Cook, P. G. (2002). Choosing appropriate techniques for quantifying groundwater recharge. <em>Hydrogeology Journal</em>, 10(1), 18–39. <a href="https://doi.org/10.1007/s10040-001-0176-2" class="uri">https://doi.org/10.1007/s10040-001-0176-2</a></p>
+<p>Sousa, M. R., Jones, J. P., Frind, E. O., &amp; Rudolph, D. L. (2013). A simple method to assess unsaturated zone time lag in the travel time from ground surface to receptor. <em>Journal of Contaminant Hydrology</em>, 144(1), 138–151. <a href="https://doi.org/10.1016/j.jconhyd.2012.10.007" class="uri">https://doi.org/10.1016/j.jconhyd.2012.10.007</a></p>
+<p>Szymkiewicz, A., Gumuła-Kawęcka, A., Potrykus, D., Jaworska-Szulc, B., Pruszkowska-Caceres, M., &amp; Gorczewska-Langner, W. (2018). Estimation of Conservative Contaminant Travel Time through Vadose Zone Based on Transient and Steady Flow Approaches. <em>Water</em>, 10(10). <a href="https://doi.org/10.3390/w10101417" class="uri">https://doi.org/10.3390/w10101417</a></p>
+<p>U.S. Air Force Civil Engineer Center. (2017). <em>Aqueous film forming foam (AFFF) replacement and containment: Frequently asked questions</em>. U.S. Air Force. <a href="https://www.afcec.af.mil/Portals/17/documents/Environment/AFFF%20FAQ%20replacement%20and%20containment.pdf" class="uri">https://www.afcec.af.mil/Portals/17/documents/Environment/AFFF%20FAQ%20replacement%20and%20containment.pdf</a></p>
+<p>U.S. Congress. (2019). <em>National Defense Authorization Act for Fiscal Year 2020</em>, Pub. L. No.&nbsp;116-92, Section 322. 133 Stat. 1198.</p>
+<p>U.S. Department of Defense. (2023). <em>Interim guidance on aqueous film-forming foam (AFFF) disposal and transition</em>. Washington, DC.</p>
+<p>U.S. Environmental Protection Agency. (2006). <em>2010/2015 PFOA stewardship program</em>. Washington, DC.</p>
+<p>U.S. Government Accountability Office. (2021). <em>DoD has begun to address PFAS contamination but additional actions are needed</em> (GAO-21-421). Washington, DC.</p>
+<p><strong>Conceptual Model References:</strong></p>
+<p>Backe, W. J., Day, T. C., &amp; Field, J. A. (2013). Zwitterionic, cationic, and anionic fluorinated chemicals in aqueous film forming foam formulations and groundwater from U.S. military bases by nonaqueous large-volume injection HPLC-MS/MS. <em>Environmental Science &amp; Technology</em>, 47(10), 5226–5234. <a href="https://doi.org/10.1021/es3034999" class="uri">https://doi.org/10.1021/es3034999</a></p>
+<p>Barzen-Hanson, K. A., Roberts, S. C., Choyke, S., Oetjen, K., McAlees, A., Riddell, N., McCrindle, R., Ferguson, P. L., Higgins, C. P., &amp; Field, J. A. (2017). Discovery of 40 classes of per- and polyfluoroalkyl substances in historical aqueous film-forming foams (AFFFs) and AFFF-impacted groundwater. <em>Environmental Science &amp; Technology</em>, 51(4), 2047–2057. <a href="https://doi.org/10.1021/acs.est.6b05843" class="uri">https://doi.org/10.1021/acs.est.6b05843</a></p>
+<p>Interstate Technology and Regulatory Council (ITRC). (2023). <em>Per- and polyfluoroalkyl substances technical and regulatory guidance</em>. <a href="https://pfas-1.itrcweb.org/" class="uri">https://pfas-1.itrcweb.org/</a></p>
+<p>Place, B. J., &amp; Field, J. A. (2012). Identification of novel fluorochemicals in aqueous film-forming foams used by the US military. <em>Environmental Science &amp; Technology</em>, 46(13), 7120–7127. <a href="https://doi.org/10.1021/es301465n" class="uri">https://doi.org/10.1021/es301465n</a></p>
+<p>Ruyle, B. J., Thackray, C. P., McCord, J. P., Strynar, M. J., Mauge-Lewis, K. A., Fenton, S. E., &amp; Sunderland, E. M. (2021). Reconstructing the composition of per- and polyfluoroalkyl substances in contemporary aqueous film-forming foams. <em>Environmental Science &amp; Technology Letters</em>, 8(1), 59–65. <a href="https://doi.org/10.1021/acs.estlett.0c00798" class="uri">https://doi.org/10.1021/acs.estlett.0c00798</a></p>
+<p>Schultz, M. M., Barofsky, D. F., &amp; Field, J. A. (2006). Quantitative determination of fluorotelomer sulfonates in groundwater by LC MS/MS. <em>Environmental Science &amp; Technology</em>, 40(1), 289–295. <a href="https://doi.org/10.1021/es051420a" class="uri">https://doi.org/10.1021/es051420a</a></p>
+<p>Stockwell, E. B., Adamson, D. T., Gamlin, J. D., Kulkarni, P. R., Singh, A., Falta, R. W., &amp; Newell, C. J. (2026). Modeling per- and polyfluoroalkyl substance precursor transformation in groundwater at a well-characterized site. <em>Journal of Contaminant Hydrology</em>, 276, 104766. <a href="https://doi.org/10.1016/j.jconhyd.2025.104766" class="uri">https://doi.org/10.1016/j.jconhyd.2025.104766</a></p>
+<p>U.S. Air Force Civil Engineer Center (AFCEC). (2017). <em>AFFF replacement and containment: Frequently asked questions</em>. <a href="https://www.afcec.af.mil/" class="uri">https://www.afcec.af.mil/</a></p>
+<p>U.S. Government Accountability Office (GAO). (2024). <em>Firefighting foam: DOD is working to address challenges to transitioning to fluorine-free alternatives</em> (GAO-24-107322). <a href="https://www.gao.gov/assets/gao-24-107322.pdf" class="uri">https://www.gao.gov/assets/gao-24-107322.pdf</a></p>
 
 
 
@@ -806,8 +899,8 @@ t_u = \frac{L \, n_e}{\sqrt[3]{R^2 k_s}}
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../appendix/appendix_2_1.html" class="pagination-link" aria-label="APPENDIX 2.1  REMFLUOR-MD CELL SIZE CONFIGURATION">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">APPENDIX 2.1 REMFLUOR-MD CELL SIZE CONFIGURATION</span>
+      <a href="../appendix/appendix_2_1.html" class="pagination-link" aria-label="APPENDIX 2.1  EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">APPENDIX 2.1 EFFECTS OF CELL SIZE ON NUMERICAL DISPERSION AND REMFLUOR-MD RUNTIME</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
