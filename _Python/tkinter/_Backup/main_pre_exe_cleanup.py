@@ -71,7 +71,7 @@ import sys
 import glob
 from datetime import datetime
 
-# --- Pure-Python action modules (no .exe subprocess calls) ---
+# --- Standalone functions (replace exe subprocess calls) ---
 try:
     from functions.state import get_state
     from functions import (
@@ -91,6 +91,7 @@ try:
         popups_heterogeneity,
         run_model,
         cali_1,
+        xlsm_io,
     )
     _FUNCS_LOADED = True
 except Exception as _e:
@@ -255,8 +256,80 @@ def _resolve_figures_dir():
 
 FIGURES_DIR = _resolve_figures_dir()
 
+def _exe(*parts):
+    return os.path.join(BASE_DIR, "dist", *parts)
+
 def _html(*parts):
     return os.path.join(BASE_DIR, "docs", "_site", *parts)
+
+EXES = {
+    "GWVelocityCalculator": (
+        _exe("popups_GWvelocity", "popups_GWvelocity.exe"),
+        ["{workbook}", "{sheet}"]),
+    "HeterogeneityCalculator_Unconsolidated_Media": (
+        _exe("popups_heterogeneity", "popups_heterogeneity.exe"),
+        ["{workbook}", "{unitflag}", "Unconsolidated Media"]),
+    "HeterogeneityCalculator_Fractured_Rock": (
+        _exe("popups_heterogeneity", "popups_heterogeneity.exe"),
+        ["{workbook}", "{unitflag}", "Fractured Rock"]),
+    "CalculrateRetardationFactors": (
+        _exe("popups_retardation", "popups_retardation.exe"),
+        ["{workbook}", "{sheet}"]),
+    "ModelingTransformationLowK": (
+        _exe("popups_transformation", "popups_transformation.exe"),
+        ["{workbook}"]),
+    "SourceOption2": (
+        _exe("popups_mass_discharge_import", "popups_mass_discharge_import.exe"),
+        ["{workbook}", "{sheet}"]),
+    "SourceRemediation": (
+        _exe("popups_source_remediation", "popups_source_remediation.exe"),
+        ["{workbook}", "{sheet}"]),
+    "LongevityTool": (
+        _exe("popups_longevity", "popups_longevity.exe"),
+        ["{workbook}", "{sheet}"]),
+    "CalibrationDataLoader": (
+        _exe("popups_calibration", "popups_calibration.exe"),
+        ["{workbook}", "{sheet}"]),
+    "ChangeNumericalParameters": (
+        _exe("popups_numerical", "popups_numerical.exe"),
+        ["{workbook}", "{sheet}"]),
+    "OpenAppendix_2_1_Relative_EXE": (
+        _exe("popups_cellsize", "popups_cellsize.exe"),
+        ["{workbook}", "{sheet}"]),
+    "RunPythonScript": (
+        _exe("input_variables", "input_variables.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Save_Data": (
+        _exe("generate_input_file", "generate_input_file.exe"),
+        ["{workbook}", "{sheet}", "ask"]),
+    "Load_Data_Step1": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Load_Data_Step2": (
+        _exe("restore_from_saved_folder", "restore_from_saved_folder.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Paste_Example_Step1": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Paste_Example_Step2": (
+        _exe("restore_from_example_folder", "restore_from_example_folder.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Clear_Data": (
+        _exe("clear_for_restore", "clear_for_restore.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Save_Data_Calibration_Step1": (
+        _exe("generate_input_file", "generate_input_file.exe"),
+        ["{workbook}", "{sheet}", "noask"]),
+    "Save_Data_Calibration_Step2": (
+        _exe("export_calibration_data", "export_calibration_data.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Run_Machine_Based_Calibration": (
+        _exe("cali_1", "cali_1.exe"),
+        ["{workbook}", "{sheet}"]),
+    "Load_Optimal_Data": (
+        _exe("restore_from_optimal", "restore_from_optimal.exe"),
+        ["{workbook}", "{sheet}"]),
+}
 
 HTML_APPENDIX = {
     "OpenAppendix_2_1_Relative": _html("appendix", "appendix_2_1.html"),
@@ -265,8 +338,7 @@ HTML_APPENDIX = {
     "OpenAppendix_6_1_Relative": _html("appendix", "appendix_6_1.html"),
     "OpenAppendix_7_1_Relative": _html("appendix", "appendix_7_1.html"),
     "OpenAppendix_8_1_Relative": _html("appendix", "appendix_8_1.html"),
-    "OpenAppendix_9_1_Relative":  _html("appendix", "appendix_9_1.html"),
-    "OpenAppendix_11_1_Relative": _html("appendix", "appendix_11_1.html"),
+    "OpenAppendix_9_1_Relative": _html("appendix", "appendix_9_1.html"),
 }
 
 HTML_CHICKLETS = {
@@ -291,7 +363,6 @@ HTML_CHICKLETS = {
     "OpenTable5_5":             ("Step5_PFASTransportProperties.html", "detailed-model-only-precursor-transformation-to-pfaas"),
     "OpenTable5_6":             ("Step5_PFASTransportProperties.html", "microbial-yield-factor"),
     "OpenTable5_7":             ("Step5_PFASTransportProperties.html", "molecular-diffusion-coefficient-in-free-water"),
-    "OpenTable6_0":             ("Step6_PlumeTransport.html", ""),
     "OpenTable6_1":             ("Step6_PlumeTransport.html", "longitudinal-dispersivity"),
     "OpenTable6_2":             ("Step6_PlumeTransport.html", "transverse-dispersivity"),
     "OpenTable6_3":             ("Step6_PlumeTransport.html", "vertical-dispersivity"),
@@ -299,7 +370,6 @@ HTML_CHICKLETS = {
     "OpenTable8_1":             ("Step8_SourceRemediation.html", "percent-source-mass-removed-by-remediation"),
     "OpenTable8_2":             ("Step8_SourceRemediation.html", "remediation-started-in-year"),
     "OpenTable8_3":             ("Step8_SourceRemediation.html", "remediation-ended-in-year"),
-    "OpenTable9_0":             ("Step9_PlumeRemediationPSB.html", ""),
     "OpenTable9_1":             ("Step9_PlumeRemediationPSB.html", "psb-freundlich-exponent-a"),
     "OpenTable9_2":             ("Step9_PlumeRemediationPSB.html", "psb-freundlich-kf"),
     "OpenTable9_3":             ("Step9_PlumeRemediationPSB.html", "year-psb-barrier-installed"),
@@ -315,6 +385,9 @@ HTML_CHICKLETS = {
 # ─────────────────────────────────────────────────────────────────────────────
 # ACTION DISPATCHER
 # ─────────────────────────────────────────────────────────────────────────────
+XLSM_PATH = os.path.join(BASE_DIR,
+                         "REMFluor-MD Interface Storyboard v2.6.xlsm")
+
 def _open_html(path_or_url: str, wait: bool = False):
     if sys.platform == "win32":
         url = "file:///" + path_or_url.replace("\\", "/")
@@ -325,6 +398,171 @@ def _open_html(path_or_url: str, wait: bool = False):
         subprocess.Popen(["open", path_or_url])
     else:
         subprocess.Popen(["xdg-open", path_or_url])
+
+
+def _launch_exe(exe_path: str, args: list, wait: bool = True):
+    if not os.path.exists(exe_path):
+        messagebox.showwarning(
+            "Executable Not Found",
+            f"Expected executable not found:\n{exe_path}\n\n"
+            "Ensure the dist\\ folder is present next to this script."
+        )
+        return
+    # Standalone-pipeline step 1 — push current app state into the .xlsm
+    # so the popup EXE (openpyxl-based) sees the latest user edits.
+    if _FUNCS_LOADED and _app_ref is not None:
+        try:
+            sheet_name = _current_sheet()
+            xlsm_io.push_state_to_xlsm(_app_ref, XLSM_PATH, sheet_name)
+        except Exception as exc:
+            print(f"[main] xlsm push failed (continuing): {exc}")
+    cmd = [exe_path] + args
+    if wait:
+        subprocess.run(cmd)
+    else:
+        subprocess.Popen(cmd)
+    # Standalone-pipeline step 3 — pull the updated cell values back from
+    # the .xlsm into the Tk UI so the user sees the result of the popup.
+    if wait and _app_ref is not None:
+        _app_ref.refresh_from_xlsm()
+
+
+# ─── XLSM read-back (for cells the dist EXEs mutate) ────────────────
+# Maps a Tk StringVar attribute name to a cell address on the active
+# sheet (Detailed_2 / Simple).  Subset that the EXEs are known to
+# modify — anything not listed is left alone.
+XLSM_CELL_MAP = {
+    # ── Section 1 (Site / Date) ─────────────────────────────────────
+    "v_site":         "B4",
+    "v_date":         "E4",
+    # ── Section 2 (Model Configuration) ─────────────────────────────
+    "v_x_size":       "E11",
+    "v_y_size":       "E12",
+    "v_z_size":       "E13",
+    "v_sw_width":     "E15",
+    "v_sw_thick":     "E16",
+    "v_yr_start":     "E18",
+    "v_yr_end":       "E19",
+    "v_run_time":     "M16",   # approx run time (locked black)
+    # ── Section 3 (Groundwater Darcy Velocity) ──────────────────────
+    "v_darcy":        "C22",
+    "v_porf":         "G22",
+    # ── Section 4 (Hydrogeologic Setting / Matrix Diffusion) ────────
+    "v_lowk_media":   "K26",
+    "v_lowk_por":     "K27",
+    "v_lowk_tort":    "K28",
+    # ── Section 5 (PFAS Transport Properties) ───────────────────────
+    "v_pfaa1":        "E38",
+    "v_pfaa2":        "G38",
+    "v_ret_trans1":   "E39",
+    "v_ret_lowk1":    "E40",
+    "v_ret_trans2":   "G39",
+    "v_ret_lowk2":    "G40",
+    "v_mol_diff":     "E44",
+    # ── Section 6 (Plume Transport — Dispersivity) ──────────────────
+    "v_alpha_l":      "V4",
+    "v_alpha_t":      "X4",
+    "v_alpha_v":      "Z4",
+    # ── Section 7 (PFAS Source Term — 11 decade rows) ──────────────
+    # Source years U8:U18, PFAA-1 V8:V18, PFAA-2 X8:X18.  The list
+    # entries are filled programmatically below to keep the table tidy.
+    # ── Section 8 (Source Remediation) ──────────────────────────────
+    "v_src_rem_yr":   "D27",
+    "v_src_conc_red": "D28",
+    # ── Section 9 (Plume Remediation : PSB) ─────────────────────────
+    "v_model_psb":    "R22",
+    # Freundlich "a"
+    "v_psb_a_1":      "V23",
+    "v_psb_a_2":      "X23",
+    "v_psb_a_3":      "Z23",
+    "v_psb_a_4":      "AB23",
+    # Freundlich Kf + unit dropdown
+    "v_psb_kf_unit":  "U24",
+    "v_psb_kf_1":     "V24",
+    "v_psb_kf_2":     "X24",
+    "v_psb_kf_3":     "Z24",
+    "v_psb_kf_4":     "AB24",
+    # PFAS molecular weight (g/mol) — only used when Kf unit is mol-based
+    "v_psb_mw_1":     "V25",
+    "v_psb_mw_2":     "X25",
+    "v_psb_mw_3":     "Z25",
+    "v_psb_mw_4":     "AB25",
+    # Converted Kf in (ug/kg)(ug/L)^(-a) — auto-computed by the app
+    "v_psb_kf_conv":  "V26",
+    "v_psb_kf_conv2": "X26",
+    "v_psb_kf_conv3": "Z26",
+    "v_psb_kf_conv4": "AB26",
+    # Detailed-only Section 5 transformation row (kept here for proximity)
+    "v_trans_rate_3":   "K41",
+    "v_trans_rate_4":   "M41",
+    "v_yield_factor_3": "K42",
+    "v_yield_factor_4": "M42",
+    # PSB geometry / install
+    "v_psb_yr":       "AB28",
+    "v_psb_dist":     "X74",
+    "v_psb_width":    "Y82",
+    "v_psb_load":     "AA82",
+    "v_psb_cells":    "AC82",
+    # ── Section 10 (Field Data to Calibrate) — sample year only.
+    #    Per-MW rows are populated by the EXEs but addresses depend on
+    #    sheet layout; covered in a later refinement pass.
+    "v_sample_yr":    "Y74",
+    # ── Section 11 (Output / Numerical Parameters) ──────────────────
+    "v_see_every":    "V47",
+}
+
+# Section 7 source rows — extend the map programmatically
+for _i in range(11):
+    XLSM_CELL_MAP[f"v_src_years_{_i}"] = f"U{8 + _i}"
+    XLSM_CELL_MAP[f"v_src_pfaa1_{_i}"] = f"V{8 + _i}"
+    XLSM_CELL_MAP[f"v_src_pfaa2_{_i}"] = f"X{8 + _i}"
+    # Detailed-only Precursor 1 / Precursor 2 source columns (XLSM Z / AB)
+    XLSM_CELL_MAP[f"v_src_pre1_{_i}"]  = f"Z{8 + _i}"
+    XLSM_CELL_MAP[f"v_src_pre2_{_i}"]  = f"AB{8 + _i}"
+del _i
+
+
+def _read_xlsm_cells(addresses, sheet_name="Detailed_2"):
+    """Read a list of A1 addresses from the workbook. Returns dict of
+    addr → string-formatted value.  Silently returns {} if openpyxl is
+    not installed or the workbook is unreachable."""
+    try:
+        from openpyxl import load_workbook
+    except ImportError:
+        return {}
+    if not os.path.exists(XLSM_PATH):
+        return {}
+    try:
+        wb = load_workbook(XLSM_PATH, read_only=True,
+                           data_only=True, keep_vba=False)
+        sh_name = sheet_name if sheet_name in wb.sheetnames else wb.sheetnames[0]
+        ws = wb[sh_name]
+        out = {}
+        for addr in addresses:
+            v = ws[addr].value
+            out[addr] = "" if v is None else str(v)
+        wb.close()
+        return out
+    except Exception:
+        return {}
+
+
+def _resolve_args(template: list, sheet: str = "", unitflag: str = "2") -> list:
+    return [
+        a.replace("{workbook}", XLSM_PATH)
+         .replace("{sheet}", sheet)
+         .replace("{unitflag}", unitflag)
+        for a in template
+    ]
+
+
+def _current_sheet() -> str:
+    return getattr(_app_ref, "active_sheet", "Simple")
+
+
+def _unitflag() -> str:
+    return "1" if getattr(_app_ref, "v_units", None) and \
+           _app_ref.v_units.get() == "feet" else "2"
 
 
 _app_ref = None
@@ -573,6 +811,8 @@ def _load_optimal_model(app, path):
 
 
 def run_script(macro_name, extra_args=None):
+    sheet     = _current_sheet()
+    unitflag  = _unitflag()
     _ensure_state_work_dir()
 
     # ── Standalone Python replacements ──────────────────────────────────
@@ -807,6 +1047,21 @@ def run_script(macro_name, extra_args=None):
                                      f"Run Model failed:\n{exc}")
             return
 
+    # ── Legacy exe path (fallback when functions not loaded) ────────────
+    if macro_name == "Load_Data":
+        exe1, t1 = EXES["Load_Data_Step1"]
+        exe2, t2 = EXES["Load_Data_Step2"]
+        _launch_exe(exe1, _resolve_args(t1, sheet, unitflag), wait=True)
+        _launch_exe(exe2, _resolve_args(t2, sheet, unitflag), wait=True)
+        return
+
+    if macro_name == "Paste_Example":
+        exe1, t1 = EXES["Paste_Example_Step1"]
+        exe2, t2 = EXES["Paste_Example_Step2"]
+        _launch_exe(exe1, _resolve_args(t1, sheet, unitflag), wait=True)
+        _launch_exe(exe2, _resolve_args(t2, sheet, unitflag), wait=True)
+        return
+
     if macro_name == "Save_Data_Calibration":
         # Pure-Python: build input.inp from current state, then write a
         # calibration_inputs.txt sidecar with the chosen parameter
@@ -832,12 +1087,21 @@ def run_script(macro_name, extra_args=None):
         return
 
     if macro_name == "OpenAppendix_2_1_Relative":
-        _open_html(HTML_APPENDIX[macro_name])
+        # v101: open the help HTML first, then drop into the popup.
+        # In dev / standalone-Python mode, dispatch to the pure-Python
+        # popups_cellsize.run() — DO NOT fall back to the .exe (the
+        # whole point of the functions/ port is to run without exes).
+        html_path = HTML_APPENDIX[macro_name]
+        _open_html(html_path)
         if _FUNCS_LOADED and _app_ref is not None:
             try:
                 popups_cellsize.run(_app_ref)
             except Exception as exc:
-                messagebox.showerror("Cell Size", f"Popup failed:\n{exc}")
+                messagebox.showerror("Cell Size",
+                                     f"Popup failed:\n{exc}")
+        else:
+            exe, tmpl = EXES["OpenAppendix_2_1_Relative_EXE"]
+            _launch_exe(exe, _resolve_args(tmpl, sheet, unitflag), wait=True)
         return
 
     if macro_name in HTML_APPENDIX:
@@ -1307,10 +1571,16 @@ def run_script(macro_name, extra_args=None):
                 except Exception: pass
             return
 
+    if macro_name in EXES:
+        exe_path, tmpl = EXES[macro_name]
+        wait = macro_name != "RunPythonScript"
+        _launch_exe(exe_path, _resolve_args(tmpl, sheet, unitflag), wait=wait)
+        return
+
     messagebox.showinfo(
         "Not Mapped",
         f"No action mapped for macro '{macro_name}'.\n"
-        "Add a handler in run_script() or register it in HTML_CHICKLETS / HTML_APPENDIX."
+        "Add it to EXES or HTML_CHICKLETS."
     )
 
 
@@ -2355,6 +2625,46 @@ class REMFluorApp(tk.Tk):
         self.v_alpha_t.set(f"{at:.3f}")
         self.v_alpha_v.set(f"{av:.4f}")
 
+    # ── XLSM read-back ─────────────────────────────────────────────
+    def refresh_from_xlsm(self):
+        """Pull the cells listed in XLSM_CELL_MAP from the workbook
+        back into the matching Tk StringVars.  Called after every
+        dist/popups_*.exe returns, so cells those EXEs wrote are
+        reflected in the GUI.
+
+        Two flavors of var name supported:
+          - "v_pfaa1"           -> single StringVar attribute on self
+          - "v_src_pfaa1_3"     -> 4th element of self.v_src_pfaa1 list
+        """
+        addrs = list(XLSM_CELL_MAP.values())
+        sheet = "Detailed_2" if self.active_sheet == "Detailed_2" else "Simple"
+        cells = _read_xlsm_cells(addrs, sheet_name=sheet)
+        if not cells:
+            return
+        for var_name, addr in XLSM_CELL_MAP.items():
+            if addr not in cells:
+                continue
+            value = cells[addr]
+            # Indexed list attribute? "<name>_<idx>"
+            if "_" in var_name:
+                base, _, tail = var_name.rpartition("_")
+                if tail.isdigit():
+                    seq = getattr(self, base, None)
+                    if isinstance(seq, list) and int(tail) < len(seq):
+                        try:
+                            seq[int(tail)].set(value)
+                        except Exception:
+                            pass
+                        continue
+            var = getattr(self, var_name, None)
+            if var is None:
+                continue
+            try:
+                var.set(value)
+            except Exception:
+                pass
+
+    # ── v102: unit-aware label / value helpers ───────────────────────────
     def _unit_len(self):
         """Return current length unit suffix string: 'm' or 'ft'."""
         try:
@@ -3047,12 +3357,9 @@ class REMFluorApp(tk.Tk):
     # SECTION 6 – GEOLOGIC HETEROGENEITY  (right column, top)
     # ─────────────────────────────────────────────────────────────────────
     def _build_s6_heterogeneity(self, parent):
-        _hdr6 = tk.Frame(parent, bg=BG_MAIN)
-        _hdr6.pack(anchor="w", pady=(2, 1), fill="x")
-        section_header(_hdr6, "6",
+        section_header(parent, "6",
                        "PLUME TRANSPORT – DISPERSIVITY"
-                       ).pack(side="left")
-        help_link(_hdr6, "OpenTable6_0").pack(side="left", padx=(6, 0))
+                       ).pack(anchor="w", pady=(2, 1))
 
         # All controls live in a single grid:
         #   row 0  – heterogeneity radios + "Enter Your Own Value Below"
@@ -4065,12 +4372,9 @@ class REMFluorApp(tk.Tk):
     # SECTION 9 – PSB
     # ─────────────────────────────────────────────────────────────────────
     def _build_s9_psb(self, parent):
-        _hdr9 = tk.Frame(parent, bg=BG_MAIN)
-        _hdr9.pack(anchor="w", pady=(2, 1), fill="x")
-        section_header(_hdr9, "9",
+        section_header(parent, "9",
                        "PLUME REMEDIATION: INSTALL PERMEABLE SORPTION BARRIER (PSB)"
-                       ).pack(side="left")
-        help_link(_hdr9, "OpenTable9_0").pack(side="left", padx=(6, 0))
+                       ).pack(anchor="w", pady=(2, 1))
 
         det_only = []
         def _mark_detailed(*ws):
@@ -4774,13 +5078,10 @@ class REMFluorApp(tk.Tk):
 
         head_l = tk.Frame(header_band, bg=BG_MAIN)
         head_l.grid(row=0, column=0, sticky="nw")
-        _cal_title_row = tk.Frame(head_l, bg=BG_MAIN)
-        _cal_title_row.pack(anchor="w")
-        tk.Label(_cal_title_row,
+        tk.Label(head_l,
                  text="REMFluor-MD MACHINE-CALIBRATION (Singh et al., 2025)",
                  font=FONT_LABEL_B, bg=BG_MAIN, fg=FG_INPUT, anchor="w"
-                 ).pack(side="left")
-        help_link(_cal_title_row, "OpenAppendix_11_1_Relative").pack(side="left", padx=(6, 0))
+                 ).pack(anchor="w")
         tk.Label(head_l,
             text="This allows you to let the computer perform a simple "
                  "calibration of your REMFluor-MD model by:",
