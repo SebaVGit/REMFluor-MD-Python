@@ -33,8 +33,7 @@ Thumbs.db
 *.log
 *.out
 *.csv
-*.inp
-*.txt
+
  
 # If you DO want to keep specific output files tracked, un-ignore them:
 # !template.inp

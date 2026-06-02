@@ -2012,7 +2012,7 @@ def main(workbook_path=None, sheet_name=None):
     import time
     import threading
     
-    def find_available_port(start_port=8050, max_attempts=10):
+    def find_available_port(start_port=8753, max_attempts=10):
         """Find an available port starting from start_port"""
         for i in range(max_attempts):
             port = start_port + i
@@ -2048,7 +2048,15 @@ def main(workbook_path=None, sheet_name=None):
         pass
     
     # Find an available port
-    port = find_available_port(8050)
+    port = find_available_port(8753)
+    # Record the actual chosen port so the launcher (run_model.py) can
+    # target THIS port for cleanup even if the base 8753 was busy and we
+    # landed on +1/+2.  Written next to the .out files (cwd == project).
+    try:
+        with open("dashboard_port.txt", "w", encoding="utf-8") as _pf:
+            _pf.write(str(port))
+    except Exception:
+        pass
     print(f"Starting dashboard server at http://127.0.0.1:{port}/")
     print("Press Ctrl+C to stop the server and close the command window.")
     

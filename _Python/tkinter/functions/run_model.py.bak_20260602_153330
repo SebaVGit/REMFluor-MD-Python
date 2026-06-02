@@ -19,7 +19,6 @@ import os
 import sys
 import json
 import time
-import atexit
 import threading
 import subprocess
 import tkinter as tk
@@ -34,29 +33,7 @@ from . import generate_input_file
 # which lets the new subprocess crash and leaves the user looking at
 # the OLD dashboard data.  See _kill_previous_dashboard().
 _LAST_DASHBOARD_PROC = None
-# Uncommon base port (8050 is the well-known Dash default that other
-# tools grab).  The dashboard scans _DASHBOARD_PORT .. +_DASHBOARD_PORT_SPAN-1
-# for the first free one and records the actual choice in
-# dashboard_port.txt so cleanup can target it exactly even if the base
-# was busy.  Keep these in sync with find_available_port() in
-# generate_dashboard.py.
-_DASHBOARD_PORT = 8753
-_DASHBOARD_PORT_SPAN = 10
-_PORT_FILE = "dashboard_port.txt"
-
-
-def _port_file_path() -> str:
-    return os.path.join(_project_dir(), _PORT_FILE)
-
-
-def _recorded_dashboard_port():
-    """Return the port the running dashboard wrote to dashboard_port.txt,
-    or None if unavailable/unparseable."""
-    try:
-        with open(_port_file_path(), "r", encoding="utf-8") as fh:
-            return int(fh.read().strip())
-    except Exception:
-        return None
+_DASHBOARD_PORT = 8050
 
 
 def _project_dir() -> str:
@@ -116,26 +93,17 @@ def _kill_previous_dashboard():
                 pass
     _LAST_DASHBOARD_PROC = None
 
-    # Belt + suspenders: kill anything else listening on the dashboard
-    # port(s).  This catches dashboards left over from a prior app
-    # session that crashed (no _LAST_DASHBOARD_PROC handle), or zombies
-    # bash didn't reap.  We target the whole scan range AND the exact
-    # port the last dashboard recorded in dashboard_port.txt — so even
-    # if the base port was busy and it landed on +1/+2, cleanup still
-    # finds it.  Cross-platform via psutil if available, else OS fallback.
-    target_ports = set(range(_DASHBOARD_PORT,
-                             _DASHBOARD_PORT + _DASHBOARD_PORT_SPAN))
-    rec = _recorded_dashboard_port()
-    if rec:
-        target_ports.add(rec)
-
+    # Belt + suspenders: kill anything else listening on port 8050.
+    # This catches dashboards left over from a prior app session that
+    # crashed (no _LAST_DASHBOARD_PROC handle), or zombies bash didn't
+    # reap.  Cross-platform via psutil if available, else OS fallback.
     try:
         import psutil   # type: ignore
         for c in psutil.net_connections(kind="inet"):
             if c.status != psutil.CONN_LISTEN:
                 continue
             laddr = getattr(c, "laddr", None)
-            if laddr and laddr.port in target_ports and c.pid:
+            if laddr and laddr.port == _DASHBOARD_PORT and c.pid:
                 try:
                     psutil.Process(c.pid).terminate()
                 except Exception:
@@ -152,8 +120,7 @@ def _kill_previous_dashboard():
                 ["netstat", "-ano"],
                 capture_output=True, text=True, timeout=5,
             )
-            ports_alt = "|".join(str(p) for p in sorted(target_ports))
-            pattern = re.compile(rf":(?:{ports_alt})\s+.*LISTENING\s+(\d+)")
+            pattern = re.compile(rf":{_DASHBOARD_PORT}\s+.*LISTENING\s+(\d+)")
             seen = set()
             for line in (ns.stdout or "").splitlines():
                 m = pattern.search(line)
@@ -167,27 +134,10 @@ def _kill_previous_dashboard():
                         )
         else:
             # POSIX: lsof or fuser.  fuser is available on most Linux/macOS.
-            for p in sorted(target_ports):
-                subprocess.run(
-                    ["fuser", "-k", f"{p}/tcp"],
-                    capture_output=True, text=True, timeout=5,
+            subprocess.run(
+                ["fuser", "-k", f"{_DASHBOARD_PORT}/tcp"],
+                capture_output=True, text=True, timeout=5,
             )
-    except Exception:
-        pass
-
-
-@atexit.register
-def _cleanup_dashboard_on_exit():
-    """Terminate the dashboard server when the GUI process exits
-    normally (window closed -> mainloop returns -> interpreter exit).
-
-    NOTE: atexit does NOT run on a hard crash or force-quit — that case
-    is covered by _kill_previous_dashboard()'s port-8050 sweep on the
-    next Run Model, and by the timestamped log names which prevent a
-    leaked handle from locking a reused filename.  Together these give
-    layered cleanup; no single mechanism is relied on alone."""
-    try:
-        _kill_previous_dashboard()
     except Exception:
         pass
 
@@ -203,33 +153,6 @@ def _dashboard_script() -> str:
     # remains in the repo as historical reference only.
     return os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "generate_dashboard.py")
-
-
-def _prune_dashboard_logs(proj: str, keep: int = 10):
-    """Keep only the newest `keep` dashboard_*.log files.  Best-effort:
-    a file still locked by a running/zombie dashboard simply won't
-    delete, and that's fine — the next run writes a fresh timestamped
-    name regardless.  Also removes a legacy fixed-name dashboard.log if
-    present and unlocked."""
-    import glob as _glob
-    # Legacy single-name log from older builds — try to clear it so it
-    # stops being the file users couldn't delete.
-    legacy = os.path.join(proj, "dashboard.log")
-    if os.path.exists(legacy):
-        try:
-            os.remove(legacy)
-        except Exception:
-            pass
-    try:
-        logs = _glob.glob(os.path.join(proj, "dashboard_*.log"))
-        logs.sort(key=lambda p: os.path.getmtime(p), reverse=True)
-        for old in logs[keep:]:
-            try:
-                os.remove(old)
-            except Exception:
-                pass
-    except Exception:
-        pass
 
 
 def _dump_dashboard_state(app, project: str) -> str:
@@ -430,22 +353,9 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
     def _worker():
         script = _dashboard_script()
         proj   = _project_dir()
-        # Timestamped log per run so a leftover OS handle (e.g. after a
-        # crash) can never lock the fixed name and block deletion/rebuild.
-        # _prune_dashboard_logs() trims old ones.  See _prune_dashboard_logs.
-        log_path = os.path.join(
-            proj, f"dashboard_{time.strftime('%Y%m%d_%H%M%S')}.log")
-        try:
-            _prune_dashboard_logs(proj, keep=10)
-        except Exception:
-            pass
+        log_path = os.path.join(proj, "dashboard.log")
 
-        # In a frozen .exe the dashboard is launched via the
-        # `--mode=dashboard` re-exec of the .exe itself (see below), so
-        # the .py source need NOT exist on disk — and it doesn't, because
-        # PyInstaller compiles it into the bundle.  Only require the
-        # on-disk script when running from source (dev mode).
-        if not getattr(sys, "frozen", False) and not os.path.exists(script):
+        if not os.path.exists(script):
             try:
                 root.after(0, lambda: label.config(
                     text=f"Finished: {mins:02d}:{secs:02d}\n"
@@ -532,17 +442,6 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
             proc = subprocess.Popen(cmd, **kwargs)
             global _LAST_DASHBOARD_PROC
             _LAST_DASHBOARD_PROC = proc
-            # Close the PARENT's copy of the log handle immediately.
-            # The child (dashboard) has inherited its own handle and
-            # keeps writing; leaving the parent's copy open is what
-            # left dashboard.log locked for the GUI's whole lifetime
-            # (undeletable file).  See bpo-19575 / bpo-24909.
-            if log_fh:
-                try:
-                    log_fh.close()
-                except Exception:
-                    pass
-                log_fh = None
         except Exception as e:
             if log_fh:
                 try: log_fh.close()

@@ -1,0 +1,19 @@
+Additional Information Not in input.inp
+==================================================
+
+Site Location and ID:,Test Case 1
+Date:,March, 2026
+Thickness:,5
+Start Year:,1977
+End Year:,2077
+
+Source Treatment Start Year:,2017
+Source Concentration Reduction:,0.5
+
+Sample Year:,None
+
+Unit Flag (AD1):,2
+Dispersivity Flag (AC1):,2
+
+PSB Loading (AH28):,0.0024
+
