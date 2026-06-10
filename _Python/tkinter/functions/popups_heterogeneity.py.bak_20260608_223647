@@ -87,23 +87,6 @@ FONT_BTN      = ("Arial", 11)
 
 
 def _figures_dir():
-    """Locate the Figures/ folder.  In a frozen .exe the PNGs are
-    bundled into sys._MEIPASS (the _internal folder), NOT next to the
-    .exe, so the plain __file__ walk below lands in the wrong place and
-    the Step images never appear.  Mirror _docs_root(): prefer the
-    bundle_dir / work_dir that main.py records on the state singleton
-    at startup, then fall back to the dev-tree walk."""
-    try:
-        from .state import get_state
-        st = get_state()
-        for base in (getattr(st, "bundle_dir", ""),
-                     getattr(st, "work_dir", "")):
-            if base:
-                cand = os.path.join(base, "Figures")
-                if os.path.isdir(cand):
-                    return cand
-    except Exception:
-        pass
     here = os.path.dirname(os.path.abspath(__file__))
     project = os.path.abspath(os.path.join(here, "..", "..", ".."))
     return os.path.join(project, "Figures")
