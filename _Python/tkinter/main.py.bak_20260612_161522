@@ -1799,16 +1799,6 @@ class REMFluorApp(tk.Tk):
         global _app_ref
         _app_ref = self
 
-        # v105: clean-start guard.  Building the dropdowns calls
-        # cb.set(var.get()) which re-writes each StringVar and therefore
-        # FIRES its write-trace — that's what made the dropdown change
-        # handlers (media → porosity, PFAA → retardation, heterogeneity →
-        # dispersivity) auto-fill the calculated cells at startup even
-        # though their defaults are blank.  While this flag is True those
-        # handlers skip their auto-fill, so the form opens genuinely empty.
-        # The flag is cleared once the UI is fully built.
-        self._building = True
-
         self._build_vars()
 
         outer = tk.Frame(self, bg=BG_MAIN)
@@ -1889,10 +1879,6 @@ class REMFluorApp(tk.Tk):
         win_w = min(int(1500 * scale), scr_w - 60)
         win_h = min(int(950  * scale), scr_h - 100)
         self.geometry(f"{win_w}x{win_h}")
-
-        # v105: UI fully built — allow the dropdown change handlers to do
-        # their normal auto-fill from here on (genuine user selections).
-        self._building = False
 
     # ── Named fonts + zoom ───────────────────────────────────────────────
     def _init_named_fonts(self):
@@ -2244,14 +2230,9 @@ class REMFluorApp(tk.Tk):
 
     def _on_pfaa_change(self, *_):
         """Recompute Section 5 retardation.
-        v105: skipped while the UI is being built so the §5 black cells
-        stay empty on a clean-start form (the §5 dropdowns' cb.set fires
-        this trace at startup).
         Uses retardation_inputs.txt (Koc, foc, rho_b) when present;
         falls back to PFAA_KOC table defaults otherwise.
         Formula: R = 1 + (rho_b * foc * Koc) / porosity"""
-        if getattr(self, "_building", False):
-            return
         try:
             G22 = float(self.v_porf.get())
         except (ValueError, TypeError):
@@ -2300,28 +2281,16 @@ class REMFluorApp(tk.Tk):
                     try: self.v_mol_diff.set("")
                     except Exception: pass
                 continue
-            # v105: these are CALCULATED (black) display cells.  Retardation
-            # has the zone porosity in its denominator, so until the user has
-            # entered that porosity (e.g. on a clean-start form) leave the
-            # cell BLANK rather than writing a misleading R = 1.0.  Earlier
-            # code used `... if G22 > 0 else 1.0`, which is why §5 showed 1.0
-            # everywhere on startup and filled more cells when switching to
-            # Detailed.  They now populate automatically once porosity exists.
-            if G22 > 0:
-                ret_t.set(f"{1.0 + (rho_b * foc_t * koc / G22):.1f}")
-            else:
-                ret_t.set("")
-            if K27 > 0:
-                ret_l.set(f"{1.0 + (rho_b * foc_l * koc / K27):.1f}")
-            else:
-                ret_l.set("")
-            # Molecular diffusion (PFAA-1 only) — also a §5 black cell.  Keep
-            # it blank until §5 is actually being configured (transmissive
-            # porosity entered) so the clean-start form stays empty.
+            r_high = 1.0 + (rho_b * foc_t * koc / G22) if G22 > 0 else 1.0
+            r_low  = 1.0 + (rho_b * foc_l * koc / K27) if K27 > 0 else 1.0
+            ret_t.set(f"{r_high:.1f}")
+            ret_l.set(f"{r_low:.1f}")
+            # Molecular diffusion from PFAA-1 only
             if idx == 0:
-                if G22 > 0 and diff is not None:
+                if diff is not None:
                     self.v_mol_diff.set(f"{diff:.2E}")
                 else:
+                    # Species recognised but no diff table entry → blank
                     try: self.v_mol_diff.set("")
                     except Exception: pass
 
@@ -2353,10 +2322,6 @@ class REMFluorApp(tk.Tk):
     def _on_lowk_media_change(self, *_):
         """K26 → K27 (porosity) + K28 (tortuosity), then cascade to
         retardation factors."""
-        # v105: don't auto-fill while the UI is still being built (the
-        # dropdown's cb.set fires this trace at startup) — clean start.
-        if getattr(self, "_building", False):
-            return
         por, tort = self.LOWK_DEFAULTS.get(self.v_lowk_media.get(),
                                            ("", ""))
         self.v_lowk_por.set(f"{por:.2f}" if isinstance(por, float) else str(por))
@@ -2376,9 +2341,6 @@ class REMFluorApp(tk.Tk):
 
     def _on_het_change(self, *_):
         """Heterogeneity radio changed → update longitudinal/transverse/vertical."""
-        # v105: don't auto-fill dispersivity during UI build (clean start).
-        if getattr(self, "_building", False):
-            return
         preset = self._DISPERSIVITY_PRESETS.get(self.v_het.get())
         if preset is None:
             # "Enter Your Own Value Below" — clear cells so the user
@@ -2471,189 +2433,17 @@ class REMFluorApp(tk.Tk):
             s = f"{val:.6g}"
             return s
         if factor is not None:
-            # Direction of this toggle, used to interpret the user's
-            # current text and to render the canonical in the new unit.
-            FT_PER_M = 1.0 / FT2M
             for var, kind in list(self._unit_length_vars):
                 try:
                     raw = str(var.get()).strip()
                     if not raw:
                         continue
                     num = float(raw.replace(",", ""))
+                    new_val = num * factor
+                    var.set(_fmt_round_trip(new_val))
                 except (ValueError, TypeError, AttributeError):
-                    continue
-                key = id(var)
-                last = self._unit_last.get(key)
-                if last is not None and raw == last and key in self._unit_canon:
-                    # Untouched since we last set it → reuse the stored
-                    # canonical so the round-trip is drift-free.
-                    canon_m = self._unit_canon[key]
-                else:
-                    # First time, or user edited the field → derive the
-                    # canonical (metres) from what's currently shown,
-                    # interpreted in the PREVIOUS unit.
-                    canon_m = num * FT2M if prev == "feet" else num
-                # Render canonical in the NEW unit.
-                disp = canon_m * FT_PER_M if new_unit == "feet" else canon_m
-                s = _fmt_round_trip(disp)
-                try:
-                    var.set(s)
-                except Exception:
                     pass
-                self._unit_canon[key] = canon_m
-                self._unit_last[key]  = s
         self._prev_units = new_unit
-
-    # ── Run-Model validation gate ─────────────────────────────────────────
-    def _collect_missing_inputs(self):
-        """Return [(section_title, [missing-field labels]), ...] for every
-        REQUIRED input left blank, taking the user's current options into
-        account (Simple vs Detailed, 1 vs 2 PFAS, precursors, PSB, units).
-        An empty list means the form is complete enough to run.
-
-        The required set mirrors exactly the numeric fields that the
-        clean-start blanks; advanced popup/sidecar parameters keep their
-        own values and are not gated here.  Conditions match the mode
-        logic in functions/generate_input_file.py and are grounded in the
-        shipped Example inputs.
-        """
-        u = self._unit_len()   # 'm' or 'ft'
-
-        def blank(v):
-            try:
-                return not str(v.get()).strip()
-            except Exception:
-                return True
-
-        def chosen(var, *placeholders):
-            """True if a dropdown holds a real selection (not blank/None)."""
-            try:
-                s = str(var.get()).strip()
-            except Exception:
-                s = ""
-            return bool(s) and s.lower() not in [p.lower() for p in placeholders]
-
-        detailed  = (getattr(self, "active_sheet", "Simple") == "Detailed_2")
-        ncomp2    = chosen(self.v_pfaa2, "", "None")
-        precursor = detailed and chosen(self.v_pfaa3, "", "None")
-        try:
-            psb_on = bool(self.v_model_psb.get())
-        except Exception:
-            psb_on = False
-
-        missing = []
-
-        def need(section, pairs):
-            miss = [lbl for var, lbl in pairs if blank(var)]
-            if miss:
-                missing.append((section, miss))
-
-        # §2 — Model domain & timeframe
-        need("Section 2 — Model Domain & Timeframe", [
-            (self.v_x_size,   f"Model length X ({u})"),
-            (self.v_y_size,   f"Model width Y ({u})"),
-            (self.v_z_size,   f"Model depth Z ({u})"),
-            (self.v_sw_width, f"Source zone width ({u})"),
-            (self.v_sw_thick, f"Source zone thickness ({u})"),
-            (self.v_yr_start, "Simulation start year"),
-            (self.v_yr_end,   "Simulation end year"),
-        ])
-        # §3 — Groundwater flow
-        need("Section 3 — Groundwater Flow", [
-            (self.v_darcy, f"Darcy velocity ({u}/yr)"),
-            (self.v_porf,  "Transmissive-zone porosity"),
-        ])
-        # §4 — Low-permeability zone
-        need("Section 4 — Low-Permeability Zone", [
-            (self.v_lowk_por,  "Low-k porosity"),
-            (self.v_lowk_tort, "Low-k tortuosity"),
-        ])
-        # §5 — Retardation & diffusion: the retardation factors and the
-        # molecular-diffusion value are CALCULATED (black, read-only) cells,
-        # NOT user inputs — they auto-fill from the PFAA species dropdowns
-        # plus the §3/§4 porosities (both already required above).  Listing
-        # them here would tell the user to "fill" a cell they can't type
-        # into, so §5 is validated via its real inputs instead: the PFAA-1
-        # species must be selected, and — in Detailed precursor mode — the
-        # editable transformation-rate / yield-factor cells must be filled.
-        s5 = [(self.v_pfaa1, "PFAA-1 species")]
-        if precursor:
-            s5 += [
-                (self.v_trans_rate_3,   "Precursor 1 transformation rate (yr)"),
-                (self.v_yield_factor_3, "Precursor 1 yield factor"),
-            ]
-            if ncomp2:
-                s5 += [
-                    (self.v_trans_rate_4,   "Precursor 2 transformation rate (yr)"),
-                    (self.v_yield_factor_4, "Precursor 2 yield factor"),
-                ]
-        need("Section 5 — PFAS & Precursor Inputs", s5)
-        # §6 — Dispersivity
-        need("Section 6 — Dispersivity", [
-            (self.v_alpha_l, f"Longitudinal dispersivity ({u})"),
-            (self.v_alpha_t, f"Transverse dispersivity ({u})"),
-            (self.v_alpha_v, f"Vertical dispersivity ({u})"),
-        ])
-        # §7 — Source loading table: every row that HAS a year needs its
-        # concentration(s) for the active component set.
-        s7 = []
-        if all(blank(v) for v in self.v_src_years):
-            s7.append("Source loading table is empty (enter years & concentrations)")
-        else:
-            for i in range(len(self.v_src_years)):
-                if blank(self.v_src_years[i]):
-                    continue
-                yr = str(self.v_src_years[i].get()).strip()
-                if blank(self.v_src_pfaa1[i]):
-                    s7.append(f"Row {i+1} (year {yr}): PFAA-1 source concentration")
-                if ncomp2 and blank(self.v_src_pfaa2[i]):
-                    s7.append(f"Row {i+1} (year {yr}): PFAA-2 source concentration")
-                if precursor and blank(self.v_src_pre1[i]):
-                    s7.append(f"Row {i+1} (year {yr}): Precursor 1 source concentration")
-                if precursor and ncomp2 and blank(self.v_src_pre2[i]):
-                    s7.append(f"Row {i+1} (year {yr}): Precursor 2 source concentration")
-        if s7:
-            missing.append(("Section 7 — Source Loading", s7))
-        # §11 — Output cadence
-        need("Section 11 — Output", [
-            (self.v_see_every, "See results every (yr)"),
-        ])
-        # §9 — PSB: required ONLY when the PSB option is turned on.
-        if psb_on:
-            psb = [
-                (self.v_psb_yr,    "Year PSB installed"),
-                (self.v_psb_dist,  f"PSB distance from source ({u})"),
-                (self.v_psb_width, f"PSB width ({u})"),
-                (self.v_psb_cells, "Number of cells in PSB"),
-                (self.v_psb_load,  "PSB loading"),
-                (self.v_psb_a_1,   "PSB Freundlich exponent a (PFAA-1)"),
-                (self.v_psb_kf_1,  "PSB Freundlich Kf (PFAA-1)"),
-            ]
-            if ncomp2:
-                psb += [(self.v_psb_a_2,  "PSB Freundlich exponent a (PFAA-2)"),
-                        (self.v_psb_kf_2, "PSB Freundlich Kf (PFAA-2)")]
-            need("Section 9 — Permeable Sorptive Barrier (PSB)", psb)
-
-        return missing
-
-    def _format_missing_message(self, missing):
-        """Render the missing-input list into a clear, sectioned message."""
-        total = sum(len(items) for _, items in missing)
-        lines = [
-            f"Cannot run the model yet — {total} required "
-            f"input{'s' if total != 1 else ''} still need a value.",
-            "These are the fields required for your current setup "
-            "(version, number of PFAS, precursors, PSB, units):",
-            "",
-        ]
-        for section, items in missing:
-            lines.append(section)
-            for it in items:
-                lines.append(f"    • {it}")
-            lines.append("")
-        lines.append("Fill these in, or click \"Paste Example\" to load a "
-                     "complete worked example, then Run Model again.")
-        return "\n".join(lines)
 
     # ── Variable initialisation ───────────────────────────────────────────
     def _build_vars(self):
@@ -2668,36 +2458,20 @@ class REMFluorApp(tk.Tk):
         # kind), where kind is "length" (m↔ft) or "rate" (m/yr↔ft/yr).
         self._unit_labels = []        # list of (widget, fmt) tuples
         self._unit_length_vars = []   # list of (StringVar, kind)
-        # v105: no-drift unit conversion.  For each registered length var
-        # we remember (a) its canonical value in METRES and (b) the exact
-        # string we last wrote into it.  On a feet<->meters toggle we
-        # derive the new display FROM the canonical instead of chaining
-        # conversions on already-rounded display text — so m->ft->m always
-        # returns to the original number.  If the user has edited the field
-        # since we last set it, we refresh the canonical from what they
-        # typed (interpreted in the previous unit) before converting.
-        self._unit_canon = {}   # id(var) -> canonical value in metres
-        self._unit_last  = {}   # id(var) -> last string we set into var
         self._prev_units = self.v_units.get()
         self.v_units.trace_add("write", self._apply_units)
         self.v_site          = tk.StringVar(value="Test Case 1")
         self.v_date          = tk.StringVar(value=datetime.now().strftime("%b-%y"))
 
         # Section 2
-        # v105: start CLEAN — numeric inputs blank so the user fills them
-        # deliberately (pre-filled defaults previously caused confusion /
-        # accidental runs on example values).  Dropdowns & text labels keep
-        # their sensible defaults; only numbers are blanked.  Run Model and
-        # all live recompute callbacks fall back to safe internal defaults
-        # when a field is empty, so nothing crashes on a blank form.
-        self.v_x_size   = tk.StringVar(value="")
-        self.v_y_size   = tk.StringVar(value="")
-        self.v_z_size   = tk.StringVar(value="")
-        self.v_sw_width = tk.StringVar(value="")
-        self.v_sw_thick = tk.StringVar(value="")
-        self.v_yr_start = tk.StringVar(value="")
-        self.v_yr_end   = tk.StringVar(value="")
-        self.v_run_time = tk.StringVar(value="")
+        self.v_x_size   = tk.StringVar(value="500")
+        self.v_y_size   = tk.StringVar(value="50")
+        self.v_z_size   = tk.StringVar(value="10")
+        self.v_sw_width = tk.StringVar(value="60")
+        self.v_sw_thick = tk.StringVar(value="5")
+        self.v_yr_start = tk.StringVar(value="1977")
+        self.v_yr_end   = tk.StringVar(value="2077")
+        self.v_run_time = tk.StringVar(value="0.0")
 
         # ── §2 "approx. run time" — live recompute ──────────────────────
         # Was a static "0.0" cell.  Now computed from the model
@@ -2716,33 +2490,12 @@ class REMFluorApp(tk.Tk):
 
         def _recompute_run_time(*_):
             try:
-                # v105: clean-start guard — if the essential geometry /
-                # duration fields are blank, show nothing rather than an
-                # estimate computed from hidden fallback numbers.
-                _essential = (self.v_yr_start.get(), self.v_yr_end.get(),
-                              self.v_x_size.get(), self.v_y_size.get(),
-                              self.v_z_size.get())
-                if any(not str(v).strip() for v in _essential):
-                    self.v_run_time.set("")
-                    return
                 yr0 = _safe_f(self.v_yr_start.get(), 1977)
                 yr1 = _safe_f(self.v_yr_end.get(),   yr0 + 100)
                 xs  = _safe_f(self.v_x_size.get(), 500)
                 ys  = _safe_f(self.v_y_size.get(),  50)
                 zs  = _safe_f(self.v_z_size.get(),  10)
-                # v105: make the estimate UNIT-INDEPENDENT.  The domain
-                # sizes are shown in the user's selected unit (m or ft),
-                # but the cell sizes below are metric.  Convert the domain
-                # to meters first so the grid-cell count — and therefore
-                # the estimate — is identical whether the form is in feet
-                # or meters (it's only an estimate; consistency matters
-                # more than the display unit).
-                try:
-                    _to_m = 0.3048 if self.v_units.get() == "feet" else 1.0
-                except Exception:
-                    _to_m = 1.0
-                xs *= _to_m; ys *= _to_m; zs *= _to_m
-                # Default cell sizes (metres) — match the cellsize_input.txt
+                # Default cell sizes — match the cellsize_input.txt
                 # defaults shipped with the examples.
                 dx, dy, dz, dt = 5.0, 5.0, 1.0, 0.1
                 nt  = max(1, int(round((yr1 - yr0) / dt)))
@@ -2770,30 +2523,28 @@ class REMFluorApp(tk.Tk):
                 self.v_run_time.set("?")
         self._recompute_run_time = _recompute_run_time
 
-        # Section 3  (v105: numeric inputs blank for clean start)
-        self.v_darcy   = tk.StringVar(value="")
-        self.v_porf    = tk.StringVar(value="")
+        # Section 3
+        self.v_darcy   = tk.StringVar(value="10.00")
+        self.v_porf    = tk.StringVar(value="0.2")
         self.v_porf.trace_add("write",
                               lambda *_: self._on_porf_change())
 
-        # Section 4  (dropdown keeps default; derived numbers start blank —
-        # they auto-fill only when the user actively changes the media
-        # dropdown, since constructor defaults don't fire the trace)
+        # Section 4
         self.v_lowk_media = tk.StringVar(value="Clay")
         self.v_lowk_media.trace_add("write",
                                     lambda *_: self._on_lowk_media_change())
-        self.v_lowk_por   = tk.StringVar(value="")
+        self.v_lowk_por   = tk.StringVar(value="0.48")
         self.v_lowk_por.trace_add("write",
                                   lambda *_: self._on_pfaa_change())
-        self.v_lowk_tort  = tk.StringVar(value="")
+        self.v_lowk_tort  = tk.StringVar(value="0.56")
 
         # Section 5
         self.v_pfaa1      = tk.StringVar(value="PFOS")
         self.v_pfaa2      = tk.StringVar(value="None")
         self.v_pfaa3      = tk.StringVar(value="PFAA 1-able")  # K38 Precursor 1 (Detailed)
         self.v_pfaa4      = tk.StringVar(value="PFAA 2-able")  # M38 Precursor 2 (Detailed)
-        self.v_ret_trans1 = tk.StringVar(value="")
-        self.v_ret_lowk1  = tk.StringVar(value="")
+        self.v_ret_trans1 = tk.StringVar(value="2.9")
+        self.v_ret_lowk1  = tk.StringVar(value="2.6")
         # PFAA-2 retardation factors (matching PFAA-1 columns)
         self.v_ret_trans2 = tk.StringVar(value="")
         self.v_ret_lowk2  = tk.StringVar(value="")
@@ -2802,7 +2553,7 @@ class REMFluorApp(tk.Tk):
         self.v_ret_lowk3  = tk.StringVar(value="")
         self.v_ret_trans4 = tk.StringVar(value="")
         self.v_ret_lowk4  = tk.StringVar(value="")
-        self.v_mol_diff   = tk.StringVar(value="")
+        self.v_mol_diff   = tk.StringVar(value="3.5E-10")
         # When user picks a different PFAA, recompute the retardation
         # cells from a default lookup (mirrors what the Excel
         # CalculrateRetardationFactors macro does — until we wire the
@@ -2831,27 +2582,24 @@ class REMFluorApp(tk.Tk):
         self._v_pfaa4_disp = _mk_disp(self.v_pfaa4, fallback="None")
 
         # Section 6 – Dispersivity (top header)
-        # v105: dropdown keeps its default; the dispersivity numbers start
-        # blank (they auto-fill if the user re-selects a heterogeneity
-        # preset, since the constructor value doesn't fire the trace).
         self.v_het     = tk.StringVar(value="Medium")
-        self.v_alpha_l = tk.StringVar(value="")
-        self.v_alpha_t = tk.StringVar(value="")
-        self.v_alpha_v = tk.StringVar(value="")
+        self.v_alpha_l = tk.StringVar(value="3.200")
+        self.v_alpha_t = tk.StringVar(value="0.040")
+        self.v_alpha_v = tk.StringVar(value="0.004")
         self.v_het.trace_add("write", self._on_het_change)
 
-        # Section 7  (v105: numeric source grids blank for clean start)
-        self.v_src_years = [tk.StringVar(value="") for _ in range(11)]
-        self.v_src_pfaa1 = [tk.StringVar(value="") for _ in range(11)]
-        self.v_src_pfaa2 = [tk.StringVar(value="") for _ in range(11)]
+        # Section 7
+        self.v_src_years = [tk.StringVar(value=str(1977 + i*10)) for i in range(11)]
+        self.v_src_pfaa1 = [tk.StringVar(value="1,600.00") for _ in range(11)]
+        self.v_src_pfaa2 = [tk.StringVar(value="0") for _ in range(11)]
         # Detailed-only Precursor 1 / Precursor 2 year-grid source values
         # (XLSM cols Z and AB on Detailed_2 sheet)
-        self.v_src_pre1  = [tk.StringVar(value="") for _ in range(11)]
-        self.v_src_pre2  = [tk.StringVar(value="") for _ in range(11)]
-        self.v_total_mass      = tk.StringVar(value="")
-        self.v_total_mass_p2   = tk.StringVar(value="")
-        self.v_total_mass_pre1 = tk.StringVar(value="")
-        self.v_total_mass_pre2 = tk.StringVar(value="")
+        self.v_src_pre1  = [tk.StringVar(value="1,600.00") for _ in range(11)]
+        self.v_src_pre2  = [tk.StringVar(value="0") for _ in range(11)]
+        self.v_total_mass      = tk.StringVar(value="#VALUE!")
+        self.v_total_mass_p2   = tk.StringVar(value="0.0")
+        self.v_total_mass_pre1 = tk.StringVar(value="#VALUE!")
+        self.v_total_mass_pre2 = tk.StringVar(value="0.0")
 
         # Section 8
         self.v_src_rem_yr   = tk.StringVar(value="")
@@ -2901,12 +2649,12 @@ class REMFluorApp(tk.Tk):
         # §5 Detailed-only Transformation Rate + Yield Factor
         # (XLSM K41/M41 = Precursor 1/2 transformation rates,
         #  K42/M42 = yield factors)
-        self.v_trans_rate_3   = tk.StringVar(value="")   # v105: clean start
+        self.v_trans_rate_3   = tk.StringVar(value="0.380")
         self.v_trans_rate_4   = tk.StringVar(value="")
-        self.v_yield_factor_3 = tk.StringVar(value="")   # v105: clean start
+        self.v_yield_factor_3 = tk.StringVar(value="0.750")
         self.v_yield_factor_4 = tk.StringVar(value="")
         self.v_psb_yr      = tk.StringVar(value="")
-        self.v_psb_width   = tk.StringVar(value="")      # v105: clean start
+        self.v_psb_width   = tk.StringVar(value="4")
         self.v_psb_load    = tk.StringVar(value="")
         self.v_psb_dist    = tk.StringVar(value="")
         self.v_psb_cells   = tk.StringVar(value="")
@@ -2936,25 +2684,26 @@ class REMFluorApp(tk.Tk):
                   self.v_psb_kf_1, self.v_psb_kf_2):
             v.trace_add("write", _maybe_enable_psb)
 
-        # Section 10  (v105: numeric calibration inputs blank; well NAME
-        # labels kept as a convenient template since they're text, not
-        # numbers — the user can overwrite them)
-        self.v_sample_yr = tk.StringVar(value="")
+        # Section 10
+        self.v_sample_yr = tk.StringVar(value="2025")
         self.v_mw_names  = [tk.StringVar(value=n) for n in
                             ["MW-504","FS-MW504","FS-MW505","FS-MW506",
                              "FS-MW507","FS-MW508","FS-MW509"]]
-        self.v_mw_conc   = [tk.StringVar(value="") for _ in range(7)]
-        self.v_mw_dist   = [tk.StringVar(value="") for _ in range(7)]
+        self.v_mw_conc   = [tk.StringVar(value=str(c)) for c in
+                            [2000, 1950, 1900, 1700, 1300, 750, 200]]
+        self.v_mw_dist   = [tk.StringVar(value=str(d)) for d in
+                            [10, 50, 100, 200, 300, 400, 500]]
         # v102: monitoring-well distances are lengths → convert on unit toggle
         for _d in self.v_mw_dist:
             self._register_length_var(_d, "length")
         self.v_mw_conc2  = [tk.StringVar(value="") for _ in range(7)]
 
         # Section 11
-        # v105: blank for clean start — the user fills it (or pastes an
-        # example).  If left blank at Run Model, generate_input_file falls
-        # back to V47=10 internally so the run still produces output.
-        self.v_see_every = tk.StringVar(value="")
+        # v87: was "100" — but with form defaults of yr_start=1977
+        # / yr_end=2077 (100-yr sim) and dt=0.1, see_every=100 forces
+        # npt=1000 and output only at t=100 (one dropdown year).
+        # Default 10 gives output every 10 yr → 11 dropdown options.
+        self.v_see_every = tk.StringVar(value="10")
 
         # Image cache (Tk PhotoImage refs must be held to avoid GC)
         self._figures = {}

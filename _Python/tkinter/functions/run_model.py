@@ -606,6 +606,25 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
 
 def run(app, parent=None) -> bool:
     """Run the model pipeline.  Returns True if launch succeeded."""
+    # Step 0 (v105): validation gate.  Refuse to run on a partially-filled
+    # form and tell the user EXACTLY which required inputs are missing for
+    # their current options — no silent fallback to built-in defaults.
+    validator = getattr(app, "_collect_missing_inputs", None)
+    if callable(validator):
+        try:
+            missing = validator()
+        except Exception:
+            missing = []
+        if missing:
+            try:
+                msg = app._format_missing_message(missing)
+            except Exception:
+                msg = ("Some required inputs are missing. Please complete "
+                       "the form before running the model.")
+            messagebox.showwarning("Run Model — Missing Inputs", msg,
+                                   parent=parent or app)
+            return False
+
     # Step 1: build input.inp from current state ---------------------------
     if not generate_input_file.run(app):
         return False
