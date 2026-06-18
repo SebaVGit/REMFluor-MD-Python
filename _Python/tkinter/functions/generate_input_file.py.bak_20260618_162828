@@ -454,19 +454,6 @@ def build_inp_data(state) -> dict:
         try: difflen = float(_ov)
         except (TypeError, ValueError): pass
 
-    # v106: scale the Darcy velocity by the transmissive-zone volume
-    # fraction before writing it to input.inp.  Only the transmissive
-    # fraction of the cross-section carries advective flow, so the
-    # effective Darcy velocity the solver uses is vd * volfrac.  This must
-    # come AFTER any calibration override of volfrac above.  When
-    # volfrac = 1.0 (no low-k zone / no heterogeneity_inputs.txt) it's a
-    # no-op, so existing fully-transmissive models are unaffected.
-    if vd is not None:
-        try:
-            vd = vd * float(volfrac)
-        except (TypeError, ValueError):
-            pass
-
     # high-K yield / decay
     yieldf2 = _safe_float(state.get("K42", 0)) if ipre == 1 else 0
     yieldf4 = (_safe_float(state.get("M42", 0)) if (ipre == 1 and ncomp == 2) else 0)

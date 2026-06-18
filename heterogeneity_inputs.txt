@@ -1,4 +1,4 @@
 Heterogeneity Calculator Results
-mdflag: 7
+mdflag: 2
 Transmissive Fraction of Model (-): 0.8
 Diffusion Length (m): 0.25
