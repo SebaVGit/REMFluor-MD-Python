@@ -19,7 +19,7 @@ lysource, lzsourcemax, lzsourcemin, vd (m/yr)
 6, 5, 3, 8
 ***High K zone transport terms
 porf, tortf, bulkden (g/ml), foc, alphax (m), alphay (m), alphaz (m)
-0.2, 1e-06, 1.7, 0.001, 3.2, 0.04, 0.004
+0.2, 1e-06, 1.7, 0.00434, 3.2, 0.04, 0.004
 ***High K zone organic carbon partition coeff
 ock(1), ock(2), ock(3), ock(4) (ml/g)
 0, 220.0, 0, 0.0
@@ -43,7 +43,7 @@ decayf(1), decayf(2), decayf(3), decayf(4) (1/yr)
 0, 0, 0, 0
 *** Low K zone transport terms
 mdflag, porm, tortm, focm, diff (m^2/yr), volfrac, difflen (m)
-2, 0.48, 0.56, 0.001, 0.011, 0.8, 0.25
+7, 0.48, 0.56, 0.006767, 0.011, 0.8, 0.25
 ***decay terms in Low K zone
 yieldm(2), yieldm(3), yieldm(4) -alwyas set yieldf(3)=0
 0, 0, 0

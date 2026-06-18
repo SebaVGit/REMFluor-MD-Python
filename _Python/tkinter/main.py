@@ -3642,9 +3642,11 @@ class REMFluorApp(tk.Tk):
     # SECTION 4 – HYDROGEOLOGIC / MATRIX DIFFUSION
     # ─────────────────────────────────────────────────────────────────────
     def _build_s4_hydrogeologic(self, parent):
-        # Whole section indented 0.25" from the left edge.
+        # v105: flush-left (padx 0) so Section 4 aligns with Sections 3 and 5,
+        # which pack their headers directly into the column with no indent.
+        # (Was indented 0.25" from the left edge, which made it look offset.)
         s4 = tk.Frame(parent, bg=BG_MAIN)
-        s4.pack(fill="x", padx=("0.25i", 0), pady=(0, 4))
+        s4.pack(fill="x", padx=0, pady=(0, 4))
 
         section_header(s4, "4",
                        "HYDROGEOLOGIC SETTING AND MATRIX DIFFUSION"

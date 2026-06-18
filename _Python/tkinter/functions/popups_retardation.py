@@ -313,7 +313,7 @@ def run(app, parent=None):
              ).grid(row=r, column=0, sticky="w", pady=(16, 4))
     r += 1
 
-    tk.Label(outer, text="foc (-)", font=FONT_LABEL, bg="#F0F0F0", anchor="w"
+    tk.Label(outer, text="focm (-)", font=FONT_LABEL, bg="#F0F0F0", anchor="w"
              ).grid(row=r, column=0, sticky="w", pady=4)
     _help_btn(outer, app, "fraction-organic-carbon-in-low-k"
               ).grid(row=r, column=1, padx=(8, 12))

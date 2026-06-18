@@ -421,12 +421,7 @@ def build_inp_data(state) -> dict:
     # low-K zone
     porm  = _safe_float(state.get("K27", 0.48))
     tortm = _safe_float(state.get("K28", 0.56))
-    # v107: read the low-k foc from retardation_inputs.txt ("Low-K Zone"
-    # foc) instead of hard-coding 0.001.  Previously the low-k foc the user
-    # entered in §4 (e.g. 0.0035) was ignored and input.inp always wrote
-    # 0.001 — mismatching the txt file.  Falls back to 0.001 if absent.
-    focm  = (retard_data.get('Low-K') or retard_data.get('Low-k')
-             or {}).get('foc', 0.001)
+    focm  = 0.001
     # v102: state.get returns the STORED value (which may be None or "")
     # rather than the second-arg default when the key exists.  After
     # Clear All Data, state["E44"] is None — passing that to _safe_float
@@ -773,18 +768,4 @@ def run(app) -> bool:
     wells_str = "\n".join(data['wells'])
 
     try:
-        with open(template_path) as f:
-            template = f.read()
-        filled = template.format(
-            source_zone_data=source_zone_str,
-            observation_wells=wells_str,
-            **{k: v for k, v in data.items() if k not in ('times','concs1','concs2',
-                                                            'concs3','concs4','wells')},
-        )
-        with open(output_path, 'w') as f:
-            f.write(filled)
-        print(f"input.inp written to: {output_path}")
-        return True
-    except Exception as e:
-        messagebox.showerror("Error", f"Could not write input.inp:\n{e}")
-        return False
+        with open(template
