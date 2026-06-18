@@ -2389,6 +2389,12 @@ class REMFluorApp(tk.Tk):
             self.v_alpha_v.set("")
             return
         al, at, av = preset
+        # v105: presets are defined in METRES (matching popups_dispersivity).
+        # If §1 units are feet, convert so the value matches the unit label
+        # shown beside the cell.
+        if self.v_units.get() == "feet":
+            FT_PER_M = 1.0 / 0.3048
+            al, at, av = al * FT_PER_M, at * FT_PER_M, av * FT_PER_M
         self.v_alpha_l.set(f"{al:.3f}")
         self.v_alpha_t.set(f"{at:.3f}")
         self.v_alpha_v.set(f"{av:.4f}")
