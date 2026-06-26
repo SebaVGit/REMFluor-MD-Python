@@ -1,0 +1,54 @@
+Additional Information Not in input.inp
+==================================================
+
+Site Location and ID:,Test Case 1
+Date:,2026-03-01 00:00:00
+Thickness:,5.0
+Source Width:,60.0
+Model X Size:,500.0
+Model Y Size:,50.0
+Model Z Size:,10.0
+Start Year:,1977.0
+End Year:,2077.0
+
+Source Treatment Start Year:,None
+Source Concentration Reduction:,None
+
+Sample Year:,2025.0
+Sample Event:,
+
+Unit Flag (AD1):,2
+Dispersivity Flag (AC1):,2
+
+Model Version:,Simple
+Units:,meters
+Heterogeneity:,Medium
+Low-k Zone Media:,Clay
+PFAA 1:,PFOS
+PFAA 2:,None
+Precursor 1:,PFAA 1-able
+Precursor 2:,PFAA 2-able
+PSB Kf Unit:,(ug/kg)(ug/L)^(-a)
+
+PSB Loading (AH28):,None
+
+Bulk Darcy Velocity (vd):,10.0
+Effective Porosity (porf):,0.2
+
+Monitoring Well Names (Simple Version):
+Well 1:,MW-504
+Well 2:,FS-MW504
+Well 3:,FS-MW505
+Well 4:,FS-MW506
+Well 5:,FS-MW507
+Well 6:,FS-MW508
+Well 7:,FS-MW509
+
+Monitoring Well Concentrations (Simple Version):
+Well 1:,2000,
+Well 2:,1950,
+Well 3:,1900,
+Well 4:,1700,
+Well 5:,1300,
+Well 6:,750,
+Well 7:,200,

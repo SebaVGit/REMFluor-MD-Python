@@ -165,6 +165,8 @@ INPUT_TXT_FILES = [
     "calibration_inputs.txt",
     "cellsize_input.txt",
     "gwvelocity_inputs.txt",   # written by §3 GW Velocity Calculator
+    "dispersivity_inputs.txt", # v106: written by §6 Save Data (exact alpha)
+    "psb_inputs.txt",          # v106: written by §9 Save Data (raw Kf+unit)
     "longevity_inputs.txt",    # written by §9 Simple CAC Longevity Tool
     "optimal_model.txt",       # written by §calibration Save Optimal Model
     "best_calib.json",         # v90: written by cali_1 with best_x + RMSLE
@@ -284,6 +286,19 @@ class AppState:
                     idx = int(idx_s)
                     if idx < len(lst):
                         self.set(addr, _parse(lst[idx].get()))
+
+        # v106: §5 General Molecular Diffusion Coefficient (m²/s).
+        # E44 is deliberately NOT in CELL_MAP (push() must not clobber the
+        # trace-managed cell on load), but it MUST be captured here so a
+        # value shown in the §5 cell — whether the tabulated default or a
+        # user override — actually flows into input.inp.  Without this,
+        # generate_input_file always fell back to the 3.5e-10 default.
+        mol = getattr(app, 'v_mol_diff', None)
+        if mol is not None:
+            try:
+                self.set("E44", _parse(mol.get()))
+            except Exception:
+                pass
 
         # Extra flags not in CELL_MAP
         ver = getattr(app, 'v_model_version', None)

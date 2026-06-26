@@ -705,13 +705,39 @@ def run_script(macro_name, extra_args=None):
                         add_lines.append(f"Well {i}:,{nm.get()}")
                     add_lines.append("")
                     add_lines.append("Monitoring Well Concentrations (Simple Version):")
+                    # v106: save BOTH PFAA-1 (v_mw_conc) and PFAA-2
+                    # (v_mw_conc2) §10 concentrations as "Well i:,c1,c2".
+                    # inp_parser.parse_additional_info splits on the comma
+                    # into V34.. (PFAA1) and X34.. (PFAA2); previously only
+                    # c1 was written so the PFAA-2 column was lost on Load.
+                    _conc2 = getattr(_app_ref, "v_mw_conc2", [])
                     for i, cv in enumerate(_app_ref.v_mw_conc, 1):
-                        add_lines.append(f"Well {i}:,{cv.get()},")
+                        c2 = ""
+                        if i - 1 < len(_conc2):
+                            try: c2 = _conc2[i - 1].get()
+                            except Exception: c2 = ""
+                        add_lines.append(f"Well {i}:,{cv.get()},{c2}")
                     add_path = os.path.join(dst, "store_info_additional_input.txt")
                     with open(add_path, "w", encoding="utf-8") as fh:
                         fh.write("\n".join(add_lines) + "\n")
                 except Exception as exc:
                     print(f"[Save_Data] additional info write failed: {exc}")
+                # Step 3b (v106): write dedicated §6 dispersivity + §9 PSB
+                # sidecars so Save → Load restores those values EXACTLY
+                # (custom "Enter Your Own Value" dispersivity + raw PSB
+                # Freundlich Kf with its original unit dropdown).  Written
+                # to work_dir (picked up by the generic copy below) AND
+                # directly to dst when dst differs.
+                try:
+                    from functions import sidecars as _sc
+                    _sc.write_dispersivity(_app_ref, work_dir)
+                    _sc.write_psb(_app_ref, work_dir)
+                    if os.path.normcase(os.path.realpath(dst)) != \
+                       os.path.normcase(os.path.realpath(work_dir)):
+                        _sc.write_dispersivity(_app_ref, dst)
+                        _sc.write_psb(_app_ref, dst)
+                except Exception as exc:
+                    print(f"[Save_Data] sidecar write failed: {exc}")
                 # Step 4: copy input.inp + every sidecar listed in
                 # INPUT_TXT_FILES from work_dir to dst.  v102: handle
                 # three edge cases that broke the previous version:
@@ -2242,6 +2268,42 @@ class REMFluorApp(tk.Tk):
             print(f"Warning reading retardation_inputs.txt: {e}")
         return rho_b, foc_t, foc_l, koc_list
 
+    # ── §5 General Molecular Diffusion Coefficient (v_mol_diff / E44) ──
+    def _set_mol_diff(self, value):
+        """Set v_mol_diff programmatically WITHOUT tripping the
+        user-edit flag (see _on_mol_diff_edit)."""
+        self._mol_diff_programmatic = True
+        try:
+            self.v_mol_diff.set(value)
+        finally:
+            self._mol_diff_programmatic = False
+
+    def _on_mol_diff_edit(self, *_):
+        """Trace on v_mol_diff — a real keystroke (not one of our own
+        programmatic sets) flags a manual override that survives until
+        the PFAA-1 species changes."""
+        if getattr(self, "_building", False):
+            return
+        if getattr(self, "_mol_diff_programmatic", False):
+            return
+        self._mol_diff_user_edited = True
+
+    def _update_mol_diff(self, species, diff, has_porosity):
+        """Refill the §5 diffusion cell from the lookup table for the
+        current PFAA-1 *species*, EXCEPT keep a manual override.  When
+        the species changes the override is dropped and the new
+        tabulated value (``diff``) is written."""
+        if species != getattr(self, "_mol_diff_last_species", None):
+            # PFAA-1 species changed → revert to the table value.
+            self._mol_diff_last_species = species
+            self._mol_diff_user_edited = False
+        if getattr(self, "_mol_diff_user_edited", False):
+            return                       # preserve the user's typed value
+        if has_porosity and diff is not None:
+            self._set_mol_diff(f"{diff:.2E}")
+        else:
+            self._set_mol_diff("")
+
     def _on_pfaa_change(self, *_):
         """Recompute Section 5 retardation.
         v105: skipped while the UI is being built so the §5 black cells
@@ -2296,8 +2358,10 @@ class REMFluorApp(tk.Tk):
                 ret_t.set(""); ret_l.set("")
                 # v102: also blank v_mol_diff when PFAA-1 is unset so
                 # Clear All Data wipes the diffusion coefficient cell.
+                # v106: route through _update_mol_diff so a manual
+                # override is still honored / reverted on species change.
                 if idx == 0:
-                    try: self.v_mol_diff.set("")
+                    try: self._update_mol_diff(species, diff, G22 > 0)
                     except Exception: pass
                 continue
             # v105: these are CALCULATED (black) display cells.  Retardation
@@ -2319,11 +2383,9 @@ class REMFluorApp(tk.Tk):
             # it blank until §5 is actually being configured (transmissive
             # porosity entered) so the clean-start form stays empty.
             if idx == 0:
-                if G22 > 0 and diff is not None:
-                    self.v_mol_diff.set(f"{diff:.2E}")
-                else:
-                    try: self.v_mol_diff.set("")
-                    except Exception: pass
+                # v106: tabulated value unless the user typed an override
+                # (which survives until the PFAA-1 species changes).
+                self._update_mol_diff(species, diff, G22 > 0)
 
     # ── Decimal-formatting helpers ──────────────────────────────
     @staticmethod
@@ -2378,6 +2440,11 @@ class REMFluorApp(tk.Tk):
         """Heterogeneity radio changed → update longitudinal/transverse/vertical."""
         # v105: don't auto-fill dispersivity during UI build (clean start).
         if getattr(self, "_building", False):
+            return
+        # v106: suppressed while Load Data restores custom dispersivity
+        # from dispersivity_inputs.txt, so the loaded alpha cells aren't
+        # re-derived from a preset / cleared by this trace.
+        if getattr(self, "_disp_loading", False):
             return
         preset = self._DISPERSIVITY_PRESETS.get(self.v_het.get())
         if preset is None:
@@ -2809,6 +2876,17 @@ class REMFluorApp(tk.Tk):
         self.v_ret_trans4 = tk.StringVar(value="")
         self.v_ret_lowk4  = tk.StringVar(value="")
         self.v_mol_diff   = tk.StringVar(value="")
+        # v106: §5 General Molecular Diffusion Coefficient may be manually
+        # overridden by the user.  The override sticks until the PFAA-1
+        # species changes, then reverts to that species' tabulated value.
+        #   _mol_diff_user_edited  — True once the user types a value
+        #   _mol_diff_last_species — PFAA-1 species the cell was filled for
+        #   _mol_diff_programmatic — guard so OUR .set() calls don't count
+        #                            as a user edit
+        self._mol_diff_user_edited = False
+        self._mol_diff_last_species = None
+        self._mol_diff_programmatic = False
+        self.v_mol_diff.trace_add("write", self._on_mol_diff_edit)
         # When user picks a different PFAA, recompute the retardation
         # cells from a default lookup (mirrors what the Excel
         # CalculrateRetardationFactors macro does — until we wire the
@@ -2946,9 +3024,10 @@ class REMFluorApp(tk.Tk):
         # labels kept as a convenient template since they're text, not
         # numbers — the user can overwrite them)
         self.v_sample_yr = tk.StringVar(value="")
-        self.v_mw_names  = [tk.StringVar(value=n) for n in
-                            ["MW-504","FS-MW504","FS-MW505","FS-MW506",
-                             "FS-MW507","FS-MW508","FS-MW509"]]
+        # v106: start blank — previously seeded with example well names
+        # ("MW-504", "FS-MW504", …) which made §10 look pre-populated on a
+        # clean start.  User types their own monitoring-well names.
+        self.v_mw_names  = [tk.StringVar(value="") for _ in range(7)]
         self.v_mw_conc   = [tk.StringVar(value="") for _ in range(7)]
         self.v_mw_dist   = [tk.StringVar(value="") for _ in range(7)]
         # v102: monitoring-well distances are lengths → convert on unit toggle
@@ -4496,9 +4575,27 @@ class REMFluorApp(tk.Tk):
         #     mmol/kg   m = MW × 1e3
         # `a` and `MW` come from row 1 / row 3 of the same column.
         def _to_float(var, default=None):
+            # v106: accept BOTH US ("1,234.56" / "1,227,951") and European
+            # ("1.234,56" / "0,7") number formats so the converted-Kf cell
+            # fills regardless of how the user types the value.
             try:
-                s = (var.get() or "").strip().replace(",", "")
-                return float(s) if s else default
+                s = (var.get() or "").strip()
+                if not s:
+                    return default
+                if "." in s and "," in s:
+                    # Both separators present → the LAST one is the decimal.
+                    if s.rfind(",") > s.rfind("."):     # European 1.234,56
+                        s = s.replace(".", "").replace(",", ".")
+                    else:                                # US 1,234.56
+                        s = s.replace(",", "")
+                elif "," in s:
+                    # Only commas: grouped thousands (1,600 / 1,227,951) vs
+                    # a European decimal (0,7).
+                    if re.fullmatch(r"\d{1,3}(,\d{3})+", s):
+                        s = s.replace(",", "")           # US thousands
+                    else:
+                        s = s.replace(",", ".")          # European decimal
+                return float(s)
             except (ValueError, AttributeError):
                 return default
 
@@ -4526,18 +4623,30 @@ class REMFluorApp(tk.Tk):
                 a   = _to_float(var_a)
                 kf  = _to_float(var_kf)
                 mw  = _to_float(var_mw)
-                if a is None or kf is None:
+                if kf is None:
                     var_out.set("")
                     continue
                 m = _unit_prefix_factor(unit, mw)
                 if m is None:
                     var_out.set("")
                     continue
-                try:
-                    conv = kf * (m ** (1 - a))
-                except (ValueError, OverflowError, ZeroDivisionError):
-                    var_out.set("")
-                    continue
+                # v106: the exponent `a` only changes the result when the
+                # unit prefix m != 1 (i.e. non-ug units).  For the default
+                # (ug/kg)(ug/L)^(-a) unit, m == 1 so the converted Kf equals
+                # the entered Kf — fill it as soon as Kf is present, even if
+                # the user hasn't typed `a` yet.  Other units still need `a`.
+                if a is None:
+                    if abs(m - 1.0) < 1e-12:
+                        conv = kf
+                    else:
+                        var_out.set("")
+                        continue
+                else:
+                    try:
+                        conv = kf * (m ** (1 - a))
+                    except (ValueError, OverflowError, ZeroDivisionError):
+                        var_out.set("")
+                        continue
                 # Format with thousands separators — never scientific.
                 # Whole numbers display without decimals ("1,227,951"),
                 # otherwise up to 4 decimals are kept and trailing zeros

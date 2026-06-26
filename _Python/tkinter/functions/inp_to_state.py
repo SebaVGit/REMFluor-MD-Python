@@ -133,7 +133,17 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
             state.set("AC82", n_cells)
             state.set("AH29", n_cells)
 
-        psb_load = additional.get('psb_loading')
+        # v106 FIX: psb_loading from store_info text can be a STRING
+        # (e.g. "None" or a comma-grouped number).  Coerce to float BEFORE
+        # any arithmetic — previously "0 / psb_load" with a str divisor
+        # raised "unsupported operand type(s) for /: 'int' and 'str'" and
+        # aborted the whole Load.
+        _psb_raw = additional.get('psb_loading')
+        try:
+            psb_load = (float(str(_psb_raw).replace(",", "").strip())
+                        if _psb_raw not in (None, "") else None)
+        except (TypeError, ValueError):
+            psb_load = None
         if psb_load is not None:
             # PSB Loading 'fcac' — UI cell AA82 displays the value as
             # a *percentage* (e.g. 0.0024 fraction → 0.24 in the §9

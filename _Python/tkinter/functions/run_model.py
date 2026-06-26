@@ -587,17 +587,30 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
         except Exception:
             pass
 
-        msg_short = (f"Finished: {mins:02d}:{secs:02d}\n"
-                     f"Dashboard FAILED (exit {rc}).\nSee: {log_path}")
+        # v106: user-facing wording.  Lead with what happened in plain
+        # terms; keep the exit code + log tail lower down for whoever
+        # needs to debug.  Avoid raw "exit 1 / traceback" as the headline.
+        msg_short = (f"Model finished in {mins:02d}:{secs:02d}.\n"
+                     "The results dashboard couldn't open.\n"
+                     "See the pop-up for details.")
         msg_full = (
-            f"Dashboard process exited with code {rc}.\n\n"
+            "The model run finished, but the results dashboard could "
+            "not be opened.\n\n"
+            "This usually means the model's output files could not be "
+            "read — often because the model did not finish producing a "
+            "complete set of results.\n\n"
+            "What to try:\n"
+            "  1. Run the model again.\n"
+            "  2. If it keeps happening, send the log file below to "
+            "support.\n\n"
             f"Log file:\n{log_path}\n\n"
-            f"--- last lines of log ---\n{tail or '(empty log)'}"
+            f"--- technical details (dashboard exit code {rc}) ---\n"
+            f"{tail or '(empty log)'}"
         )
         try:
             root.after(0, lambda: label.config(text=msg_short))
             root.after(0, lambda: messagebox.showerror(
-                "Dashboard Error", msg_full, parent=root))
+                "Results Dashboard Could Not Open", msg_full, parent=root))
         except Exception:
             pass
 

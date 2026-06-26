@@ -53,6 +53,10 @@ def run(app) -> list:
     try:
         if hasattr(app, 'v_mol_diff'):
             app.v_mol_diff.set("")
+        # v106: drop any manual diffusion override + species memory so the
+        # cell re-auto-fills from the table once the user picks a §5 PFAA-1.
+        app._mol_diff_user_edited = False
+        app._mol_diff_last_species = None
     except Exception:
         pass
 
