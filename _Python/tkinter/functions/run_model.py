@@ -46,7 +46,7 @@ _PORT_FILE = "dashboard_port.txt"
 
 
 def _port_file_path() -> str:
-    return os.path.join(_project_dir(), _PORT_FILE)
+    return os.path.join(_run_dir(), _PORT_FILE)
 
 
 def _recorded_dashboard_port():
@@ -66,6 +66,26 @@ def _project_dir() -> str:
         return os.path.dirname(os.path.abspath(sys.executable))
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.abspath(os.path.join(here, "..", "..", ".."))
+
+
+def _run_dir() -> str:
+    """The ACTIVE model folder for this run's inputs + outputs.
+
+    v106: defaults to the app folder (_project_dir()), but once the user
+    saves a model with Save Data the state work_dir points at that saved
+    folder — so each model's input.inp + .out results + dashboard read/
+    write in ITS OWN folder, keeping things organized and preventing one
+    model's run from overwriting another's.  Bundled read-only assets
+    (remfluor_v8a.exe, template.inp) are still resolved via the app
+    folder / PyInstaller bundle, so moving the run dir is safe."""
+    try:
+        from .state import get_state
+        wd = getattr(get_state(), "work_dir", "") or ""
+        if wd and os.path.isdir(wd):
+            return wd
+    except Exception:
+        pass
+    return _project_dir()
 
 
 def _bundle_dir() -> str:
@@ -193,7 +213,10 @@ def _cleanup_dashboard_on_exit():
 
 
 def _xlsm_path() -> str:
-    return os.path.join(_project_dir(),
+    # Only used to hand the dashboard a DIRECTORY to chdir into (it reads
+    # the .out files + dashboard_state.json from there).  Point it at the
+    # active run dir so the dashboard reads the current model's results.
+    return os.path.join(_run_dir(),
                         "REMFluor-MD Interface Storyboard v2.6.xlsm")
 
 
@@ -429,7 +452,7 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
     """
     def _worker():
         script = _dashboard_script()
-        proj   = _project_dir()
+        proj   = _run_dir()
         # Timestamped log per run so a leftover OS handle (e.g. after a
         # crash) can never lock the fixed name and block deletion/rebuild.
         # _prune_dashboard_logs() trims old ones.  See _prune_dashboard_logs.
@@ -617,6 +640,92 @@ def _launch_dashboard_async(workbook_path: str, sheet_name: str,
     threading.Thread(target=_worker, daemon=False).start()
 
 
+# Result files the Plotly-Dash dashboard reads from the project dir.
+# REMFluor-MD.out + dashboard_state.json are REQUIRED; the rest enrich
+# the plots (observation wells, mass discharge, plume mass).
+DASHBOARD_RESULT_FILES = [
+    "REMFluor-MD.out",
+    "discharge.out",
+    "plume_mass.out",
+    "output.out",
+    "dashboard_state.json",
+]
+DASHBOARD_RESULT_GLOBS = ["obs_well*.out"]
+
+
+def launch_dashboard(parent=None, sheet_name="Simple"):
+    """Launch the Plotly-Dash dashboard for whatever result files are
+    already sitting in the project dir — WITHOUT re-running the solver.
+
+    Used by the §11 "Visualize Results" button.  Returns
+    (ok: bool, message: str)."""
+    proj = _run_dir()
+    main_out = os.path.join(proj, "REMFluor-MD.out")
+    if not os.path.exists(main_out):
+        return False, ("No model results found to visualize in:\n"
+                       f"{proj}\n\n(REMFluor-MD.out is missing.)")
+
+    py = sys.executable or "python"
+    ok, missing = _check_dashboard_imports(py)
+    if not ok:
+        pip_names = {"win32com.client": "pywin32", "pythoncom": "pywin32"}
+        pkgs = sorted({pip_names.get(m, m) for m in missing})
+        return False, ("The dashboard cannot start — missing Python "
+                       f"modules: {', '.join(missing)}\n\n"
+                       f"Run:  pip install {' '.join(pkgs)}")
+
+    workbook_path = _xlsm_path()
+    if getattr(sys, "frozen", False):
+        cmd = [py, "--mode=dashboard", workbook_path, sheet_name]
+    else:
+        script = _dashboard_script()
+        if not os.path.exists(script):
+            return False, f"Dashboard script not found:\n{script}"
+        cmd = [py, "-u", script, workbook_path, sheet_name]
+
+    _kill_previous_dashboard()
+    time.sleep(0.5)
+
+    log_path = os.path.join(
+        proj, f"dashboard_{time.strftime('%Y%m%d_%H%M%S')}.log")
+    try:
+        _prune_dashboard_logs(proj, keep=10)
+    except Exception:
+        pass
+    try:
+        log_fh = open(log_path, "w", encoding="utf-8", errors="replace")
+    except Exception:
+        log_fh = None
+
+    kwargs = {
+        "cwd":    proj,
+        "stdout": log_fh if log_fh else subprocess.DEVNULL,
+        "stderr": subprocess.STDOUT,
+        "stdin":  subprocess.DEVNULL,
+    }
+    if os.name == "nt":
+        kwargs["creationflags"] = 0x00000200
+    else:
+        kwargs["start_new_session"] = True
+
+    try:
+        proc = subprocess.Popen(cmd, **kwargs)
+        global _LAST_DASHBOARD_PROC
+        _LAST_DASHBOARD_PROC = proc
+    except Exception as e:
+        if log_fh:
+            try: log_fh.close()
+            except Exception: pass
+        return False, f"Failed to launch dashboard:\n{e}\n\nLog: {log_path}"
+    finally:
+        if log_fh:
+            try: log_fh.close()
+            except Exception: pass
+
+    return True, ("Dashboard launching — it will open in your default "
+                  "browser in a few seconds.")
+
+
 def run(app, parent=None) -> bool:
     """Run the model pipeline.  Returns True if launch succeeded."""
     # Step 0 (v105): validation gate.  Refuse to run on a partially-filled
@@ -642,10 +751,14 @@ def run(app, parent=None) -> bool:
     if not generate_input_file.run(app):
         return False
 
-    project = _project_dir()
-    # v100: input.inp is a write target → project (writable).
+    # v106: run in the ACTIVE model folder (work_dir) so input.inp and the
+    # .out outputs land in the saved model's own folder, not the shared app
+    # folder.  generate_input_file already wrote input.inp to work_dir, so
+    # this keeps the solver cwd consistent with where input.inp lives.
+    project = _run_dir()
+    # v100: input.inp is a write target → run dir (writable).
     # remfluor_v8a.exe is a bundled binary → resolve via _resolve_asset
-    # which checks project (so a user-supplied override works) then
+    # which checks the app folder (so a user-supplied override works) then
     # falls back to the PyInstaller bundle (sys._MEIPASS).
     inp_path = os.path.join(project, "input.inp")
     exe_path = _resolve_asset("remfluor_v8a.exe")

@@ -80,6 +80,11 @@ def write_dispersivity(app, folder):
         f"Longitudinal alphax:,{_g(app, 'v_alpha_l')}",
         f"Transverse alphay:,{_g(app, 'v_alpha_t')}",
         f"Vertical alphaz:,{_g(app, 'v_alpha_v')}",
+        # §5 General Molecular Diffusion Coefficient (m²/s) — stored here
+        # for an EXACT round-trip.  The input.inp path rounds it to 3
+        # decimals in m²/yr and the §5 PFAA trace re-derives it from the
+        # species table, so a user override was being lost on Load.
+        f"Molecular Diffusion m2s:,{_g(app, 'v_mol_diff')}",
     ]
     with open(os.path.join(folder, DISPERSIVITY_FILE), "w",
               encoding="utf-8") as fh:
@@ -100,6 +105,20 @@ def read_dispersivity(app, folder):
     _s(app, "v_alpha_l", d.get("Longitudinal alphax", ""))
     _s(app, "v_alpha_t", d.get("Transverse alphay", ""))
     _s(app, "v_alpha_v", d.get("Vertical alphaz", ""))
+    # §5 General Molecular Diffusion Coefficient — restore the exact saved
+    # value and flag it as a manual override so the §5 PFAA trace
+    # (_on_pfaa_change → _update_mol_diff) keeps it instead of replacing it
+    # with the species default.  last_species is pinned to the loaded
+    # PFAA-1 so the value sticks until the user actually changes species.
+    md = d.get("Molecular Diffusion m2s")
+    if md not in (None, ""):
+        _s(app, "v_mol_diff", md)
+        try:
+            app._mol_diff_user_edited = True
+            pf = getattr(app, "v_pfaa1", None)
+            app._mol_diff_last_species = pf.get() if pf is not None else None
+        except Exception:
+            pass
     return True
 
 

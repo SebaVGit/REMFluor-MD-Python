@@ -78,6 +78,7 @@ try:
         clear_for_restore,
         restore_from_example,
         restore_from_saved,
+        visualize_saved,
         generate_input_file,
         popups_retardation,
         popups_source_remediation,
@@ -597,6 +598,18 @@ def run_script(macro_name, extra_args=None):
             restore_from_saved.run(_app_ref)
             return
 
+        if macro_name == "Visualize_Saved_Results":
+            # §11: pick a folder with a previous run's output files,
+            # stage them into the project dir, and open the dashboard
+            # WITHOUT re-running the solver.
+            try:
+                visualize_saved.run(_app_ref)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Visualize Saved Results",
+                    f"Could not visualize saved results:\n{exc}")
+            return
+
         if macro_name == "CalculrateRetardationFactors":
             # In-app port of Source_Py/popups_retardation.py — no .exe, no
             # xlwings/openpyxl.  Opens a Toplevel popup, persists Koc/foc/
@@ -639,6 +652,20 @@ def run_script(macro_name, extra_args=None):
                 )
                 if not dst:
                     return  # user cancelled
+                # v106: warn before overwriting an existing saved model so
+                # the user doesn't clobber a different model by mistake.
+                # (Load stays read-only; only Save writes — so the original
+                # loaded folder is never touched unless saved over here.)
+                if os.path.exists(os.path.join(dst, "input.inp")):
+                    if not messagebox.askyesno(
+                        "Overwrite Existing Model?",
+                        "This folder already contains a saved model:\n"
+                        f"{dst}\n\n"
+                        "Saving will overwrite its input.inp, sidecars and "
+                        "results.\n\nOverwrite?\n"
+                        "(Choose No to cancel, then pick a different folder "
+                        "to keep both models.)"):
+                        return
                 os.makedirs(dst, exist_ok=True)
                 # Step 3: write store_info_additional_input.txt next to
                 # input.inp (UI-only fields not in the .inp).
@@ -678,8 +705,10 @@ def run_script(macro_name, extra_args=None):
                         f"End Year:,{_app_ref.v_yr_end.get()}", "",
                         f"Source Treatment Start Year:,{_app_ref.v_src_rem_yr.get() or 'None'}",
                         f"Source Concentration Reduction:,{_app_ref.v_src_conc_red.get() or 'None'}", "",
-                        f"Sample Year:,{_app_ref.v_sample_yr.get()}",
-                        f"Sample Event:,{getattr(_app_ref, 'v_event', tk.StringVar()).get()}", "",
+                        f"Sample Year:,{_app_ref.v_sample_yr.get()}", "",
+                        # v106: removed the vestigial "Sample Event" line —
+                        # there is no v_event field in the app, so it only
+                        # ever wrote a blank and was never read back on load.
                         f"Unit Flag (AD1):,"
                         f"{'1' if _app_ref.v_units.get()=='feet' else '2'}",
                         f"Dispersivity Flag (AC1):,2", "",
@@ -807,6 +836,40 @@ def run_script(macro_name, extra_args=None):
                         continue
                     if _copy_one(src, os.path.join(dst, fname)):
                         copied.append(fname)
+                # v106: also save the model RESULT files (.out + the
+                # dashboard JSON) so the saved folder can later be opened
+                # with §11 "Visualize Saved Results".  These only exist
+                # after a Run Model; skip silently if the user hasn't run
+                # yet.  obs_well*.out is globbed.
+                try:
+                    import glob as _glob
+                    from functions import run_model as _rm
+                    _result_names = list(_rm.DASHBOARD_RESULT_FILES)
+                    for _pat in _rm.DASHBOARD_RESULT_GLOBS:
+                        _result_names += [os.path.basename(p) for p in
+                                          _glob.glob(os.path.join(work_dir, _pat))]
+                    for fname in _result_names:
+                        src = os.path.join(work_dir, fname)
+                        if not os.path.exists(src):
+                            continue
+                        if same_folder:
+                            if fname not in copied:
+                                copied.append(fname)
+                            continue
+                        if _copy_one(src, os.path.join(dst, fname)) \
+                                and fname not in copied:
+                            copied.append(fname)
+                except Exception as exc:
+                    print(f"[Save_Data] result-file copy failed: {exc}")
+                # v106: adopt the saved folder as the ACTIVE working folder
+                # so subsequent Run Model writes its input.inp + .out results
+                # here, and Visualize Results reads from here — one folder
+                # per model.  generate_input_file / popups / run_model all
+                # key off state.work_dir, so this is the single switch.
+                try:
+                    state.work_dir = dst
+                except Exception as exc:
+                    print(f"[Save_Data] could not set work_dir: {exc}")
                 # User-facing summary
                 same_note = ("\n(destination is the same as the work "
                              "folder — existing files left in place)"
@@ -815,6 +878,9 @@ def run_script(macro_name, extra_args=None):
                     "Save Data",
                     f"Saved {len(copied)} file(s) to:\n{dst}{same_note}\n\n"
                     + "\n".join(f"  {f}" for f in copied)
+                    + "\n\nThis is now your active model folder — Run Model "
+                      "will write results here, and Visualize Results will "
+                      "read from here."
                 )
             except Exception as exc:
                 messagebox.showerror("Save Data",
@@ -5059,11 +5125,15 @@ class REMFluorApp(tk.Tk):
         actfr = tk.Frame(bar, bg=BTN_FILL_BLUE)
         actfr.pack(side="left", padx=(32, 0))
         cells = [
-            (0, 0, "Authors",        "Authors",       BTN_FILL_GREEN, FG_BTN_GREEN),
-            (0, 1, "Load Data",      "Load_Data",     "#FFFFFF",      FG_BTN_NAVY),
-            (0, 2, "Save Data",      "Save_Data",     BTN_FILL_GREEN, FG_BTN_GREEN),
-            (1, 1, "Clear All Data", "Clear_Data",    BTN_FILL,       FG_BTN_NAVY),
-            (1, 2, "Paste Example",  "Paste_Example", BTN_FILL,       FG_BTN_NAVY),
+            (0, 0, "Authors",          "Authors",                 BTN_FILL_GREEN, FG_BTN_GREEN),
+            (0, 1, "Load Data",        "Load_Data",               "#FFFFFF",      FG_BTN_NAVY),
+            (0, 2, "Save Data",        "Save_Data",               BTN_FILL_GREEN, FG_BTN_GREEN),
+            # v106: new — visualize the output of a previous run.  Sits in
+            # the previously-empty slot directly below "Authors".  Styled
+            # like "Load Data" (white fill, navy text).
+            (1, 0, "Visualize\nResults", "Visualize_Saved_Results", "#FFFFFF", FG_BTN_NAVY),
+            (1, 1, "Clear All Data",   "Clear_Data",              BTN_FILL,       FG_BTN_NAVY),
+            (1, 2, "Paste Example",    "Paste_Example",           BTN_FILL,       FG_BTN_NAVY),
         ]
         for r, c, txt, macro, bg, fg in cells:
             make_btn(actfr, txt, macro,

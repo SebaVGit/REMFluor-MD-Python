@@ -1,6 +1,6 @@
 ***flags for choosing components to be simulated and presence of CAC barrier
 ncomp, ipre, iwall, iTVD
-1, 0, 2, 1
+1, 0, 0, 1
 ***source zone concentrations at 11 times
 stime(n) (yr), czero(1,n), czero(2,n), czero(3,n), czero(4,n) (ug/l)
 0, 0, 1600, 0, 0
@@ -28,10 +28,10 @@ x1, x2 (m)
 0, 0
 ***length of period 1 and period 2 for plume remediation
 tplume1, tplume2 (yr)
-0, 700
+0, 0
 ***Freundlich adsorption parameters for sorption barrier, exponent
 fra(1), fra(2), fra(3), fra(4),
-0, 0.3, 0, 0
+0, 0, 0, 0
 ***Freundlich adsorption fcac*Kf, units (ug/kg)(ug/L)**(-a)
 fcackf(1), fcackf(2), fcackf(3), fcackf(4)
 0, 0, 0, 0
@@ -52,7 +52,7 @@ decaym(1), decaym(2), decaym(3), decaym(4) (1/yr)
 0, 0, 0, 0
 ***x-direction grid
 xmax (m), nx1, nxpsb, nx2
-500, 0, 0, 100
+500, 100, 0, 0
 ***y-direction locations
 dy (m), ny
 5, 10
