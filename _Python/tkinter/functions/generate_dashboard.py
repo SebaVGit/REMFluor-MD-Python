@@ -909,7 +909,7 @@ def main(workbook_path=None, sheet_name=None):
                 ], className="control-group", id="y-selection"),
                 
                 html.Div([
-                    html.Label("📍 Z Coordinate", className="control-label", style={"fontSize": "2.0rem"}),
+                    html.Label("📍 Depth from Top", className="control-label", style={"fontSize": "2.0rem"}),
                     html.Div([
                         dcc.Dropdown(
                             options=[{"label": f"{z * length_display_scale:.1f} {length_unit_label}", "value": z} for z in z_options],
@@ -1239,7 +1239,7 @@ def main(workbook_path=None, sheet_name=None):
                         line=dict(width=2, color=colors[i % len(colors)])
                     ),
                     hovertemplate=f'<b>{display_name}</b><br>' +
-                                f'Concentration: %{{x:.3f}} μg/L<br>' +
+                                f'Concentration: %{{x:.4f}} μg/L<br>' +
                                 # v102: depth unit follows §1 feet/meters
                                 f'Depth: %{{y:.2f}} {length_unit_label}<br>' +
                                 '<extra></extra>'
@@ -1288,7 +1288,7 @@ def main(workbook_path=None, sheet_name=None):
                     ),
                     hovertemplate=f'<b>{pfas_name}</b><br>' +
                                     f'{xlabel}: %{{x}}<br>' +
-                                    'Concentration: %{y:.3f} μg/L<br>' +
+                                    'Concentration: %{y:.4f} μg/L<br>' +
                                     '<extra></extra>'
                 ))
                 color_idx += 1
@@ -1525,7 +1525,7 @@ def main(workbook_path=None, sheet_name=None):
                                 ),
                                 hovertemplate=f'<b>{well} - {pfas_name}</b><br>' +
                                             f'{xlabel}: %{{x}}<br>' +
-                                            'Concentration: %{y:.3f} μg/L<br>' +
+                                            'Concentration: %{y:.4f} μg/L<br>' +
                                             '<extra></extra>'
                             ))
                             color_idx += 1
@@ -1595,7 +1595,7 @@ def main(workbook_path=None, sheet_name=None):
                                     ),
                                     hovertemplate=f'<b>{well} - {obs_analyte_name} (obs)</b><br>' +
                                                 f'{xlabel}: %{{x:.2f}}<br>' +
-                                                'Concentration: %{y:.3f} μg/L<br>' +
+                                                'Concentration: %{y:.4f} μg/L<br>' +
                                                 '<extra></extra>',
                                     legendgroup=f'{well}_{obs_analyte_name}_obs',
                                     showlegend=True
@@ -1665,7 +1665,7 @@ def main(workbook_path=None, sheet_name=None):
                                 ),
                                 hovertemplate=f"<b>{label}</b><br>" +
                                             f'{xlabel}: %{{x:.2f}}<br>' +
-                                            'Concentration: %{y:.3f} μg/L<br>' +
+                                            'Concentration: %{y:.4f} μg/L<br>' +
                                             '<extra></extra>',
                                 legendgroup=f'{well}_{pfas_name}_obs',
                                 showlegend=True
@@ -1885,7 +1885,7 @@ def main(workbook_path=None, sheet_name=None):
                     if len(PFAS_names) > 2 and PFAS_names[2] not in ('None', ''):
                         conc_to_pfas["Conc3"] = PFAS_names[2]
                     display_name = conc_to_pfas.get(col, col)
-                    hover_label = "Concentration: %{y:.3f} μg/L"
+                    hover_label = "Concentration: %{y:.4f} μg/L"
                 else:
                     display_name = col
                     hover_label = "%{y:.2f}"
@@ -1963,8 +1963,47 @@ def main(workbook_path=None, sheet_name=None):
         
         # Apply log scale: x-axis for analysis_type 1 (Concentration vs Depth), y-axis for all others
         if log_scale == "log":
+            # v108 (Ron review): floor the CONCENTRATION log axis at 1e-6 ug/L
+            # (= 0.001 ng/L, 1/1000 of a nanogram/L).  Auto-range used to
+            # drop to absurd levels like 1e-21 for near-zero cells.  Mass
+            # plots (types 6, 7) are not concentrations -> plain log.
+            import math as _math
+            _CONC_LOG_FLOOR = 1e-6  # ug/L
+            def _pos_vals(getter):
+                out = []
+                for _tr in fig.data:
+                    seq = getter(_tr)
+                    if seq is None:
+                        continue
+                    for _v in seq:
+                        try:
+                            _fv = float(_v)
+                        except (TypeError, ValueError):
+                            continue
+                        if _fv > 0:
+                            out.append(_fv)
+                return out
+            def _log_range(getter):
+                vals = _pos_vals(getter)
+                if not vals:
+                    return None
+                dmin, dmax = min(vals), max(vals)
+                # Only intervene when near-zero cells would drag the log
+                # axis below the floor (e.g. 1e-21).  When ALL data is at or
+                # above the floor, let Plotly autorange -- forcing a range on
+                # near-constant data produced an ugly, near-linear-looking
+                # plot (flat line pinned to the bottom).
+                if dmin >= _CONC_LOG_FLOOR:
+                    return None
+                lo = _CONC_LOG_FLOOR
+                hi = dmax if dmax > lo else lo * 10
+                return [_math.log10(lo), _math.log10(hi * 1.5)]
             if analysis_type == 1:
-                fig.update_xaxes(type="log")
+                _rng = _log_range(lambda t: t.x)
+                fig.update_xaxes(type="log", **({"range": _rng} if _rng else {}))
+            elif analysis_type in (2, 3, 4, 5):
+                _rng = _log_range(lambda t: t.y)
+                fig.update_yaxes(type="log", **({"range": _rng} if _rng else {}))
             else:
                 fig.update_yaxes(type="log")
         elif analysis_type == 1:

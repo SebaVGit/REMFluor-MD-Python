@@ -529,6 +529,130 @@ check("sidecar round-trips nx1=7", _bs.v_psb_nx1.get() == "7", _bs.v_psb_nx1.get
 check("sidecar round-trips nx2=13", _bs.v_psb_nx2.get() == "13", _bs.v_psb_nx2.get())
 
 
+
+# ====================================================================
+# Item 13 (part 3) - Freundlich Kf UNIT preserved across save/load
+# ====================================================================
+# Saving with Kf in mg (or ug) then loading must reproduce the SAME
+# fcackf in input.inp and the SAME raw Kf + unit.  The bug reduced the
+# value (e.g. by 1000) or applied the wrong unit; root cause was the
+# loading percent/fraction mix-up feeding inp_to_state's Kf recovery.
+print("== Item 13: Freundlich Kf unit preserved on save/load ==")
+
+_tplk = os.path.join(ROOT, "template.inp")
+if os.path.exists(_tplk):
+    import shutil as _shk
+    from functions.inp_parser import parse_input_inp as _pik
+    from functions.inp_to_state import write_inp_to_state as _wisk
+    from functions.state import get_state as _gsk
+
+    def _ufk(u):
+        u = u.lower()
+        return {"ng/kg": 1e-3, "ug/kg": 1.0, "mg/kg": 1e3}[
+            next(k for k in ("ng/kg", "ug/kg", "mg/kg") if k in u)]
+
+    def _convk(raw, unit, a):
+        return raw * (_ufk(unit) ** (1 - a))
+
+    _stk = _gsk(); _stk.snapshot = lambda a: None
+    class _AppK: pass
+
+    def _wdk():
+        wd = tempfile.mkdtemp()
+        _shk.copy(_tplk, os.path.join(wd, "template.inp"))
+        open(os.path.join(wd, "cellsize_input.txt"), "w").write(
+            "Grid Cell Sizes\nParameter,Value\nCell Size X:,1.0\n"
+            "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+        open(os.path.join(wd, "numerical_inputs.txt"), "w").write(
+            "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+            "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+        return wd
+
+    def _kf_roundtrip(unit, raw_kf, a=0.33, loading_pct=0.24):
+        base = {"A8": 2, "AD1": 2, "R22": True, "E11": 132, "E12": 50, "E13": 10,
+                "E15": 4, "E16": 5, "E18": 1977, "E19": 2077, "C22": 10, "G22": 0.3,
+                "X74": 108, "Y82": 12, "AB28": 2025, "AA82": loading_pct, "V23": a,
+                "AC82": 12, "V47": 10, "U24": unit, "V24": raw_kf,
+                "V26": _convk(raw_kf, unit, a)}
+        wd = _wdk(); _stk.work_dir = wd; _stk.bundle_dir = wd; _stk._cells = dict(base)
+        _stk.snapshot = lambda a: None
+        gif.run(_AppK())
+        fk_save = _pik(os.path.join(wd, "input.inp"))["fcackf2"]
+        d1 = _pik(os.path.join(wd, "input.inp"))
+        wd2 = _wdk(); _stk.work_dir = wd2; _stk.bundle_dir = wd2; _stk._cells = {}
+        _wisk(_stk, d1, {"psb_loading": loading_pct / 100.0,
+                         "psb_kf_unit": unit}, 2, 1.0)
+        unit_rec = _stk.get("U24"); raw_rec = str(_stk.get("V24")).replace(",", "")
+        # PSB sidecar restores raw Kf + unit verbatim, then converted recomputes
+        _stk.set("U24", unit); _stk.set("V24", raw_kf)
+        _stk.set("V26", _convk(raw_kf, unit, a))
+        gif.run(_AppK())
+        fk_load = _pik(os.path.join(wd2, "input.inp"))["fcackf2"]
+        return fk_save, fk_load, unit_rec, float(raw_rec)
+
+    _fs, _fl, _ur, _rr = _kf_roundtrip("(mg/kg)(mg/L)^(-a)", 1227.951)
+    check("mg Kf: fcackf round-trips exactly",
+          abs(_fs - _fl) < 1e-2, f"save={_fs} load={_fl}")
+    check("mg Kf: unit preserved on load (mg, not ug)",
+          "mg/kg" in (_ur or ""), _ur)
+    check("mg Kf: raw value recovered (1227.951, not /1000)",
+          abs(_rr - 1227.951) < 1e-2, _rr)
+
+    _fs2, _fl2, _ur2, _rr2 = _kf_roundtrip("(ug/kg)(ug/L)^(-a)", 5000.0)
+    check("ug Kf: fcackf round-trips exactly",
+          abs(_fs2 - _fl2) < 1e-2, f"save={_fs2} load={_fl2}")
+    check("ug Kf: unit preserved (ug)", "ug/kg" in (_ur2 or ""), _ur2)
+    check("ug Kf: raw value recovered (5000, not /1000)",
+          abs(_rr2 - 5000.0) < 1e-2, _rr2)
+else:
+    print("  SKIP  Kf unit round-trip (template.inp not found)")
+
+
+
+# ====================================================================
+# Output plot suggestions (Ron review, dashboard)
+# ====================================================================
+# generate_dashboard.py pulls in dash/plotly, so it can't run headless;
+# guard these with the floor math + source-level assertions.
+print("== Output plots: Z label, log floor, hover precision ==")
+
+import math as _mdash
+_CONC_LOG_FLOOR = 1e-6   # ug/L (0.001 ng/L)
+
+def _log_lo(vals):
+    """Mirror generate_dashboard._log_range: force the floor ONLY when the
+    data would sink below it; otherwise return None (Plotly autorange)."""
+    v = [x for x in vals if x > 0]
+    if not v:
+        return None
+    return _CONC_LOG_FLOOR if min(v) < _CONC_LOG_FLOOR else None
+
+# (b) a near-zero cell (1e-21) must floor to 1e-6, not sink the axis
+check("log floor: 1e-21 present -> lower bound 1e-6",
+      _log_lo([1e-21, 3.2, 0.5, 1e-15]) == _CONC_LOG_FLOOR,
+      _log_lo([1e-21, 3.2, 0.5, 1e-15]))
+# data already at/above the floor -> autorange (no forced range), which
+# fixes the ugly near-linear log plot on near-constant ~1600 data
+check("log floor: normal data (>=floor) autoranges (no forced range)",
+      _log_lo([0.01, 5.0, 1.2]) is None, _log_lo([0.01, 5.0, 1.2]))
+check("log floor: near-constant ~1600 data autoranges (no forced range)",
+      _log_lo([1598.8, 1598.8, 1598.8]) is None, _log_lo([1598.8, 1598.8]))
+
+_dash_src = open(os.path.join(ROOT, "_Python", "tkinter", "functions",
+                              "generate_dashboard.py"), encoding="utf-8").read()
+# (a) Z control relabeled
+check("(a) Z control relabeled 'Depth from Top'",
+      "Depth from Top" in _dash_src and "Z Coordinate" not in _dash_src)
+# (b) explicit concentration log floor constant present
+check("(b) concentration log floor 1e-6 present",
+      "_CONC_LOG_FLOOR = 1e-6" in _dash_src)
+# (c) concentration hovers show 4 decimals, none left at 3
+check("(c) hover concentration uses .4f (down to 0.0001)",
+      "Concentration: %{y:.4f}" in _dash_src)
+check("(c) no concentration hover left at .3f",
+      "Concentration: %{y:.3f}" not in _dash_src
+      and "Concentration: %{{x:.3f}}" not in _dash_src)
+
 print()
 print(f"{PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

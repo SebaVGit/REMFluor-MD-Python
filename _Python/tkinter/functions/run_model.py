@@ -747,6 +747,42 @@ def run(app, parent=None) -> bool:
                                    parent=parent or app)
             return False
 
+    # Step 0b (v108): ask the user WHERE to save the model files before
+    # running, and warn before overwriting an existing run.  The chosen
+    # folder becomes the active work_dir so input.inp AND every .out
+    # result land there (and Visualize Results reads from there).
+    from tkinter import filedialog as _fd
+    from .state import get_state as _gs
+    import glob as _glob
+    _state = _gs()
+    _cur = getattr(_state, "work_dir", "") or os.getcwd()
+    _dst = _fd.askdirectory(
+        title="Choose a folder to save the model input + results",
+        initialdir=_cur, mustexist=False, parent=parent or app)
+    if not _dst:
+        return False   # user cancelled the save-location prompt
+    # Overwrite guard: list any model files already in the target folder.
+    _existing = [f for f in (["input.inp"] + list(DASHBOARD_RESULT_FILES))
+                 if os.path.exists(os.path.join(_dst, f))]
+    _existing += sorted(os.path.basename(_p) for _p in
+                        _glob.glob(os.path.join(_dst, "obs_well*.out")))
+    if _existing:
+        _lst = "\n".join(f"  {f}" for f in sorted(set(_existing))[:12])
+        if not messagebox.askyesno(
+                "Overwrite Existing Files?",
+                "This folder already contains model files that Run Model "
+                f"will overwrite:\n{_dst}\n\n{_lst}\n\nOverwrite them?",
+                parent=parent or app):
+            return False   # user chose not to overwrite
+    try:
+        os.makedirs(_dst, exist_ok=True)
+        _state.work_dir = _dst
+    except Exception as _exc:
+        messagebox.showerror("Run Model",
+                             f"Could not use that folder:\n{_exc}",
+                             parent=parent or app)
+        return False
+
     # Step 1: build input.inp from current state ---------------------------
     if not generate_input_file.run(app):
         return False
