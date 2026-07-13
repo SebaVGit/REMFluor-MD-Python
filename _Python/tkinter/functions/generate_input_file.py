@@ -250,6 +250,17 @@ def build_inp_data(state) -> dict:
     # v102: iwall = 2 when PSB activated, 0 when off (matches the
     # Detailed Excel/Fortran convention used in inptest.inp).
     iwall = 2 if PSB_flag else 0
+    # v108 (Ron review item 4): let the user pick the PSB grid type
+    # in §9 -- iwall=2 (refined near the barrier, default) or iwall=1
+    # (uniform grid before/after the PSB, useful for model
+    # comparisons / generating a uniform grid).
+    if PSB_flag:
+        _iw = state.get("IWAL")
+        try:
+            _iwi = int(float(_iw)) if _iw not in (None, "") else 2
+        except (TypeError, ValueError):
+            _iwi = 2
+        iwall = _iwi if _iwi in (1, 2) else 2
 
     # time
     startT = _safe_float(state.get("E18", 1977))
@@ -374,6 +385,18 @@ def build_inp_data(state) -> dict:
             nxpsb = max(1, round(_w / dx)) if (dx and _w > 0) else 1
         nx1   = round(x1 / dx) if dx else 0
         nx2   = round((X - x2) / dx) if dx else 0
+        # v108 (Ron review item 4): allow direct entry of the cell
+        # counts before (nx1) and after (nx2) the PSB for detailed
+        # code comparisons / uniform grids.  Blank keeps the
+        # computed default; the wall count (nxpsb) stays from §9.
+        _nx1u = state.get("NXB1")
+        if _nx1u not in (None, ""):
+            try: nx1 = max(0, int(float(_nx1u)))
+            except (TypeError, ValueError): pass
+        _nx2u = state.get("NXA2")
+        if _nx2u not in (None, ""):
+            try: nx2 = max(0, int(float(_nx2u)))
+            except (TypeError, ValueError): pass
         if nx2 < 0:
             nx2 = 0
 
@@ -680,6 +703,7 @@ def build_inp_data(state) -> dict:
     # The sidecar stores depths in the USER'S unit (ft or m); c() will
     # convert to meters for input.inp.
     well_depths_map = {}
+    well_y_map = {}
     try:
         import json as _json
         obs_path = os.path.join(work_dir, 'mw_observations.json')
@@ -691,8 +715,14 @@ def build_inp_data(state) -> dict:
                 if isinstance(d, dict):
                     well_depths_map[str(wname).strip()] = (
                         d.get('top'), d.get('bot'))
+            # v108 (Ron review item 2): per-well Y distance off
+            # centerline, imported from the .xlsx Model Location sheet.
+            wy = obs_payload.get('well_y', {}) or {}
+            for wname, yv in wy.items():
+                well_y_map[str(wname).strip()] = yv
     except Exception:
         well_depths_map = {}
+        well_y_map = {}
 
     for i in range(7):
         row = 34 + i
@@ -736,9 +766,25 @@ def build_inp_data(state) -> dict:
                 z_top = grid_ztop
             if z_bot > z_top:
                 z_bot = z_top
+        # v108 (Ron review item 2): Monitoring Well Y Distance off
+        # Centerline was hard-coded to 0, forcing every well onto the
+        # centerline.  Use the imported per-well y (ft->m via c()).
+        ywell = 0.0
+        if well_name:
+            _yv = well_y_map.get(str(well_name).strip())
+            if _yv is not None:
+                try:
+                    _yc = c(_yv)
+                    if _yc is not None:
+                        ywell = float(_yc)
+                except Exception:
+                    ywell = 0.0
+        # v108 (Ron review items 1 & 3): keep significant digits on
+        # the well coordinates (xwell, ywell, zwelltop, zwellbot) —
+        # _smart_fmt truncated any value >= 100 to a whole metre.
         wells.append(
-            f"{nwell}, {_smart_fmt(xwell_f)}, 0, "
-            f"{_smart_fmt(z_top)}, {_smart_fmt(z_bot)}"
+            f"{nwell}, {_coord_fmt(xwell_f)}, {_coord_fmt(ywell)}, "
+            f"{_coord_fmt(z_top)}, {_coord_fmt(z_bot)}"
         )
 
     # v102: use module-level _smart_fmt so we can call it from inside

@@ -150,8 +150,12 @@ dg = gif.build_inp_data(sg)
 check("dy*ny spans Y (6.1 x 1 for Y=6.096)",
       abs(float(dg["dy"]) * dg["ny"] - 6.1) < 1e-6,
       f"got dy={dg['dy']} ny={dg['ny']}")
-check("well z clamped to grid (6.7, not 6.71)",
-      dg["wells"][0].endswith("6.7, 3.35"), f"got {dg['wells'][0]}")
+# v108: zwelltop/zwellbot now use _coord_fmt (several significant
+# digits, Ron review item 3), so zwellbot reads 3.353 rather than the
+# old 2-decimal 3.35.  The clamp under test is zwelltop -> 6.7 (grid
+# extent), so assert on that field (index 3) directly.
+check("well z clamped to grid (zwelltop 6.7, not 6.71)",
+      dg["wells"][0].split(",")[3].strip() == "6.7", f"got {dg['wells'][0]}")
 
 tmp2 = tempfile.mkdtemp()
 _cellsize(tmp2, dx=1.0, dy=5.0, dz=2.0)

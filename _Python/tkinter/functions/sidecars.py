@@ -167,6 +167,10 @@ _PSB_FIELDS = [
     ("Distance from Source", "v_psb_dist"),
     ("Total Width of PSB",   "v_psb_width"),
     ("PSB Loading pct",      "v_psb_load"),
+    # v108 (Ron review item 4): PSB grid type + direct nx1/nx2 entry.
+    ("PSB Grid Type iwall",  "v_iwall"),
+    ("Cells Before PSB nx1", "v_psb_nx1"),
+    ("Cells After PSB nx2",  "v_psb_nx2"),
 ]
 
 

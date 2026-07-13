@@ -315,6 +315,20 @@ class AppState:
         het = getattr(app, 'v_het', None)
         if het:
             self.set("A1", {"High": 1, "Medium": 2, "Weak": 3}.get(het.get(), 2))
+        # v108 (Ron review item 4): §9 PSB grid type + direct nx1/nx2.
+        # Captured here (not in CELL_MAP) so push() cannot wipe the UI
+        # defaults on load; save/load round-trips via the PSB sidecar.
+        iw = getattr(app, 'v_iwall', None)
+        if iw is not None:
+            try:
+                self.set("IWAL", int(float(iw.get())))
+            except (TypeError, ValueError):
+                self.set("IWAL", 2)
+        for _vn, _addr in (('v_psb_nx1', "NXB1"), ('v_psb_nx2', "NXA2")):
+            _v = getattr(app, _vn, None)
+            if _v is not None:
+                _sv = str(_v.get()).strip()
+                self.set(_addr, _parse(_sv) if _sv else None)
 
     def push(self, app):
         """Write state back to UI widgets.  See snapshot() for the

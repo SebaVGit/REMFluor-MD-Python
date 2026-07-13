@@ -184,16 +184,23 @@ def _import_xlsx_into_app(app, xlsx_path):
         # (top_screen / bot_screen columns).  Empty when not in the
         # sheet — generate_input_file falls back to constant Z, Z/2.
         well_depths = {}
+        well_y = {}   # v108: per-well Y distance off centerline
         if loc_sheet is not None:
             header_row = None
-            name_col = dist_col = top_col = bot_col = None
+            name_col = dist_col = top_col = bot_col = y_col = None
             for r in range(1, 30):
                 for c in range(1, 27):
                     val = loc_sheet.cell(row=r, column=c).value
                     if val is None:
                         continue
                     s = str(val).strip().lower()
-                    if name_col is None and ("name" in s or s in (
+                    # v108 (Ron review item 2): the "Y Distance off
+                    # Centerline" header also contains "distance", so
+                    # match it BEFORE dist_col to avoid a collision.
+                    if ("centerline" in s or "off center" in s):
+                        if y_col is None:
+                            y_col = c
+                    elif name_col is None and ("name" in s or s in (
                             "well", "id", "site", "location")):
                         name_col = c; header_row = r
                     elif dist_col is None and ("distance" in s or s == "x"
@@ -270,6 +277,17 @@ def _import_xlsx_into_app(app, xlsx_path):
                             well_depths[well_name] = (top_f, bot_f)
                 except Exception as exc:
                     _log(f"failed to read top/bot for {well_name}: {exc}")
+                # v108 (Ron review item 2): Y distance off centerline
+                try:
+                    y_v = (loc_sheet.cell(row=r, column=y_col).value
+                           if y_col else None)
+                    if y_v is not None:
+                        try: y_f = float(y_v)
+                        except (TypeError, ValueError): y_f = None
+                        if y_f is not None:
+                            well_y[well_name] = y_f
+                except Exception as exc:
+                    _log(f"failed to read y for {well_name}: {exc}")
                 if idx >= 6:
                     break
             _log(f"Wells imported from Location sheet: {seen_wells}")
@@ -487,6 +505,10 @@ def _import_xlsx_into_app(app, xlsx_path):
                     w: {"top": d[0], "bot": d[1]}
                     for w, d in well_depths.items()
                 },
+                # v108 (Ron review item 2): per-well Y distance off
+                # centerline (user's unit) -> generate_input_file
+                # writes ywell instead of a hard-coded 0.
+                "well_y": {w: y for w, y in well_y.items()},
             }
             with open(obs_path, "w", encoding="utf-8") as fh:
                 _json.dump(payload, fh, indent=2, default=str)

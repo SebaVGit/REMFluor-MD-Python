@@ -3089,6 +3089,11 @@ class REMFluorApp(tk.Tk):
         self.v_psb_load    = tk.StringVar(value="")
         self.v_psb_dist    = tk.StringVar(value="")
         self.v_psb_cells   = tk.StringVar(value="")
+        # v108 (Ron review item 4): PSB grid type (iwall) + optional
+        # direct entry of the cell counts before/after the barrier.
+        self.v_iwall       = tk.StringVar(value="2")   # 2=refined,1=uniform
+        self.v_psb_nx1     = tk.StringVar(value="")     # cells before PSB
+        self.v_psb_nx2     = tk.StringVar(value="")     # cells after PSB
 
         # Auto-enable "Model PSB?" the moment the user types ANY value
         # into a §9 cell.  Excel parity: in the workbook the checkbox
@@ -4856,7 +4861,10 @@ class REMFluorApp(tk.Tk):
         # right-edge of these long labels stays aligned with the
         # rcluster column; YR above it visually pokes out to the left).
         rg = tk.Frame(rcluster, bg=BG_MAIN)
-        rg.pack(anchor="e", pady=(0, 0))
+        # v108: left-anchored (was "e") so the long labels + "?" help
+        # chicklets sit further left and no longer clip at the window
+        # edge; also aligns this stack under "Year PSB Installed".
+        rg.pack(anchor="w", pady=(0, 0))
         # v102: PSB width is a length → flips m↔ft; load + cells stay literal.
         for i, (lbl, var, unit, helpm) in enumerate([
             ("Total Width of PSB in X-Direction",
@@ -4883,6 +4891,40 @@ class REMFluorApp(tk.Tk):
                     self._register_length_var(var, "length")
             if helpm:
                 help_link(rg, helpm).grid(row=i, column=3, padx=(2, 0))
+
+        # v108 (Ron review item 4): PSB grid options — shown in BOTH
+        # Simple and Detailed (not marked Detailed-only).  Kept in a
+        # SEPARATE frame from rg so the "2=refined, 1=uniform" hint
+        # can't widen rg's shared columns and push the §9 "?" help
+        # chicklets off the right edge.  iwall: 2=refined near the
+        # barrier (default), 1=uniform grid before/after the PSB.
+        # nx1/nx2: optional direct cell counts before/after the PSB
+        # (blank keeps the auto-computed grid; the wall count stays
+        # in "# of cells in PSB" above).
+        pg = tk.Frame(rcluster, bg=BG_MAIN)
+        pg.pack(anchor="w", pady=(3, 0))
+        tk.Label(pg, text="PSB grid type (iwall)", font=FONT_LABEL,
+                 bg=BG_MAIN, anchor="e"
+                 ).grid(row=0, column=0, sticky="e", padx=(0, 4), pady=1)
+        dropdown(pg, self.v_iwall, ["2", "1"], width=3,
+                 bg=BG_INPUT_BLUE
+                 ).grid(row=0, column=1, padx=2, sticky="w")
+        tk.Label(pg, text="2=refined, 1=uniform", font=FONT_LABEL_SM,
+                 bg=BG_MAIN).grid(row=0, column=2, sticky="w", padx=(2, 0))
+        tk.Label(pg, text="# cells before PSB (nx1)", font=FONT_LABEL,
+                 bg=BG_MAIN, anchor="e"
+                 ).grid(row=1, column=0, sticky="e", padx=(0, 4), pady=1)
+        make_entry(pg, self.v_psb_nx1, width=6
+                   ).grid(row=1, column=1, padx=2, sticky="w")
+        tk.Label(pg, text="optional", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=1, column=2, sticky="w", padx=(2, 0))
+        tk.Label(pg, text="# cells after PSB (nx2)", font=FONT_LABEL,
+                 bg=BG_MAIN, anchor="e"
+                 ).grid(row=2, column=0, sticky="e", padx=(0, 4), pady=1)
+        make_entry(pg, self.v_psb_nx2, width=6
+                   ).grid(row=2, column=1, padx=2, sticky="w")
+        tk.Label(pg, text="optional", font=FONT_LABEL_SM, bg=BG_MAIN
+                 ).grid(row=2, column=2, sticky="w", padx=(2, 0))
 
         # ═══ Buttons — packed under the form in `leftcol` so they
         # sit flush against the bottom of the Freundlich grid (no

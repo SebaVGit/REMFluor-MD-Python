@@ -399,6 +399,136 @@ else:
     print("  SKIP  end-to-end input.inp (template.inp not found)")
 
 
+
+# ====================================================================
+# Items 1-3 - observation well coordinates (x, y, z) in input.inp
+# ====================================================================
+# x/y/z were formatted with _smart_fmt (truncated >=100 to whole metres)
+# and ywell was hard-coded to 0.  Now they use _coord_fmt and the
+# per-well Y distance off centerline imported into mw_observations.json.
+print("== Items 1-3: observation well x/y/z coordinates ==")
+import json as _jsonw
+import shutil as _shutilw
+from functions.state import get_state as _gs_w
+
+_tplw = os.path.join(ROOT, "template.inp")
+if os.path.exists(_tplw):
+    _wdw = tempfile.mkdtemp()
+    _shutilw.copy(_tplw, os.path.join(_wdw, "template.inp"))
+    open(os.path.join(_wdw, "cellsize_input.txt"), "w").write(
+        "Grid Cell Sizes\nParameter,Value\nCell Size X:,1.0\n"
+        "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+    open(os.path.join(_wdw, "numerical_inputs.txt"), "w").write(
+        "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+        "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+    _jsonw.dump({"well_depths": {"W1": {"top": 150.4, "bot": 75.2},
+                                 "W2": {"top": 10, "bot": 5}},
+                 "well_y": {"W1": 12.3, "W2": -3.7}},
+                open(os.path.join(_wdw, "mw_observations.json"), "w"))
+    _stw = _gs_w(); _stw.work_dir = _wdw; _stw.bundle_dir = _wdw
+    _stw.snapshot = lambda a: None; _stw._cells = {}
+    for _k, _v in {"A8": 2, "AD1": 2, "R22": False, "E11": 400, "E12": 50,
+                   "E13": 200, "E15": 4, "E16": 5, "E18": 1977, "E19": 2077,
+                   "C22": 10, "G22": 0.3, "V47": 10,
+                   "U34": "W1", "AF34": 105.1,
+                   "U35": "W2", "AF35": 50.5}.items():
+        _stw.set(_k, _v)
+    class _AppW: pass
+    assert gif.run(_AppW())
+    _wl = [l.strip() for l in open(os.path.join(_wdw, "input.inp")).read().splitlines()
+           if len(l.split(",")) == 5 and l.strip()[:1] in ("1", "2")]
+    _w1 = next((l for l in _wl if l.startswith("1,")), "")
+    _w2 = next((l for l in _wl if l.startswith("2,")), "")
+    check("well 1 x keeps decimals >100 (105.1, item 1)",
+          _w1 == "1, 105.1, 12.3, 150.4, 75.2", _w1)
+    check("well 1 Y off centerline written (12.3, not 0, item 2)",
+          ", 12.3," in _w1, _w1)
+    check("well 1 zwelltop/zwellbot keep decimals >100 (item 3)",
+          _w1.endswith("150.4, 75.2"), _w1)
+    check("well 2 negative Y off centerline (-3.7)",
+          _w2 == "2, 50.5, -3.7, 10, 5", _w2)
+else:
+    print("  SKIP  well coords end-to-end (template.inp not found)")
+
+
+# ====================================================================
+# Item 4 - iwall grid type + direct nx1/nx2 entry
+# ====================================================================
+print("== Item 4: iwall dropdown + direct nx1/nx2 entry ==")
+
+def _gen_psb(overrides):
+    wd = tempfile.mkdtemp()
+    _shutilw.copy(_tplw, os.path.join(wd, "template.inp"))
+    open(os.path.join(wd, "cellsize_input.txt"), "w").write(
+        "Grid Cell Sizes\nParameter,Value\nCell Size X:,1.0\n"
+        "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+    open(os.path.join(wd, "numerical_inputs.txt"), "w").write(
+        "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+        "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+    st = _gs_w(); st.work_dir = wd; st.bundle_dir = wd
+    st.snapshot = lambda a: None; st._cells = {}
+    base = {"A8": 2, "AD1": 2, "R22": True, "E11": 132, "E12": 50, "E13": 10,
+            "E15": 4, "E16": 5, "E18": 1977, "E19": 2077, "C22": 10, "G22": 0.3,
+            "X74": 108, "Y82": 12, "AB28": 2025, "AA82": 0.24, "V23": 0.33,
+            "V24": 100, "AC82": 12, "V47": 10}
+    base.update(overrides)
+    for k, v in base.items():
+        st.set(k, v)
+    class _AppP: pass
+    gif.run(_AppP())
+    ls = open(os.path.join(wd, "input.inp")).read().splitlines()
+    flags = ls[2].strip()
+    xg = None
+    for i, l in enumerate(ls):
+        if "xmax (m), nx1, nxpsb, nx2" in l:
+            xg = ls[i + 1].strip()
+    return flags, xg
+
+if os.path.exists(_tplw):
+    _f0, _x0 = _gen_psb({})
+    check("default iwall == 2", _f0.split(",")[2].strip() == "2", _f0)
+    check("default x-grid auto-computed (132, 108, 12, 12)",
+          _x0 == "132, 108, 12, 12", _x0)
+    _f1, _x1 = _gen_psb({"IWAL": 1})
+    check("IWAL=1 writes iwall == 1 (uniform grid)",
+          _f1.split(",")[2].strip() == "1", _f1)
+    _f2, _x2 = _gen_psb({"NXB1": 7, "NXA2": 13})
+    check("direct nx1=7 / nx2=13 override the computed counts",
+          _x2 == "132, 7, 12, 13", _x2)
+    check("nxpsb (wall count) unchanged by nx1/nx2 override",
+          _x2.split(",")[2].strip() == "12", _x2)
+else:
+    print("  SKIP  iwall/nx end-to-end (template.inp not found)")
+
+# sidecar round-trip for the new PSB fields
+from functions import sidecars as _sc4
+
+class _V4:
+    def __init__(self, v=""): self.v = v
+    def get(self): return self.v
+    def set(self, x): self.v = str(x)
+
+class _AppS: pass
+_as = _AppS()
+for _n in ("v_psb_kf_unit", "v_psb_a_1", "v_psb_a_2", "v_psb_a_3", "v_psb_a_4",
+           "v_psb_kf_1", "v_psb_kf_2", "v_psb_kf_3", "v_psb_kf_4",
+           "v_psb_mw_1", "v_psb_mw_2", "v_psb_mw_3", "v_psb_mw_4", "v_psb_yr",
+           "v_psb_cells", "v_psb_dist", "v_psb_width", "v_psb_load"):
+    setattr(_as, _n, _V4(""))
+_as.v_model_psb = _V4("True")
+_as.v_iwall = _V4("1"); _as.v_psb_nx1 = _V4("7"); _as.v_psb_nx2 = _V4("13")
+_wd4 = tempfile.mkdtemp()
+_sc4.write_psb(_as, _wd4)
+_bs = _AppS()
+for _n in ("v_iwall", "v_psb_nx1", "v_psb_nx2", "v_psb_kf_unit"):
+    setattr(_bs, _n, _V4(""))
+_bs.v_model_psb = _V4("")
+_sc4.read_psb(_bs, _wd4)
+check("sidecar round-trips iwall=1", _bs.v_iwall.get() == "1", _bs.v_iwall.get())
+check("sidecar round-trips nx1=7", _bs.v_psb_nx1.get() == "7", _bs.v_psb_nx1.get())
+check("sidecar round-trips nx2=13", _bs.v_psb_nx2.get() == "13", _bs.v_psb_nx2.get())
+
+
 print()
 print(f"{PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
