@@ -29,6 +29,12 @@ def _copy_files(src_dir: str, dst_dir: str) -> list:
         dst = os.path.join(dst_dir, fname)
         if os.path.exists(src):
             try:
+                # v107: Windows leaves result/sidecar files read-only at
+                # times; copy2 onto a read-only dst raises PermissionError
+                # and the stale file silently survived.  chmod first.
+                if os.path.exists(dst):
+                    try: os.chmod(dst, 0o666)
+                    except Exception: pass
                 shutil.copy2(src, dst)
                 copied.append(fname)
                 print(f"Copied: {fname}")
@@ -53,16 +59,22 @@ def run(app):
             "Check version and units selection.")
         return
 
-    # v100: search both work_dir (writable, dev tree) and bundle_dir
-    # (read-only PyInstaller _MEIPASS) for the Example/ folder.  In a
-    # frozen .exe the bundled Example/ lives in _MEIPASS, not next to
-    # the .exe itself, so the work_dir-only lookup used to fail.
+    # v107: the Example/ folder ships NEXT TO the .exe (base_dir) —
+    # it is NOT bundled inside the .exe.  When the user saves/loads a
+    # model, work_dir switches to that model folder, which has no
+    # Example/, so keep the reference to the .exe folder.  Search
+    # order: work_dir (dev tree / user override) → base_dir (exe
+    # folder) → bundle_dir (_MEIPASS, legacy fallback).
+    base_dir   = getattr(state, "base_dir",   "") or ""
+    bundle_dir = getattr(state, "bundle_dir", "") or ""
     example_dir = os.path.join(work_dir, "Example", sub)
-    if not os.path.isdir(example_dir):
-        bundle_dir = getattr(state, "bundle_dir", "") or work_dir
-        alt = os.path.join(bundle_dir, "Example", sub)
-        if os.path.isdir(alt):
-            example_dir = alt
+    for cand_base in (base_dir, bundle_dir):
+        if os.path.isdir(example_dir):
+            break
+        if cand_base:
+            alt = os.path.join(cand_base, "Example", sub)
+            if os.path.isdir(alt):
+                example_dir = alt
     if not os.path.isdir(example_dir):
         messagebox.showerror("Error",
             f"Example folder not found:\n{example_dir}")
@@ -73,6 +85,29 @@ def run(app):
         messagebox.showerror("Error",
             f"input.inp not found in:\n{example_dir}")
         return
+
+    # v107: Paste Example ALWAYS runs in the app's BASE folder with a
+    # clean slate, regardless of which model folder was loaded before.
+    # Two guarantees: (1) example results are reproducible — identical
+    # every time, because no leftover sidecar from a previously-loaded
+    # model can skew the run; (2) a user's model folder is never
+    # contaminated with example files or example results.
+    _base = getattr(state, "base_dir", "") or ""
+    if _base and os.path.isdir(_base):
+        state.work_dir = _base
+        work_dir = _base
+
+    # Remove stale sidecars the example does NOT ship (dispersivity,
+    # PSB, transformation, calibration leftovers, …) so the run reads
+    # only example-provided or default values.
+    for fname in list(INPUT_TXT_FILES) + ["mw_observations.json"]:
+        wp = os.path.join(work_dir, fname)
+        sp = os.path.join(example_dir, fname)
+        try:
+            if os.path.exists(wp) and not os.path.exists(sp):
+                os.remove(wp)
+        except Exception as e:
+            print(f"[restore_from_example] could not clean {fname}: {e}")
 
     # Copy auxiliary .txt files to work dir
     _copy_files(example_dir, work_dir)
@@ -94,18 +129,45 @@ def run(app):
     for addr, name in pfas_names.items():
         state.set(addr, name)
 
+    # v107: input.inp stores vd × transmissive volume fraction; read the
+    # fraction from the example's heterogeneity sidecar so the loader can
+    # recover the original pre-scaling velocity.
+    try:
+        from .generate_input_file import _read_hetero
+        _, volfrac, _ = _read_hetero(
+            os.path.join(example_dir, "heterogeneity_inputs.txt"))
+    except Exception:
+        volfrac = 1.0
+
     # Write parsed data into state
-    write_inp_to_state(state, data, additional, unit_flag)
+    write_inp_to_state(state, data, additional, unit_flag, volfrac)
 
     # v102: temporarily disable §7 auto-year-interpolator so the
     # values loaded from input.inp / store_info don't get overwritten
     # by the trace that fires when v_yr_start / v_yr_end change.
+    # v107: ALSO hold the §6 heterogeneity trace guard across the push
+    # (same as restore_from_saved).  push() sets v_het last, and the
+    # _on_het_change trace re-derives the three alpha cells from the
+    # PRESET table — overwriting the alphax/y/z values just loaded from
+    # the example's input.inp (e.g. UI on "High" → 7.5 replaced the
+    # example's 3.2).
     setattr(app, "_s7_years_filling", True)
+    setattr(app, "_disp_loading", True)
     try:
         # Push to UI
         state.push(app)
     finally:
         setattr(app, "_s7_years_filling", False)
+        setattr(app, "_disp_loading", False)
+
+    # v107: §5 mol-diff — examples ship no dispersivity sidecar, so
+    # restore the coefficient recovered from the example's input.inp
+    # (state E44) before the §5 trace fills the table default.
+    try:
+        from . import sidecars as _sc
+        _sc.mol_diff_from_state_fallback(app, state, example_dir)
+    except Exception as exc:
+        print(f"[restore_from_example] mol-diff fallback failed: {exc}")
 
     # Recompute section 5 (retardation factors + mol-diff) from PFAS names
     # that were just pushed. _on_pfaa_change uses PFAA_KOC lookup table.
@@ -166,7 +228,9 @@ def run(app):
             is_detailed = (state.get("A8", 2) == 2)
             tmpl = ("CalibrationTemplate_Detailed.xlsx" if is_detailed
                     else "CalibrationTemplate_Simple.xlsx")
-            for base in (work_dir, getattr(state, "bundle_dir", "") or ""):
+            for base in (work_dir,
+                         getattr(state, "base_dir", "") or "",
+                         getattr(state, "bundle_dir", "") or ""):
                 if not base:
                     continue
                 cand = os.path.join(base, tmpl)

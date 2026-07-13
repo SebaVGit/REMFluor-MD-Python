@@ -53,6 +53,12 @@ def _copy_files(src_dir: str, dst_dir: str) -> list:
                 if os.path.exists(dst) and os.path.samefile(src, dst):
                     copied.append(fname)
                     continue
+                # v107: chmod read-only destinations before overwrite —
+                # a PermissionError here used to leave the stale file in
+                # place silently (root cause of "cell sizes not loading").
+                if os.path.exists(dst):
+                    try: os.chmod(dst, 0o666)
+                    except Exception: pass
                 shutil.copy2(src, dst)
                 copied.append(fname)
                 print(f"Copied: {fname}")
@@ -83,8 +89,20 @@ def run(app):
             f"input.inp not found in selected folder:\n{saved_dir}")
         return
 
-    # v106: clean stale sidecars in work_dir, then copy the saved set
-    # (input.inp + every sidecar) so nothing from a prior model lingers.
+    # v107: ADOPT the loaded folder as the ACTIVE work_dir — mirrors
+    # Save Data's "one folder per model" behaviour.  Previously Load
+    # COPIED the saved sidecars into the old work_dir; one read-only
+    # destination file made the copy fail silently and the §-button
+    # popups (cell sizes, GW velocity, heterogeneity, …) kept showing
+    # the PREVIOUS model's values.  Adopting the folder means every
+    # sidecar read below, every popup, and Run Model all use the loaded
+    # model's own files — no copying, nothing stale, nothing clobbered.
+    state.work_dir = saved_dir
+    work_dir = saved_dir
+
+    # (kept for the same-folder edge case: no-ops when work_dir IS the
+    # saved folder, and still protects any legacy flow that calls run()
+    # with a divergent work_dir)
     _clean_work_dir(work_dir, saved_dir)
     _copy_files(saved_dir, work_dir)
 
@@ -99,10 +117,26 @@ def run(app):
     add_file = os.path.join(saved_dir, "store_info_additional_input.txt")
     additional = parse_additional_info(add_file) if os.path.exists(add_file) else {}
 
+    # v107: input.inp stores vd × transmissive volume fraction; read the
+    # fraction from the SAVED folder's heterogeneity sidecar so the loader
+    # can recover the original pre-scaling velocity.
+    try:
+        from .generate_input_file import _read_hetero
+        _, volfrac, _ = _read_hetero(
+            os.path.join(saved_dir, "heterogeneity_inputs.txt"))
+    except Exception:
+        volfrac = 1.0
+
+    # v107: convert lengths using the SAVED model's unit flag when the
+    # store_info records one — the pre-load UI unit may differ.
+    _uf = additional.get('unit_flag')
+    if _uf in (1, 2):
+        unit_flag = _uf
+
     # Write parsed data into state — sets E38/G38/K38/M38 from
     # store_info_additional_input.txt's "PFAA 1:" / "PFAA 2:" lines.
     try:
-        write_inp_to_state(state, data, additional, unit_flag)
+        write_inp_to_state(state, data, additional, unit_flag, volfrac)
     except Exception as e:
         messagebox.showerror("Error",
             f"Could not apply loaded values:\n{e}")
@@ -125,7 +159,15 @@ def run(app):
     # v102: temporarily disable §7 auto-year-interpolator so the
     # values loaded from input.inp / store_info don't get overwritten
     # by the trace that fires when v_yr_start / v_yr_end change.
+    # v106: ALSO hold the §6 heterogeneity trace guard (_disp_loading)
+    # across the whole push.  push() sets v_het, and for "Enter Your Own
+    # Value Below" the het trace would CLEAR the alpha cells that push
+    # just recovered from input.inp.  Guarding here means those recovered
+    # alphas survive as a fallback even when the dispersivity sidecar is
+    # missing (e.g. an older save); when the sidecar IS present,
+    # read_dispersivity below overwrites them with the exact values.
     setattr(app, "_s7_years_filling", True)
+    setattr(app, "_disp_loading", True)
     try:
         # Push to UI
         state.push(app)
@@ -134,11 +176,8 @@ def run(app):
 
     # v106: apply the dedicated §6 dispersivity + §9 PSB sidecars AFTER
     # push so their exact values win over the lossy input.inp recovery.
-    #   - Dispersivity: guard the §6 het trace so custom "Enter Your Own
-    #     Value" alpha cells aren't re-derived / cleared.
-    #   - PSB: sets raw Kf + unit dropdown; the converted-Kf recompute
-    #     below then rebuilds V26..AB26 with the correct units.
-    setattr(app, "_disp_loading", True)
+    # _disp_loading is still True (held from before push) so the het trace
+    # can't clear the alpha cells during read_dispersivity either.
     try:
         sidecars.read_dispersivity(app, work_dir)
     except Exception as exc:
@@ -149,6 +188,15 @@ def run(app):
         sidecars.read_psb(app, work_dir)
     except Exception as exc:
         print(f"[restore] PSB sidecar apply failed: {exc}")
+
+    # v107: §5 mol-diff fallback — when the dispersivity sidecar is
+    # missing (pre-v106 save) or lacks the line, restore the value that
+    # inp_to_state recovered from input.inp (state E44) instead of
+    # letting the §5 trace revert it to the species-table default.
+    try:
+        sidecars.mol_diff_from_state_fallback(app, state, work_dir)
+    except Exception as exc:
+        print(f"[restore] mol-diff fallback failed: {exc}")
 
     # Re-run §9 Converted-Kf auto-formula (state.push wipes V26..AB26)
     if hasattr(app, '_recompute_psb_conv_kf'):
@@ -173,4 +221,7 @@ def run(app):
             pass
 
     messagebox.showinfo("Success",
-        f"Data restored from:\n{os.path.basename(saved_dir)}")
+        f"Data restored from:\n{os.path.basename(saved_dir)}\n\n"
+        "This is now your active model folder — Run Model will write "
+        "results here, and the section buttons (cell sizes, GW velocity, "
+        "heterogeneity, …) read this folder's inputs.")

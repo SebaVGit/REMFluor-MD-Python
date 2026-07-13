@@ -20,7 +20,7 @@ REMFluor-MD\
 ├── _internal\             ← PyInstaller runtime (Python DLLs, libs).  DO NOT delete or move.
 │   ├── Figures\           ← bundled icons / illustrations
 │   └── template.inp       ← bundled input.inp generator template
-├── remfluor_v8a.exe       ← external Fortran solver (swappable)
+├── remfluor_v9a.exe       ← external Fortran solver (swappable)
 ├── docs\                  ← external help pages (HTML chicklets)
 │   └── _site\…
 └── Example\               ← external paste-example inputs
@@ -36,7 +36,7 @@ Three things to know:
    - Copy / modify `Example/` site setups to use as templates.
    - You can hot-patch a docs typo by editing the file — no rebuild needed.
 3. `Figures/` and `template.inp` are bundled inside `_internal\` because users should never edit them, and they're version-coupled to the GUI.
-4. `remfluor_v8a.exe` is external (next to the launcher) so you can drop in a new build of the Fortran solver without rebuilding the GUI.
+4. `remfluor_v9a.exe` is external (next to the launcher) so you can drop in a new build of the Fortran solver without rebuilding the GUI.
 
 ## What gets bundled vs external
 
@@ -44,7 +44,7 @@ Three things to know:
 |------|-------|-----|
 | `Figures/` | bundled (`_internal\`) | Runtime icons. Never user-edited. |
 | `template.inp` | bundled (`_internal\`) | Internal generator. Version-coupled. |
-| `remfluor_v8a.exe` | **external** (next to .exe) | Solver. Swap-in-place without rebuilding the GUI. |
+| `remfluor_v9a.exe` | **external** (next to .exe) | Solver. Swap-in-place without rebuilding the GUI. |
 | `docs/` | **external** (next to .exe) | Browsable HTML. Bookmarkable. Editable docs without rebuild. |
 | `Example/` | **external** (next to .exe) | Users clone & modify these as templates for their own sites. |
 
@@ -113,7 +113,7 @@ Folder total **~250–300 MB without UPX**. The biggest contributors:
 | Python interpreter | ~15 MB | Required |
 | `openpyxl`, `psutil`, stdlib | ~10 MB | §10 .xlsx import + port cleanup |
 | Bundled assets (`Figures/`, `template.inp`) | ~3 MB | Required at runtime |
-| External `remfluor_v8a.exe` | ~1 MB | Fortran solver (sibling of .exe) |
+| External `remfluor_v9a.exe` | ~1 MB | Fortran solver (sibling of .exe) |
 | External `docs/`, `Example/` (not in .exe, but in the shipped folder) | ~5–20 MB | Side-loaded |
 
 → raw ~250–300 MB pre-compression is normal.
@@ -140,7 +140,7 @@ If you can drop the dashboard entirely (e.g., ship a stripped build for users wh
    - App opens within ~2 s.
    - Click any "?" chicklet → opens HTML in the default browser at a path under the unzipped folder's `docs/_site/...`.
    - Paste Example → fills the form (reads from `Example/` next to the .exe).
-   - Run Model → produces `input.inp` and runs the external `remfluor_v8a.exe`.
+   - Run Model → produces `input.inp` and runs the external `remfluor_v9a.exe`.
    - Run Model → dashboard launches in the browser (multi-mode dispatcher).
 
 ## Troubleshooting
@@ -154,8 +154,8 @@ Same issue with `Example/`. The code falls back to the bundled copy at `_MEIPASS
 **".exe folder is 500 MB+"**
 PyInstaller pulled in a heavy library you don't actually use. Run with `--log-level INFO` and look for surprising entries; add them to `--exclude-module`.
 
-**"Run Model says input.inp not found" or "Could not start remfluor_v8a.exe"**
-`template.inp` (bundled) and/or `remfluor_v8a.exe` (external) weren't shipped. Verify the `--add-data "template.inp;."` line in `build_exe.bat` and that `remfluor_v8a.exe` exists in the project root before building (it gets `copy`'d next to the launcher post-build).
+**"Run Model says input.inp not found" or "Could not start remfluor_v9a.exe"**
+`template.inp` (bundled) and/or `remfluor_v9a.exe` (external) weren't shipped. Verify the `--add-data "template.inp;."` line in `build_exe.bat` and that `remfluor_v9a.exe` exists in the project root before building (it gets `copy`'d next to the launcher post-build).
 
 **"Dashboard subprocess silently fails"**
 The `--mode=dashboard` dispatcher at the top of `main.py` is missing or the `run_model.py` `sys.frozen` branch isn't there. Both should already be in v99+ codebases — see the dashboard subprocess section above.

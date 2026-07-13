@@ -8,10 +8,21 @@ import os
 from .state import get_state, INPUT_TXT_FILES
 
 
-def run(app) -> list:
+def run(app, delete_files: bool = True) -> list:
     """
-    Clear all model cells in state and delete .txt input files.
+    Clear all model cells in state and (optionally) delete .txt input files.
     Returns list of deleted filenames.
+
+    delete_files:
+      True  (default) — standalone "Clear All Data": wipe the working
+                        folder's sidecars for a genuine clean slate.
+      False — used as step 1 of Load Data.  v106 FIX: Load must NOT delete
+              the sidecars, because Save now makes the saved folder the
+              working folder, so loading from it would delete the very
+              dispersivity_inputs.txt / psb_inputs.txt that restore is about
+              to read (breaking "Enter Your Own Value" dispersivity, which
+              has no preset to fall back on).  restore_from_saved does its
+              own same-folder-safe cleanup, so nothing stale leaks.
     """
     state = get_state()
     state.snapshot(app)
@@ -19,19 +30,20 @@ def run(app) -> list:
     # Zero all restore-related cells
     state.clear_restore_cells()
 
-    # Delete .txt files from working directory
+    # Delete .txt files from working directory (only for a real Clear).
     work_dir = state.work_dir or os.getcwd()
     deleted = []
-    for fname in INPUT_TXT_FILES:
-        fpath = os.path.join(work_dir, fname)
-        if os.path.exists(fpath):
-            try:
-                os.chmod(fpath, 0o666)
-                os.remove(fpath)
-                deleted.append(fname)
-                print(f"Deleted: {fname}")
-            except Exception as e:
-                print(f"Warning: could not delete {fname}: {e}")
+    if delete_files:
+        for fname in INPUT_TXT_FILES:
+            fpath = os.path.join(work_dir, fname)
+            if os.path.exists(fpath):
+                try:
+                    os.chmod(fpath, 0o666)
+                    os.remove(fpath)
+                    deleted.append(fname)
+                    print(f"Deleted: {fname}")
+                except Exception as e:
+                    print(f"Warning: could not delete {fname}: {e}")
 
     state.push(app)
 

@@ -102,9 +102,30 @@ def read_dispersivity(app, folder):
     mode = d.get("Heterogeneity Mode")
     if mode:
         _s(app, "v_het", mode)
-    _s(app, "v_alpha_l", d.get("Longitudinal alphax", ""))
-    _s(app, "v_alpha_t", d.get("Transverse alphay", ""))
-    _s(app, "v_alpha_v", d.get("Vertical alphaz", ""))
+    # v107: honour the sidecar's own "Units:" line.  Values were saved
+    # in the unit the UI showed at save time; if the UI is currently in
+    # the OTHER unit (e.g. old save whose store_info lacked the unit
+    # flag), convert so the alpha cells match their unit labels.
+    FT2M = 0.3048
+    f_u = (d.get("Units") or "").strip().lower()
+    try:
+        c_u = str(app.v_units.get()).strip().lower()
+    except Exception:
+        c_u = ""
+    factor = 1.0
+    if f_u in ("feet", "meters") and c_u in ("feet", "meters") and f_u != c_u:
+        factor = FT2M if f_u == "feet" else (1.0 / FT2M)   # → current unit
+
+    def _conv(v):
+        if factor == 1.0 or v in (None, ""):
+            return v
+        try:
+            return f"{float(str(v).replace(',', '')) * factor:g}"
+        except (TypeError, ValueError):
+            return v
+    _s(app, "v_alpha_l", _conv(d.get("Longitudinal alphax", "")))
+    _s(app, "v_alpha_t", _conv(d.get("Transverse alphay", "")))
+    _s(app, "v_alpha_v", _conv(d.get("Vertical alphaz", "")))
     # §5 General Molecular Diffusion Coefficient — restore the exact saved
     # value and flag it as a manual override so the §5 PFAA trace
     # (_on_pfaa_change → _update_mol_diff) keeps it instead of replacing it
@@ -189,6 +210,43 @@ def read_psb(app, folder):
             continue
         if label in d:
             _s(app, attr, d[label])
+    return True
+
+
+def mol_diff_from_state_fallback(app, state, folder):
+    """v107: restore the §5 General Molecular Diffusion Coefficient when
+    the dispersivity sidecar can't supply it (folder saved before v106,
+    sidecar missing the line, or an Example folder).
+
+    inp_to_state recovers the value from input.inp into state["E44"]
+    (m²/s), but E44 is deliberately NOT in CELL_MAP — state.push must
+    not clobber the trace-managed §5 cell — so without this fallback a
+    user-entered coefficient silently reverted to the species-table
+    default on Load.  Flags the value as a manual override (pinned to
+    the loaded PFAA-1) so _update_mol_diff keeps it.
+
+    No-op when the sidecar already carried the exact value."""
+    d = _parse_kv(os.path.join(folder, DISPERSIVITY_FILE))
+    if d.get("Molecular Diffusion m2s") not in (None, ""):
+        return False          # sidecar already applied the exact value
+    e44 = state.get("E44")
+    if e44 in (None, ""):
+        return False
+    try:
+        val = f"{float(e44):.2E}"
+    except (TypeError, ValueError):
+        return False
+    setter = getattr(app, "_set_mol_diff", None)
+    if callable(setter):
+        setter(val)
+    else:
+        _s(app, "v_mol_diff", val)
+    try:
+        app._mol_diff_user_edited = True
+        pf = getattr(app, "v_pfaa1", None)
+        app._mol_diff_last_species = pf.get() if pf is not None else None
+    except Exception:
+        pass
     return True
 
 

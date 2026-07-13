@@ -33,13 +33,18 @@ def _fmt_kf(v):
     return f"{x:,.4f}".rstrip("0").rstrip(".")
 
 
-def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
+def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int,
+                       volfrac: float = 1.0):
     """
     Push all values from a parsed input.inp (data) and additional info
     (additional) into AppState.
 
     unit_flag: 1 = feet, 2 = meters
     Data in input.inp is always in metres; convert back to feet if unit_flag==1.
+
+    volfrac: transmissive volume fraction from heterogeneity_inputs.txt.
+    generate_input_file writes vd × volfrac to input.inp, so the loader
+    must divide it back out to recover the ORIGINAL user velocity.
     """
     ft = (unit_flag == 1)
 
@@ -94,7 +99,19 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
         state.set("E15", cv(lysource * dy * 2))
 
     # ── Velocity ──────────────────────────────────────────────────────────
-    vd_val = cv(data.get('vd'))
+    # v107: input.inp stores the EFFECTIVE Darcy velocity (vd × transmissive
+    # volume fraction — see generate_input_file v106).  The UI must show
+    # the ORIGINAL value before that scaling, so divide volfrac back out.
+    # When store_info has the explicit "Bulk Darcy Velocity" line (v102+
+    # saves) that exact user value overrides this recovery further below.
+    vd_raw = data.get('vd')
+    try:
+        _vf = float(volfrac)
+    except (TypeError, ValueError):
+        _vf = 1.0
+    if vd_raw is not None and 0 < _vf < 1.0:
+        vd_raw = vd_raw / _vf
+    vd_val = cv(vd_raw)
     state.set("C22", vd_val)   # UI widget v_darcy
     state.set("E22", vd_val)   # also keep E22 for generate_input_file fallback
 
@@ -110,6 +127,10 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
     # ── PSB / plume remediation ──────────────────────────────────────────
     iwall = data.get('iwall', 0)
     state.set("R22", bool(iwall))
+    # v107: True when the Kf values below were recovered from input.inp's
+    # fcackf (always in ug units) rather than taken verbatim from a
+    # sidecar.  Guards the store_info unit override further below.
+    kf_derived_in_ug = False
 
     if iwall:
         x1 = data.get('x1'); x2 = data.get('x2')
@@ -122,13 +143,23 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
             state.set("Y82",  width)
             state.set("AH27", width)
 
-        version_flag = state.get("A8", 2)
+        # v107 FIX: Year PSB Installed + # of PSB x-cells were routed by
+        # the PRE-LOAD UI version (state A8 isn't updated from the loaded
+        # store_info until later in this function).  Loading a Detailed
+        # model while the UI sat on Simple sent the year to AB26 — which
+        # is the Converted-Kf-4 cell, NOT a year cell — and never set
+        # AC82, so both fields came up wrong/blank.  v_psb_yr is bound to
+        # AB28 in BOTH versions (see state.CELL_MAP), so always write
+        # there; likewise always restore the x-cell count when present.
         tplume1 = data.get('tplume1', 0)
-        if version_flag == 1:
-            state.set("AB26", tplume1 + start_t if tplume1 else None)
+        if tplume1:
+            _yr = tplume1 + start_t
+            # Render whole years as int so the UI shows "2025" not "2025.0"
+            state.set("AB28", int(_yr) if float(_yr).is_integer() else _yr)
         else:
-            state.set("AB28", tplume1 + start_t if tplume1 else None)
-            n_cells = data.get('nxpsb')
+            state.set("AB28", None)
+        n_cells = data.get('nxpsb')
+        if n_cells is not None:
             # # of cells in PSB in x-direction — UI cell AC82 (legacy AH29).
             state.set("AC82", n_cells)
             state.set("AH29", n_cells)
@@ -158,20 +189,53 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
             state.set("Z23", data.get('fra1'))
             state.set("AB23", data.get('fra3'))
         if psb_load:
-            # input.inp stores fcackf in ug; V24 = fcackf/loading is
-            # therefore in (ug/kg)(ug/L)^(-a).  Force the unit dropdown
-            # so the §9 Converted-Kf auto-formula stays self-consistent.
-            state.set("U24", "(ug/kg)(ug/L)^(-a)")
+            # input.inp stores fcackf = ConvertedKf(ug) × loading.
+            # v107: the user's saved unit is a MUST.  For MASS-prefix
+            # units (ng/ug/mg — recorded in store_info "PSB Kf Unit")
+            # the ug-conversion is invertible with the per-column
+            # exponent a (fra*, also in input.inp):
+            #     raw = conv / m^(1-a),  m = 1e-3 / 1 / 1e3
+            # so restore the RAW values in the user's own unit.  With
+            # the unit equal to the canonical ug one, raw == converted —
+            # the §9 rows show identical numbers, as expected.
+            # Mol-based units additionally need the MW cells, which only
+            # the psb_inputs.txt sidecar carries; for those (or when no
+            # unit was saved) fall back to canonical ug — and read_psb
+            # overwrites with the exact raw values when the sidecar
+            # exists.
+            _unit = str((additional or {}).get('psb_kf_unit') or "").lower()
+            _m = None
+            for _k, _f in (("ng/kg", 1e-3), ("ug/kg", 1.0), ("mg/kg", 1e3)):
+                if _k in _unit:
+                    _m = _f
+                    break
+
+            def _raw_kf(fcackf, a):
+                conv = (fcackf or 0) / psb_load
+                if _m is not None and _m != 1.0:
+                    try:
+                        return conv / (_m ** (1.0 - (a or 0)))
+                    except (OverflowError, ZeroDivisionError, ValueError):
+                        return conv
+                return conv
+
+            if _m is not None:
+                # user's mass unit recovered exactly — keep it
+                state.set("U24", additional['psb_kf_unit'])
+                kf_derived_in_ug = False
+            else:
+                kf_derived_in_ug = True
+                state.set("U24", "(ug/kg)(ug/L)^(-a)")
             # Format with thousands separators so the §9 cells read
             # "1,227,951" instead of "1227951.0" (the §9 trace strips
             # commas before re-converting to float).
-            state.set("V24", _fmt_kf((data.get('fcackf2') or 0) / psb_load))
-            state.set("X24", _fmt_kf((data.get('fcackf4') or 0) / psb_load))
+            state.set("V24", _fmt_kf(_raw_kf(data.get('fcackf2'), data.get('fra2'))))
+            state.set("X24", _fmt_kf(_raw_kf(data.get('fcackf4'), data.get('fra4'))))
             if data.get('ipre', 0) == 1:
-                state.set("Z24",  _fmt_kf((data.get('fcackf1') or 0) / psb_load))
-                state.set("AB24", _fmt_kf((data.get('fcackf3') or 0) / psb_load))
+                state.set("Z24",  _fmt_kf(_raw_kf(data.get('fcackf1'), data.get('fra1'))))
+                state.set("AB24", _fmt_kf(_raw_kf(data.get('fcackf3'), data.get('fra3'))))
     else:
-        for addr in ("X74","Y82","AA82","AC82",
+        for addr in ("X74","Y82","AA82","AC82","AB28",
                      "V23","X23","Z23","AB23",
                      "V24","X24","Z24","AB24",
                      "AE25","AH27","AH28","AH29"):
@@ -283,7 +347,15 @@ def write_inp_to_state(state, data: dict, additional: dict, unit_flag: int):
             state.set("K38", additional['precursor1'] or "None")
         if additional.get('precursor2') is not None:
             state.set("M38", additional['precursor2'] or "None")
-        if additional.get('psb_kf_unit'):
+        # v107 FIX: only restore the saved Kf unit when the Kf VALUES were
+        # not derived from input.inp's fcackf.  The derived values are
+        # always in (ug/kg)(ug/L)^(-a); overriding just the unit dropdown
+        # with the user's original unit made the §9 unit/value pair
+        # inconsistent (and the Converted-Kf trace then re-converted the
+        # already-converted numbers).  When a psb_inputs.txt sidecar
+        # exists, sidecars.read_psb (after state.push) restores the exact
+        # raw values TOGETHER with this unit, so nothing is lost.
+        if additional.get('psb_kf_unit') and not kf_derived_in_ug:
             state.set("U24", additional['psb_kf_unit'])
 
         for i, name in enumerate(additional.get('monitoring_well_names', [])[:7]):

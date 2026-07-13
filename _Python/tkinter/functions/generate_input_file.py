@@ -326,14 +326,45 @@ def build_inp_data(state) -> dict:
         nx1 = round(X / dx) if dx else 100
         nxpsb = 0; nx2 = 0
     else:
+        # v107: x-grid consistency.  The three regions tile [0, xmax]:
+        #   [0, x1] → nx1 cells of ~dx, [x1, x2] → nxpsb cells (PSB's
+        #   own discretization), [x2, xmax] → nx2 cells of ~dx.
+        # With dx = 1 m and nxpsb defaulted from the PSB width, the
+        # counts sum to xmax (e.g. 132 = 108 + 12 + 12); a finer PSB
+        # grid only raises nxpsb (0.25 m in a 12 m PSB → 48).
+        # v107: keep the PSB inside the domain so nx2 can't go negative.
+        if X and x2 > X:
+            x2 = X
+            if x1 > X:
+                x1 = X
         nxpsb_raw = _addr_first("AC82", "AH29")
         nxpsb = _safe_int(nxpsb_raw, 0)
+        if nxpsb <= 0:
+            # v107 FIX: a blank "# of cells in PSB" used to write
+            # nxpsb = 0 — a zero-cell barrier the solver treats as no
+            # PSB at all.  Default to the PSB width discretized at the
+            # global dx (≥ 1 cell) so an enabled PSB always has cells.
+            _w = x2 - x1
+            nxpsb = max(1, round(_w / dx)) if (dx and _w > 0) else 1
         nx1   = round(x1 / dx) if dx else 0
         nx2   = round((X - x2) / dx) if dx else 0
+        if nx2 < 0:
+            nx2 = 0
 
     if dy_file:
         dy = round(dy_file, 2)
         ny = round(Y / dy) if dy > 0 else 5
+        # v107 FIX: dy×ny must SPAN the user's Y size.  The sidecar dy is
+        # a fixed target cell size (Simple mode can't even edit it — it
+        # defaults to 5 m), so with a small Y the grid came out "5, 1"
+        # regardless of the Y-direction input (e.g. Y=6.1 m → ny=1 but
+        # the grid only covered 5 m).  Keep ny from the target cell size
+        # but recompute dy = Y/ny so the grid always matches Y exactly.
+        # For Y that divides evenly (Example: Y=50, dy=5 → ny=10, dy=5)
+        # this is a no-op.
+        ny = max(1, ny)
+        if Y:
+            dy = round(Y / ny, 2)
     else:
         ny = 5
         dy = round(Y / ny, 2)
@@ -596,6 +627,17 @@ def build_inp_data(state) -> dict:
     z_top_default = float(Z) if (Z is not None and Z != 0) else 10.0
     z_bot_default = z_top_default / 2.0
 
+    # v107 FIX: well screen depths must not exceed the grid's actual z
+    # extent AS WRITTEN to input.inp (dz is rounded to 2 decimals, so
+    # dz×nz can be slightly SMALLER than Z — e.g. Z=6.7056 m from 22 ft
+    # → dz 0.67 × nz 10 = 6.7, while zwelltop formatted from Z came out
+    # 6.71 > 6.7 and put the well outside the model).  Clamp both
+    # zwelltop and zwellbot to dz×nz.
+    try:
+        grid_ztop = round(float(dz) * nz, 6) if (dz and nz) else None
+    except (TypeError, ValueError):
+        grid_ztop = None
+
     # Try to load per-well depths from mw_observations.json sidecar.
     # The sidecar stores depths in the USER'S unit (ft or m); c() will
     # convert to meters for input.inp.
@@ -648,6 +690,14 @@ def build_inp_data(state) -> dict:
                             z_bot = float(bv)
                 except Exception:
                     pass
+        # v107: clamp screen interval inside the written grid (see
+        # grid_ztop above) — applies to the Z-default path AND per-well
+        # depths from mw_observations.json.
+        if grid_ztop is not None:
+            if z_top > grid_ztop:
+                z_top = grid_ztop
+            if z_bot > z_top:
+                z_bot = z_top
         wells.append(
             f"{nwell}, {_smart_fmt(xwell_f)}, 0, "
             f"{_smart_fmt(z_top)}, {_smart_fmt(z_bot)}"
@@ -737,6 +787,21 @@ def run(app) -> bool:
     state = get_state()
     state.snapshot(app)
 
+    # v107: safety net — manual runs must NEVER use leftover calibration
+    # overrides.  cali_1 clears these itself when it finishes/cancels,
+    # but if the calibration popup dies without its _on_done firing the
+    # overrides would silently pin volfrac / difflen / Koc / decay rates
+    # and input.inp would stop reflecting the dashboard.  The calibrator
+    # never calls run() (it uses build_inp_data directly), so clearing
+    # here can't interfere with an active calibration.
+    for _k in ("_calib_volfrac", "_calib_difflen",
+               "_calib_ock1", "_calib_ock2", "_calib_ock3", "_calib_ock4",
+               "_calib_decayf1", "_calib_decayf3"):
+        try:
+            state.set(_k, None)
+        except Exception:
+            pass
+
     work_dir = state.work_dir or os.getcwd()
     # v100: template.inp is a bundled read-only asset.  In a frozen
     # .exe build it lives at sys._MEIPASS, not next to the .exe.  Try
@@ -788,3 +853,4 @@ def run(app) -> bool:
     except Exception as e:
         messagebox.showerror("Error", f"Could not write input.inp:\n{e}")
         return False
+# v107 sync marker

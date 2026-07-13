@@ -761,7 +761,13 @@ def run(app, parent=None) -> bool:
     # which checks the app folder (so a user-supplied override works) then
     # falls back to the PyInstaller bundle (sys._MEIPASS).
     inp_path = os.path.join(project, "input.inp")
-    exe_path = _resolve_asset("remfluor_v8a.exe")
+    # v107: solver renamed to remfluor_v9a.exe; keep v8a as a fallback so
+    # older installs / model folders still run.
+    exe_path = _resolve_asset("remfluor_v9a.exe")
+    if not os.path.exists(exe_path):
+        _old = _resolve_asset("remfluor_v8a.exe")
+        if os.path.exists(_old):
+            exe_path = _old
 
     if not os.path.exists(inp_path):
         messagebox.showerror(
@@ -788,7 +794,8 @@ def run(app, parent=None) -> bool:
     try:
         process = subprocess.Popen(cmd, shell=True, cwd=project)
     except Exception as e:
-        messagebox.showerror("Run Model", f"Could not start remfluor_v8a.exe:\n{e}")
+        messagebox.showerror("Run Model",
+                             f"Could not start {os.path.basename(exe_path)}:\n{e}")
         return False
 
     sheet_name = getattr(app, "active_sheet", "Simple")
@@ -809,7 +816,7 @@ def run(app, parent=None) -> bool:
     label.pack(padx=32, pady=(40, 14), fill="x")
 
     detail = tk.Label(root,
-                      text="Running remfluor_v8a.exe ...\n"
+                      text=f"Running {os.path.basename(exe_path)} ...\n"
                            "Dashboard will open in your browser when finished.",
                       font=("Arial", 12), bg="#F0F0F0", fg="#555",
                       justify="center", wraplength=1080)

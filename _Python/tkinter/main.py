@@ -345,6 +345,13 @@ def _ensure_state_work_dir():
             st.bundle_dir = BUNDLE_DIR
         except Exception:
             pass
+        # v107: BASE_DIR (folder containing the .exe) never changes even
+        # when Save/Load switches work_dir to a model folder — Paste
+        # Example uses it to find the shipped Example/ next to the .exe.
+        try:
+            st.base_dir = BASE_DIR
+        except Exception:
+            pass
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -593,8 +600,13 @@ def run_script(macro_name, extra_args=None):
             return
 
         if macro_name == "Load_Data":
-            # Step 1: clear, Step 2: restore from saved folder
-            clear_for_restore.run(_app_ref)
+            # Step 1: clear CELLS only (v106: delete_files=False so the
+            # saved folder's sidecars survive — Save makes the saved folder
+            # the working folder, and restore_from_saved reads the sidecars
+            # from there.  Deleting them here wiped custom "Enter Your Own
+            # Value" dispersivity + PSB raw values on Load).
+            # Step 2: restore from the saved folder.
+            clear_for_restore.run(_app_ref, delete_files=False)
             restore_from_saved.run(_app_ref)
             return
 

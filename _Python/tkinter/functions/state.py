@@ -243,6 +243,11 @@ class AppState:
         # --onefile build = sys._MEIPASS (the temp unpack location for
         # PyInstaller --add-data files like Example/, docs/, Figures/).
         self.bundle_dir: str = ""
+        # v107: folder containing the .exe (or project root in dev).
+        # Unlike work_dir this NEVER changes when the user saves/loads a
+        # model into another folder — used to find the shipped Example/
+        # folder, which lives next to the .exe.
+        self.base_dir: str = ""
 
     # ── primitive access ─────────────────────────────────────────────────
 

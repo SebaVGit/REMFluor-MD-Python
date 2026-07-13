@@ -652,11 +652,18 @@ def run(app, parent=None) -> bool:
         here = os.path.dirname(os.path.abspath(__file__))
         project = os.path.abspath(os.path.join(here, "..", "..", ".."))
         bundle = project
-    exe_path = os.path.join(project, "remfluor_v8a.exe")
-    if not os.path.exists(exe_path):
-        alt = os.path.join(bundle, "remfluor_v8a.exe")
-        if os.path.exists(alt):
-            exe_path = alt
+    # v107: solver renamed to remfluor_v9a.exe; v8a kept as fallback.
+    exe_path = None
+    for _name in ("remfluor_v9a.exe", "remfluor_v8a.exe"):
+        for _base in (project, bundle):
+            cand = os.path.join(_base, _name)
+            if os.path.exists(cand):
+                exe_path = cand
+                break
+        if exe_path:
+            break
+    if exe_path is None:
+        exe_path = os.path.join(project, "remfluor_v9a.exe")
     if not os.path.exists(exe_path):
         messagebox.showerror(
             "Run Machine Based Calibration",
@@ -790,13 +797,37 @@ def run(app, parent=None) -> bool:
         except Exception:
             pass
 
+    def _clear_calib_overrides():
+        """v107: drop the per-eval state overrides (_calib_*) that the
+        DDS setters wrote.  They exist ONLY so build_inp_data can vary
+        sidecar-backed knobs during calibration; leaving them in state
+        made EVERY later manual Run Model silently ignore the dashboard
+        / popup values (volfrac, difflen, Koc, decay rates) — the user
+        saw input.inp stop matching what they typed.  All optimal
+        values are persisted to their real homes (sidecars / UI cells)
+        in the steps above before this runs."""
+        try:
+            _st = get_state()
+        except Exception:
+            return
+        for k in ("_calib_volfrac", "_calib_difflen",
+                  "_calib_ock1", "_calib_ock2",
+                  "_calib_ock3", "_calib_ock4",
+                  "_calib_decayf1", "_calib_decayf3"):
+            try:
+                _st.set(k, None)
+            except Exception:
+                pass
+
     def _on_done():
         if result_holder["err"]:
+            _clear_calib_overrides()
             label.config(text="Calibration FAILED")
             detail.config(text=result_holder["err"])
             return
         res = result_holder["res"]
         if res is None:
+            _clear_calib_overrides()
             label.config(text="Cancelled.")
             return
         # Step 1 — write best DDS values into v_calib_mid.  This is
@@ -991,6 +1022,40 @@ def run(app, parent=None) -> bool:
         except Exception as exc:
             print(f"[cali] retardation_inputs.txt write failed: {exc}")
 
+        # Step 3c — v107: persist calibrated precursor decay RATES to
+        # the §5 half-life cells (K41/M41 hold half-lives; the solver
+        # rate = ln(2)/half-life).  These were the last two parameters
+        # living ONLY in the _calib_decayf* state overrides, which are
+        # cleared below — without this write the optimum was lost the
+        # moment the overrides were dropped.
+        try:
+            _chk2 = getattr(app, "v_calib_chk", [])
+            def _chkd(idx):
+                if idx is None or idx >= len(_chk2):
+                    return False
+                try: return bool(_chk2[idx].get())
+                except Exception: return False
+            for _lbl, _attr in (
+                ("First order decay rate coefficient for Precursors-1 (decayf(1))",
+                 "v_trans_rate_3"),
+                ("First order decay rate coefficient for Precursors-2 (decayf(3))",
+                 "v_trans_rate_4"),
+            ):
+                _di = label_to_idx.get(_lbl)
+                if _di is None or _di >= len(mid) or not _chkd(_di):
+                    continue
+                try:
+                    _rate = float(mid[_di].get())
+                except Exception:
+                    continue
+                if _rate > 0:
+                    _v = getattr(app, _attr, None)
+                    if _v is not None:
+                        try: _v.set(f"{math.log(2) / _rate:g}")
+                        except Exception: pass
+        except Exception as exc:
+            print(f"[cali] decay-rate persist failed: {exc}")
+
         # Step 4 - push Mid -> app source cells
         cb = getattr(app, "_push_calib_mids_to_inputs", None)
         if callable(cb):
@@ -1025,6 +1090,12 @@ def run(app, parent=None) -> bool:
                     v.set(snap)
             except Exception:
                 pass
+
+        # v107: all optimal values are now persisted to their real
+        # homes (UI cells + sidecar txts) — drop the per-eval state
+        # overrides so subsequent manual Run Models build input.inp
+        # from the dashboard again.
+        _clear_calib_overrides()
 
         # Save run history.  v103: add an "iter" column (0-indexed),
         # a "Best?" column marking the optimum row, and write the

@@ -3,7 +3,7 @@ REM ============================================================
 REM REMFluor-MD — PyInstaller build script (v104, --onedir)
 REM ============================================================
 REM Run from THIS folder (project root, the one containing
-REM template.inp + remfluor_v8a.exe + the _Python folder).
+REM template.inp + remfluor_v9a.exe + the _Python folder).
 REM
 REM Usage:
 REM     conda activate remfluor
@@ -39,7 +39,7 @@ REM                     - users can clone & modify example inputs
 REM                     - dev can hot-patch docs without rebuilding
 REM   Figures/, template.inp        — STAY bundled.  Internal
 REM                     runtime assets, never user-edited.
-REM   remfluor_v8a.exe   — EXTERNAL (next to .exe).  Allows swapping
+REM   remfluor_v9a.exe   — EXTERNAL (next to .exe).  Allows swapping
 REM                     the Fortran solver without rebuilding the GUI.
 REM ============================================================
 
@@ -74,8 +74,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "remfluor_v8a.exe" (
-    echo WARNING: remfluor_v8a.exe not found in this folder.
+if not exist "remfluor_v9a.exe" (
+    echo WARNING: remfluor_v9a.exe not found in this folder.
     echo          The Run Model button will not work in the .exe.
 )
 if not exist "template.inp" (
@@ -198,12 +198,12 @@ if exist "Example" (
         echo   Example\  copied.
     )
 )
-if exist "remfluor_v8a.exe" (
-    copy /Y "remfluor_v8a.exe" "dist\REMFluor-MD\" >nul
+if exist "remfluor_v9a.exe" (
+    copy /Y "remfluor_v9a.exe" "dist\REMFluor-MD\" >nul
     if errorlevel 1 (
-        echo WARNING: remfluor_v8a.exe copy failed.
+        echo WARNING: remfluor_v9a.exe copy failed.
     ) else (
-        echo   remfluor_v8a.exe  copied.
+        echo   remfluor_v9a.exe  copied.
     )
 )
 
@@ -233,6 +233,6 @@ echo   1. Run dist\REMFluor-MD\REMFluor-MD.exe locally.
 echo   2. Then test on a clean machine ^(no Python, no conda installed^).
 echo   3. Click a "?" chicklet to verify external docs\ resolves.
 echo   4. Click Paste Example to verify external Example\ resolves.
-echo   5. Click Run Model to verify external remfluor_v8a.exe runs.
+echo   5. Click Run Model to verify external remfluor_v9a.exe runs.
 
 endlocal
