@@ -15,7 +15,6 @@ Source Treatment Start Year:,None
 Source Concentration Reduction:,None
 
 Sample Year:,2025.0
-Sample Event:,
 
 Unit Flag (AD1):,2
 Dispersivity Flag (AC1):,2
@@ -30,9 +29,9 @@ Precursor 1:,PFAA 1-able
 Precursor 2:,PFAA 2-able
 PSB Kf Unit:,(ug/kg)(ug/L)^(-a)
 
-PSB Loading (AH28):,None
+PSB Loading (AH28):,0.0024
 
-Bulk Darcy Velocity (vd):,10.0
+Bulk Darcy Velocity (vd):,12.5
 Effective Porosity (porf):,0.2
 
 Monitoring Well Names (Simple Version):

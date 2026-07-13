@@ -187,6 +187,32 @@ def _smart_fmt(v, fallback="0"):
     return s
 
 
+def _coord_fmt(v, fallback="0", decimals=3):
+    """Distance/coordinate formatter that preserves sub-metre precision at
+    ALL magnitudes.  _smart_fmt collapses any value >= 100 to zero decimals,
+    which truncated the PSB x1/x2 boundaries and xmax in input.inp (e.g.
+    100.4 -> \"100\", 105.5 -> \"106\", 300.5 -> \"300\").  This keeps up to
+    `decimals` places and strips trailing zeros, so 100.4 stays \"100.4\",
+    105.500 -> \"105.5\", and whole numbers stay clean (\"300\", not
+    \"300.000\").  It also cleans float dust from feet->metre conversion and
+    from the x2 = x1 + width sum.  (Ron review items 3 & 4.)
+    """
+    try:
+        if v is None:
+            return fallback
+        x = float(v)
+    except (TypeError, ValueError):
+        return fallback
+    if x == 0:
+        return "0"
+    s = f"{x:.{decimals}f}"
+    if '.' in s:
+        s = s.rstrip('0').rstrip('.')
+        if not s or s == '-':
+            s = "0"
+    return s
+
+
 def build_inp_data(state) -> dict:
     """
     Read all values from AppState and build the same dict that
@@ -605,7 +631,19 @@ def build_inp_data(state) -> dict:
     # numerical
     num_data = _read_txt(os.path.join(work_dir, 'numerical_inputs.txt'))
     iTVD = int(num_data.get("iTVD", 1))
-    dt   = num_data.get("Timestep Size (yr) ", 0.1)
+    # _read_txt() strips keys, so the stored key is "Timestep Size (yr)"
+    # (no trailing space).  The popup writes "Timestep Size (yr) ".  Look up
+    # the stripped key first, keep the legacy trailing-space key as a
+    # fallback, and coerce to float so the user's Section 11 value actually
+    # reaches input.inp instead of silently defaulting to 0.1.
+    dt = num_data.get("Timestep Size (yr)",
+                      num_data.get("Timestep Size (yr) ", 0.1))
+    try:
+        dt = float(dt)
+    except (ValueError, TypeError):
+        dt = 0.1
+    if dt <= 0:
+        dt = 0.1
     nt   = int((endT - startT) / dt)
     see_every = _safe_float(state.get("V47", 10))
     npt  = int(see_every / dt) if dt else 100
@@ -712,9 +750,11 @@ def build_inp_data(state) -> dict:
     alphax = _smart(alphax)
     alphay = _smart(alphay)
     alphaz = _smart(alphaz)
-    x1     = _smart(x1)
-    x2     = _smart(x2)
-    X      = _smart(X)       # xmax
+    # Ron review items 3 & 4: keep decimals on the PSB boundaries and
+    # xmax (values >= 100 were truncated to whole metres by _smart_fmt).
+    x1     = _coord_fmt(x1)
+    x2     = _coord_fmt(x2)
+    X      = _coord_fmt(X)   # xmax
     dy     = _smart(dy)
     dz     = _smart(dz)
     difflen = _smart(difflen)

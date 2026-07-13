@@ -84,15 +84,16 @@ def run(app, parent=None):
     txt_path = os.path.join(work_dir, "longevity_inputs.txt")
 
     # Inputs from app -------------------------------------------------------
-    # fcac comes from Section 9 PSB Loading (v_psb_load) — entered as %
-    # in storyboard; we need it as a fraction (0..1).
-    fcac_raw = _safe_float(_get_var(app, "v_psb_load"), None)
+    # fcac comes from Section 9 PSB Loading (v_psb_load).  Section 9 labels
+    # this field "(%)", so the value is ALWAYS a percent mass fraction —
+    # e.g. 0.8 means 0.8 % -> fcac = 0.008.  This mirrors the canonical
+    # conversion in generate_input_file.py (PSBloading = value / 100).
+    # A trailing "%" is stripped in case the user typed it.
+    fcac_raw = _safe_float(str(_get_var(app, "v_psb_load")).rstrip('%'), None)
     if fcac_raw is None or fcac_raw == 0:
-        fcac = 0.01            # 1 % default when blank / zero
-    elif fcac_raw > 1:
-        fcac = fcac_raw / 100  # value entered as percent
+        fcac = 0.01                # 1 % default when blank / zero
     else:
-        fcac = fcac_raw        # already a fraction
+        fcac = fcac_raw / 100.0    # Section 9 value is a percent
     # Width comes from Section 9 v_psb_width
     width = _safe_float(_get_var(app, "v_psb_width"), 4.0)
     # Vd from Section 3 (m/yr)

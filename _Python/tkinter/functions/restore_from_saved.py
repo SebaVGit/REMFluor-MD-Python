@@ -152,7 +152,26 @@ def run(app):
     # retardation_inputs.txt value on Load Data.
     ret_file = os.path.join(work_dir, "retardation_inputs.txt")
     pfas_names = parse_retardation_pfas_names(ret_file)
+    # v108: spurious-precursor guard (Ron review item 13).  The
+    # retardation_inputs.txt "PFAS Names" block can carry a STALE
+    # precursor species (e.g. "PFAA 1-able" inherited from an Example
+    # the user started from) even after the user cleared the precursor
+    # in the UI.  store_info is rewritten from the live UI on every
+    # Save, so when it records a precursor slot (K38 = Precursor 1,
+    # M38 = Precursor 2) as None/blank, honour that and do NOT let the
+    # stale retardation name re-add the component -- otherwise K38
+    # flips ipre=1 and Run Model demands Precursor-1 data that the
+    # model does not have.  Only the None case is guarded; when both
+    # sources name a species the retardation file still wins (v103).
+    _precursor_cleared = set()
+    for _addr, _key in (("K38", "precursor1"), ("M38", "precursor2")):
+        _pv = additional.get(_key)
+        if _pv is not None and str(_pv).strip().lower() in ("", "none"):
+            _precursor_cleared.add(_addr)
     for addr, name in pfas_names.items():
+        if addr in _precursor_cleared:
+            state.set(addr, "None")   # UI cleared it -> keep it cleared
+            continue
         if name and str(name).strip():
             state.set(addr, name)
 

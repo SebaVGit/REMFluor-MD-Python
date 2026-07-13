@@ -703,6 +703,21 @@ def run_script(macro_name, extra_args=None):
                     _mv = "Detailed" if getattr(_app_ref, "active_sheet",
                                                  "Simple") == "Detailed_2" \
                                        else "Simple"
+                    # v108: Section 9 PSB Loading round-trip fix.
+                    # v_psb_load is the PERCENT typed in the "(%)"
+                    # cell (e.g. 0.8 for 0.8 %).  The store_info
+                    # "PSB Loading (AH28)" line, the Example folders,
+                    # and inp_to_state all expect the raw FRACTION
+                    # here (AH28 = fraction).  Writing the percent made
+                    # Load multiply by 100 again (fcac 100x too big)
+                    # and mis-scale the Freundlich Kf.  Store the
+                    # fraction; the psb_inputs.txt sidecar keeps the
+                    # exact percent for an exact UI round-trip.
+                    _psb_pct = _app_ref.v_psb_load.get()
+                    try:
+                        _psb_frac = f"{float(str(_psb_pct).replace(chr(44), '').strip()) / 100.0:g}"
+                    except (TypeError, ValueError):
+                        _psb_frac = "None"
                     add_lines = [
                         "Additional Information Not in input.inp",
                         "=" * 50, "",
@@ -737,7 +752,7 @@ def run_script(macro_name, extra_args=None):
                         f"Precursor 1:,{_gv('v_pfaa3', 'None')}",
                         f"Precursor 2:,{_gv('v_pfaa4', 'None')}",
                         f"PSB Kf Unit:,{_gv('v_psb_kf_unit', '')}", "",
-                        f"PSB Loading (AH28):,{_app_ref.v_psb_load.get() or 'None'}", "",
+                        f"PSB Loading (AH28):,{_psb_frac}", "",
                         f"Bulk Darcy Velocity (vd):,{_app_ref.v_darcy.get()}",
                         f"Effective Porosity (porf):,{_app_ref.v_porf.get()}", "",
                         "Monitoring Well Names (Simple Version):",
@@ -838,8 +853,26 @@ def run_script(macro_name, extra_args=None):
                     copied.append("input.inp")        # already there
                 elif _copy_one(src_inp, dst_inp):
                     copied.append("input.inp")
-                # Every sidecar (.txt / .json)
+                # v108: "Save Input" saves ONLY input files.  Build the set
+                # of model OUTPUT files (the .out results + dashboard JSON,
+                # plus globbed obs_well*.out) so they are excluded from the
+                # sidecar copy below.  dashboard_state.json lives in
+                # INPUT_TXT_FILES for Load's sake but is a run OUTPUT, so it
+                # must be skipped here too.  (Ron review item 21.)
+                _output_files = set()
+                try:
+                    import glob as _glob
+                    from functions import run_model as _rm
+                    _output_files = set(_rm.DASHBOARD_RESULT_FILES)
+                    for _pat in _rm.DASHBOARD_RESULT_GLOBS:
+                        _output_files |= {os.path.basename(_p) for _p in
+                                          _glob.glob(os.path.join(work_dir, _pat))}
+                except Exception as exc:
+                    print(f"[Save_Data] output-file list failed: {exc}")
+                # Every INPUT sidecar (.txt / .json) — output files skipped.
                 for fname in _SIDECARS:
+                    if fname in _output_files:
+                        continue                      # never save outputs
                     src = os.path.join(work_dir, fname)
                     if not os.path.exists(src):
                         continue
@@ -848,31 +881,6 @@ def run_script(macro_name, extra_args=None):
                         continue
                     if _copy_one(src, os.path.join(dst, fname)):
                         copied.append(fname)
-                # v106: also save the model RESULT files (.out + the
-                # dashboard JSON) so the saved folder can later be opened
-                # with §11 "Visualize Saved Results".  These only exist
-                # after a Run Model; skip silently if the user hasn't run
-                # yet.  obs_well*.out is globbed.
-                try:
-                    import glob as _glob
-                    from functions import run_model as _rm
-                    _result_names = list(_rm.DASHBOARD_RESULT_FILES)
-                    for _pat in _rm.DASHBOARD_RESULT_GLOBS:
-                        _result_names += [os.path.basename(p) for p in
-                                          _glob.glob(os.path.join(work_dir, _pat))]
-                    for fname in _result_names:
-                        src = os.path.join(work_dir, fname)
-                        if not os.path.exists(src):
-                            continue
-                        if same_folder:
-                            if fname not in copied:
-                                copied.append(fname)
-                            continue
-                        if _copy_one(src, os.path.join(dst, fname)) \
-                                and fname not in copied:
-                            copied.append(fname)
-                except Exception as exc:
-                    print(f"[Save_Data] result-file copy failed: {exc}")
                 # v106: adopt the saved folder as the ACTIVE working folder
                 # so subsequent Run Model writes its input.inp + .out results
                 # here, and Visualize Results reads from here — one folder
@@ -887,15 +895,15 @@ def run_script(macro_name, extra_args=None):
                              "folder — existing files left in place)"
                              if same_folder else "")
                 messagebox.showinfo(
-                    "Save Data",
+                    "Save Input",
                     f"Saved {len(copied)} file(s) to:\n{dst}{same_note}\n\n"
                     + "\n".join(f"  {f}" for f in copied)
-                    + "\n\nThis is now your active model folder — Run Model "
-                      "will write results here, and Visualize Results will "
-                      "read from here."
+                    + "\n\nOnly input files were saved (no model results). "
+                      "This is now your active model folder — Run Model will "
+                      "write results here."
                 )
             except Exception as exc:
-                messagebox.showerror("Save Data",
+                messagebox.showerror("Save Input",
                                      f"Could not save:\n{exc}")
             return
 
@@ -936,7 +944,16 @@ def run_script(macro_name, extra_args=None):
         return
 
     if macro_name == "OpenAppendix_2_1_Relative":
+        # v108 (Ron review item 4): pure help link now -- opens
+        # Appendix 2.1 only.  The §2 grid-cells button no longer
+        # routes here; it uses OpenCellSizePopup so editing the grid
+        # does not force the appendix open every time.  This macro is
+        # now reached only from the small "?" help chicklet.
         _open_html(HTML_APPENDIX[macro_name])
+        return
+
+    if macro_name == "OpenCellSizePopup":
+        # v108: open ONLY the user-defined grid cell-size popup.
         if _FUNCS_LOADED and _app_ref is not None:
             try:
                 popups_cellsize.run(_app_ref)
@@ -3707,9 +3724,17 @@ class REMFluorApp(tk.Tk):
         # Starts at x = w1 + gap (right edge of Section2_1 + gap).
         opt_btn = make_btn(img_box,
                            "Optional: Enter user defined\nsize of grid cells",
-                           "OpenAppendix_2_1_Relative", quarto=True,
+                           "OpenCellSizePopup",
                            font=FONT_BTN_SM, width=24, bg=BTN_FILL)
         opt_btn.place(x=w1 + gap_px, y=8 + shift_px)   # 0.2" lower
+        # v108 (Ron review item 4): small "?" help chicklet beside the
+        # grid-cells button -> Appendix 2.1.  The button itself only
+        # opens the cell-size popup now, so the appendix no longer pops
+        # up every time the grid is edited.
+        opt_btn.update_idletasks()
+        _cs_help = help_link(img_box, "OpenAppendix_2_1_Relative")
+        _cs_help.place(x=w1 + gap_px + opt_btn.winfo_reqwidth() + 6,
+                       y=8 + shift_px + 4)
 
         # ── approx run time: next to Section2_2.  Because Section2_2
         #    is narrower, this starts further LEFT than the Optional
@@ -5139,7 +5164,7 @@ class REMFluorApp(tk.Tk):
         cells = [
             (0, 0, "Authors",          "Authors",                 BTN_FILL_GREEN, FG_BTN_GREEN),
             (0, 1, "Load Data",        "Load_Data",               "#FFFFFF",      FG_BTN_NAVY),
-            (0, 2, "Save Data",        "Save_Data",               BTN_FILL_GREEN, FG_BTN_GREEN),
+            (0, 2, "Save Input",       "Save_Data",               BTN_FILL_GREEN, FG_BTN_GREEN),
             # v106: new — visualize the output of a previous run.  Sits in
             # the previously-empty slot directly below "Authors".  Styled
             # like "Load Data" (white fill, navy text).
@@ -5181,7 +5206,7 @@ class REMFluorApp(tk.Tk):
         cells = [
             (0, 0, "Authors",        "Authors",       BTN_FILL_GREEN, FG_BTN_GREEN),
             (0, 1, "Load Data",      "Load_Data",     BG_INPUT_BLUE,  FG_BTN_NAVY),
-            (0, 2, "Save Data",      "Save_Data",     BTN_FILL_GREEN, FG_BTN_GREEN),
+            (0, 2, "Save Input",    "Save_Data",     BTN_FILL_GREEN, FG_BTN_GREEN),
             (1, 0, "Help",           "Help",          BTN_FILL,       FG_BTN_NAVY),
             (1, 1, "Clear All Data", "Clear_Data",    BTN_FILL,       FG_BTN_NAVY),
             (1, 2, "Paste Example",  "Paste_Example", BTN_FILL,       FG_BTN_NAVY),
