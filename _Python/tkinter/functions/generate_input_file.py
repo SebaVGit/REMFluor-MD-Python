@@ -445,6 +445,18 @@ def build_inp_data(state) -> dict:
     concs3 = ([_safe_float(state.get(f"AB{8+i}"), 0) for i in range(11)]
               if (ipre == 1 and ncomp == 2) else [0]*11)                  # Precursor 2
 
+    # v108 (client request): if the LAST Section 7 source year coincides
+    # with the Section 2 end-of-simulation year (endT), push that last
+    # source point out by 5 years before writing input.inp.  This keeps
+    # the source concentration series defined past the simulation end and
+    # avoids a boundary artifact when the source ends exactly at endT.
+    # times are RELATIVE (year - startT), so the check is startT + t == endT.
+    if times:
+        _last_t = max(times)
+        if _last_t > 0 and abs((startT + _last_t) - endT) < 1e-6:
+            times = [(_t + 5) if abs(_t - _last_t) < 1e-6 else _t
+                     for _t in times]
+
     # NOTE: calibration czero(*,n) multipliers are now baked into the
     # §7 cells PHYSICALLY at calibration finish + Load Optimal Data
     # (see main.py _apply_calib_multipliers_to_s7).  Reading the §7

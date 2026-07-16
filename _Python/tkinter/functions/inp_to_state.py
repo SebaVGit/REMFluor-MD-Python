@@ -5,6 +5,7 @@ Adapted from write_values_to_excel() in Source_Py/restore_from_saved_folder.py,
 but writes to state dict instead of xlwings cells.
 """
 import math
+import os
 
 
 M2FT = 1.0 / 0.3048   # meters -> feet

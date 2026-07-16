@@ -396,7 +396,10 @@ def _objective_for_app(app, work_dir, exe_path) -> Callable:
             _log_fail(f"build_inp_data failed: {exc}")
             return FAIL_PENALTY
 
-        proj = os.path.dirname(exe_path)
+        # v108 (client fix): write input.inp + run the solver in the
+        # calibration work_dir (the folder the user picked), NOT the
+        # install directory next to the .exe.
+        proj = work_dir
         # v100: template.inp is a bundled read-only asset (sys._MEIPASS
         # in frozen builds).  Try project first (user override), then
         # state.bundle_dir.  Output path stays in project (writable).
@@ -641,21 +644,20 @@ def run(app, parent=None) -> bool:
         "v_pfaa4": _snap_pfaa("v_pfaa4"),
     }
 
-    # Resolve solver path.  v100: in a frozen --onefile build the
-    # .exe is at sys._MEIPASS, not next to sys.executable.  Search
-    # both — project (writable, user-supplied override) first, then
-    # bundle (sys._MEIPASS).
+    # Resolve solver + template from the real install dir / bundle — used
+    # ONLY to find the .exe + template.inp, never as the calibration work
+    # dir (v108 fix: the work dir is a user-picked folder, see below).
     if getattr(sys, "frozen", False):
-        project = os.path.dirname(os.path.abspath(sys.executable))
-        bundle = getattr(sys, "_MEIPASS", project)
+        exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+        bundle = getattr(sys, "_MEIPASS", exe_dir)
     else:
         here = os.path.dirname(os.path.abspath(__file__))
-        project = os.path.abspath(os.path.join(here, "..", "..", ".."))
-        bundle = project
+        exe_dir = os.path.abspath(os.path.join(here, "..", "..", ".."))
+        bundle = exe_dir
     # v107: solver renamed to remfluor_v9a.exe; v8a kept as fallback.
     exe_path = None
     for _name in ("remfluor_v9a.exe", "remfluor_v8a.exe"):
-        for _base in (project, bundle):
+        for _base in (exe_dir, bundle):
             cand = os.path.join(_base, _name)
             if os.path.exists(cand):
                 exe_path = cand
@@ -663,12 +665,79 @@ def run(app, parent=None) -> bool:
         if exe_path:
             break
     if exe_path is None:
-        exe_path = os.path.join(project, "remfluor_v9a.exe")
+        exe_path = os.path.join(exe_dir, "remfluor_v9a.exe")
     if not os.path.exists(exe_path):
         messagebox.showerror(
             "Run Machine Based Calibration",
             f"Model executable not found:\n{exe_path}")
         return False
+
+    # v108 (client request): ask WHERE to run/save the calibration, like
+    # the Run Model prompt, so ALL its files (input.inp, obs_well*.out,
+    # output.out, run_history.csv, best_calib.json, cali_debug.log) land in
+    # the model folder the user picks -- NOT the install directory.  Copy
+    # the model input sidecars + template into that folder and adopt it as
+    # the active work_dir so build_inp_data reads the right inputs.
+    from tkinter import filedialog as _fd
+    from .state import get_state as _gs, INPUT_TXT_FILES as _SIDECARS
+    import shutil as _shutil
+    _state = _gs()
+    _old_wd = getattr(_state, "work_dir", "") or os.getcwd()
+    project = _fd.askdirectory(
+        title="Choose a folder to save the calibration input + results",
+        initialdir=_old_wd, mustexist=False, parent=parent or app)
+    if not project:
+        return False   # user cancelled the folder prompt
+    _cal_out = ["input.inp", "output.out", "run_history.csv",
+                "best_calib.json", "cali_debug.log"]
+    _existing = [f for f in _cal_out
+                 if os.path.exists(os.path.join(project, f))]
+    _existing += sorted(os.path.basename(_p) for _p in
+                        glob.glob(os.path.join(project, "obs_well*.out")))
+    if _existing:
+        _lst = "\n".join(f"  {f}" for f in sorted(set(_existing))[:12])
+        if not messagebox.askyesno(
+                "Overwrite Existing Files?",
+                "This folder already contains calibration files that will "
+                f"be overwritten:\n{project}\n\n{_lst}\n\nOverwrite them?",
+                parent=parent or app):
+            return False   # user chose not to overwrite
+    try:
+        os.makedirs(project, exist_ok=True)
+    except Exception as _exc:
+        messagebox.showerror("Run Machine Based Calibration",
+                             f"Could not use that folder:\n{_exc}",
+                             parent=parent or app)
+        return False
+    # Copy the model input sidecars into the calibration folder (unless it
+    # is already the model folder) so build_inp_data has everything.
+    try:
+        _same = (os.path.normcase(os.path.realpath(_old_wd)) ==
+                 os.path.normcase(os.path.realpath(project)))
+    except Exception:
+        _same = (_old_wd == project)
+    if not _same:
+        for _fn in _SIDECARS:
+            _src = os.path.join(_old_wd, _fn)
+            if os.path.exists(_src):
+                _dstf = os.path.join(project, _fn)
+                try:
+                    if os.path.exists(_dstf):
+                        try: os.chmod(_dstf, 0o666)
+                        except Exception: pass
+                    _shutil.copy2(_src, _dstf)
+                except Exception:
+                    pass
+    # Ensure template.inp is present in the calibration folder.
+    _tpl_dst = os.path.join(project, "template.inp")
+    if not os.path.exists(_tpl_dst):
+        for _b in (_old_wd, exe_dir, bundle):
+            _tpl_src = os.path.join(_b, "template.inp")
+            if os.path.exists(_tpl_src):
+                try: _shutil.copy2(_tpl_src, _tpl_dst)
+                except Exception: pass
+                break
+    _state.work_dir = project
 
     # Progress popup ----------------------------------------------------
     # Big + centered so the user can read iteration / RMSLE progress
@@ -1141,12 +1210,26 @@ def run(app, parent=None) -> bool:
                 _json.dump(payload, fp, indent=2)
         except Exception as exc:
             print(f"[cali] best_calib.json write failed: {exc}")
+        # v108: auto-save the optimal-model snapshot into the calibration
+        # folder so "Load Optimal Data" works with no separate Save button.
+        _snap_ok = False
+        try:
+            _wo = getattr(app, "_write_optimal_snapshot", None)
+            if callable(_wo):
+                _wp = _wo(project)
+                _snap_ok = bool(_wp) and os.path.exists(_wp)
+        except Exception as exc:
+            print(f"[cali] optimal snapshot auto-save failed: {exc}")
         label.config(text=f"Best RMSLE: {best_rmsle:.4g}")
+        _snap_line = ("optimal_model.txt saved (use '3. Load Optimal Data')"
+                      if _snap_ok else
+                      "WARNING: optimal_model.txt could NOT be saved")
         detail.config(
             text=f"{len(labels)} parameter(s) optimized over "
                  f"{len(res['x_history'])} evaluations.\n"
                  f"Best values pushed into the Mid-Range column.\n"
-                 f"Full history -> run_history.csv")
+                 f"All calibration files saved in:\n{project}\n"
+                 f"{_snap_line}   |   history -> run_history.csv")
         for child in btn_row.winfo_children():
             child.destroy()
         tk.Button(btn_row, text="Close", width=16, font=("Arial", 14),

@@ -380,6 +380,119 @@ _CALIB_PARAMS = [
 ]
 
 
+def _active_dir():
+    """The active model / calibration folder (state.work_dir), falling
+    back to BASE_DIR when it is unset."""
+    try:
+        wd = getattr(get_state(), "work_dir", "") or ""
+        if wd and os.path.isdir(wd):
+            return wd
+    except Exception:
+        pass
+    return BASE_DIR
+
+
+def _resolve_calib_dir(need_file=None, title="Select the calibration folder"):
+    """Folder the calibration buttons read/write.  Reuses the folder the
+    last calibration ran in (state.work_dir) when it exists and, if a
+    specific file is required, actually contains it; otherwise prompts the
+    user to locate it (and remembers it).  Returns None on cancel."""
+    from tkinter import filedialog as _fd
+    st = get_state()
+    wd = getattr(st, "work_dir", "") or ""
+    if wd and os.path.isdir(wd):
+        if need_file is None or os.path.exists(os.path.join(wd, need_file)):
+            return wd
+    chosen = _fd.askdirectory(title=title, initialdir=(wd or BASE_DIR),
+                              mustexist=True)
+    if not chosen:
+        return None
+    try:
+        st.work_dir = chosen
+    except Exception:
+        pass
+    return chosen
+
+
+def _write_optimal_snapshot(app, folder):
+    """Write optimal_model.txt (the post-calibration snapshot Load Optimal
+    Data restores) into `folder`, reading best_calib.json from the same
+    folder for the lowest-RMSLE parameter values.  Returns the path.
+    Extracted from the former "6. Save Optimal Model" button so calibration
+    can save it AUTOMATICALLY at the end of a run."""
+    best_overrides = {}
+    best_rmsle_str = ""
+    try:
+        best_path = os.path.join(folder, "best_calib.json")
+        if os.path.exists(best_path):
+            import json as _json
+            with open(best_path, "r", encoding="utf-8") as fp:
+                bp = _json.load(fp)
+            for lbl, val in zip(bp.get("labels", []), bp.get("best_x", [])):
+                best_overrides[lbl] = val
+            if bp.get("best_rmsle") is not None:
+                best_rmsle_str = f"{bp['best_rmsle']:.6g}"
+    except Exception as exc:
+        print(f"[optimal snapshot] best_calib.json read failed: {exc}")
+    path = os.path.join(folder, "optimal_model.txt")
+    with open(path, "w", encoding="utf-8") as fp:
+        fp.write("REMFluor-MD Optimal Model snapshot v4\n")
+        if best_rmsle_str:
+            fp.write(f"Best RMSLE: {best_rmsle_str}\n")
+        fp.write(f"Iterations: {app.v_n_iter.get()}\n")
+        src_snapshot = {
+            "v_yr_start":   app.v_yr_start,
+            "v_darcy":      app.v_darcy,
+            "v_porf":       app.v_porf,
+            "v_alpha_l":    app.v_alpha_l,
+            "v_ret_trans1": app.v_ret_trans1,
+            "v_ret_trans2": app.v_ret_trans2,
+            "v_ret_trans3": app.v_ret_trans3,
+            "v_ret_trans4": app.v_ret_trans4,
+        }
+        fp.write("# Source cell snapshot\n")
+        for k, v in src_snapshot.items():
+            try: fp.write(f"src.{k}={v.get()}\n")
+            except Exception: pass
+        # v108: persist the transmissive fraction (volfrac) + diffusion
+        # length so the velocity x Transmissive Fraction scaling survives
+        # Load Optimal Data.  Read from the calibration folder's
+        # heterogeneity_inputs.txt (calibration wrote the OPTIMAL volfrac).
+        try:
+            _mdf, _vf, _dl = generate_input_file._read_hetero(
+                os.path.join(folder, "heterogeneity_inputs.txt"))
+            fp.write("\n# Heterogeneity (velocity x Transmissive Fraction)\n")
+            fp.write(f"het.mdflag={_mdf}\n")
+            fp.write(f"het.volfrac={_vf}\n")
+            fp.write(f"het.difflen={_dl}\n")
+        except Exception as _hexc:
+            print(f"[optimal snapshot] heterogeneity read failed: {_hexc}")
+        fp.write("\n# Section 7 source zone (post-multiplier values)\n")
+        for col, lst in (("pfaa1", app.v_src_pfaa1),
+                         ("pfaa2", app.v_src_pfaa2),
+                         ("pre1",  app.v_src_pre1),
+                         ("pre2",  app.v_src_pre2)):
+            for i, var in enumerate(lst):
+                try: fp.write(f"s7.{col}[{i}]={var.get()}\n")
+                except Exception: pass
+        fp.write("\n# Step 4 calibration rows\n")
+        for i, label in enumerate(_CALIB_PARAMS):
+            if i >= min(len(app.v_calib_chk), len(app.v_calib_low),
+                        len(app.v_calib_mid), len(app.v_calib_high)):
+                break
+            if label in best_overrides:
+                mid_val = f"{best_overrides[label]:g}"
+            else:
+                mid_val = app.v_calib_mid[i].get()
+            fp.write(f"row[{i}]\n")
+            fp.write(f"  label={label}\n")
+            fp.write(f"  use={app.v_calib_chk[i].get()}\n")
+            fp.write(f"  lo={app.v_calib_low[i].get()}\n")
+            fp.write(f"  mid={mid_val}\n")
+            fp.write(f"  hi={app.v_calib_high[i].get()}\n")
+    return path
+
+
 def _save_calibration_inputs(app):
     """Write calibration_inputs.txt next to input.inp.  Format mirrors
     what the Excel macro emitted — one ranges block + one weights block
@@ -391,7 +504,9 @@ def _save_calibration_inputs(app):
     user's calibration .xlsx and the dashboard / cali_1 both depend
     on it.  Without preservation the §10 button and §calibration "1.
     Save" button would clobber each other."""
-    out = os.path.join(BASE_DIR, "calibration_inputs.txt")
+    # v108: write next to input.inp in the active model / calibration
+    # folder (was BASE_DIR / the install dir).
+    out = os.path.join(_active_dir(), "calibration_inputs.txt")
     n_iter = getattr(app, "v_n_iter", None)
     n_iter_val = n_iter.get() if n_iter is not None else "50"
     # Preserve Excel File Path line from any prior write
@@ -1017,12 +1132,19 @@ def run_script(macro_name, extra_args=None):
         return
 
     if macro_name == "See_Calibration_Data":
-        csv_path = os.path.join(BASE_DIR, "run_history.csv")
+        # v108: read run_history.csv from the calibration folder (reuse the
+        # run folder; prompt if none has been run yet).
+        d = _resolve_calib_dir(
+            "run_history.csv",
+            "Select the calibration folder (contains run_history.csv)")
+        if not d:
+            return
+        csv_path = os.path.join(d, "run_history.csv")
         if os.path.exists(csv_path):
             _open_html(csv_path)
         else:
             messagebox.showinfo("Not Found",
-                                f"run_history.csv not found in:\n{BASE_DIR}")
+                                f"run_history.csv not found in:\n{d}")
         return
 
     # ── Calibration helper buttons (DefaultRanges, Run_Optimal_Model,
@@ -1050,41 +1172,42 @@ def run_script(macro_name, extra_args=None):
         return
 
     if macro_name == "Run_Optimal_Model":
-        # Run the model with the current (presumed-optimal) inputs —
-        # equivalent to clicking the main "Run Model" button.
+        # v108: run the model with the current (optimal) inputs IN the
+        # calibration folder.  Reuse the folder the calibration ran in
+        # (skip the Run Model prompt); prompt only if it is unknown.
         if _FUNCS_LOADED and _app_ref is not None:
+            d = _resolve_calib_dir(
+                None, "Select the folder to run the optimal model in")
+            if not d:
+                return
             try:
-                run_model.run(_app_ref)
+                run_model.run(_app_ref, target_dir=d)
             except Exception as exc:
                 messagebox.showerror("Run Optimal Model",
                                      f"Run failed:\n{exc}")
         return
 
     if macro_name == "Run_Machine_Based_Calibration":
-        # Standalone Python calibration loop — DDS optimizer over the
-        # checked rows in §Step 4.  Replaces the legacy cali_1.exe
-        # pipeline (which depended on xlwings + an Excel template +
-        # the pandas/sklearn stack).  See functions/cali_1.py for the
-        # full implementation.
+        # v108: MERGED former "Save Calibration Data" + "Run" into one
+        # button.  cali_1.run() prompts for the calibration folder, copies
+        # the model inputs there, adopts it as work_dir, and launches the
+        # DDS optimizer.  After it starts, save the calibration setup
+        # snapshot into that same folder so the ranges are versioned.
         if _FUNCS_LOADED and _app_ref is not None:
-            # First save the calibration inputs sidecar so the user
-            # can inspect / version the parameter ranges they ran.
             try:
-                ok = generate_input_file.run(_app_ref)
-                if ok:
-                    _save_calibration_inputs(_app_ref)
-            except Exception as exc:
-                print(f"[cali] sidecar save failed: {exc}")
-            # Now kick off the optimizer.  Returns immediately; the
-            # actual loop runs in a worker thread inside cali_1.run().
-            try:
-                cali_1.run(_app_ref)
+                started = cali_1.run(_app_ref)
             except Exception as exc:
                 import traceback
                 traceback.print_exc()
                 messagebox.showerror(
-                    "Run Machine Based Calibration",
+                    "Run Calibration",
                     f"Calibration failed to start:\n{exc}")
+                return
+            if started:
+                try:
+                    _save_calibration_inputs(_app_ref)
+                except Exception as exc:
+                    print(f"[cali] setup save failed: {exc}")
         return
 
     if macro_name == "Load_Optimal_Data":
@@ -1093,21 +1216,33 @@ def run_script(macro_name, extra_args=None):
         # file doesn't exist, tell the user.
         if _app_ref is None:
             return
-        path = os.path.join(BASE_DIR, "optimal_model.txt")
+        # v108: read from the calibration folder (reuse the run folder;
+        # prompt if unknown).  optimal_model.txt is now written AUTOMATICALLY
+        # at the end of every calibration run, so no manual save is needed.
+        d = _resolve_calib_dir(
+            "optimal_model.txt",
+            "Select the calibration folder (contains optimal_model.txt)")
+        if not d:
+            return
+        path = os.path.join(d, "optimal_model.txt")
         if not os.path.exists(path):
             messagebox.showinfo(
                 "Load Optimal Data",
-                f"No optimal_model.txt found in:\n{BASE_DIR}\n\n"
-                "Click '6. Save Optimal Model' first to create it.")
+                f"No optimal_model.txt found in:\n{d}\n\n"
+                "Run a calibration first — it is saved automatically.")
             return
         # Delete sidecar files first.  Otherwise _src_K / _src_i /
         # _src_volfrac / _src_difflen would re-read those files on
         # the next refresh and clobber the values we're about to
         # load.  Optimal_model.txt now carries the source-cell
         # snapshot directly, so the sidecars are no longer needed.
-        for sidecar in ("gwvelocity_inputs.txt",
-                        "heterogeneity_inputs.txt"):
-            sp = os.path.join(BASE_DIR, sidecar)
+        # v108: do NOT delete heterogeneity_inputs.txt -- it carries the
+        # calibrated Transmissive Fraction (volfrac) that scales the Darcy
+        # velocity (vd x volfrac).  Only gwvelocity is cleared (rewritten
+        # from the loaded K x i just below); heterogeneity is restored from
+        # the snapshot further down for exactness.
+        for sidecar in ("gwvelocity_inputs.txt",):
+            sp = os.path.join(d, sidecar)
             if os.path.exists(sp):
                 try: os.remove(sp)
                 except Exception: pass
@@ -1136,7 +1271,7 @@ def run_script(macro_name, extra_args=None):
                     i_val = float(i_str.replace(",", "")) if i_str else 1.0
                     vd_my = K * i_val
                     vd_fy = vd_my / 0.3048
-                    gw_path = os.path.join(BASE_DIR, "gwvelocity_inputs.txt")
+                    gw_path = os.path.join(d, "gwvelocity_inputs.txt")
                     with open(gw_path, "w", encoding="utf-8") as fp:
                         fp.write("Groundwater BulkDarcy Velocity Calculator Results\n")
                         fp.write(f"Bulk Hydraulic Conductivity Value: {K:g}\n")
@@ -1146,6 +1281,29 @@ def run_script(macro_name, extra_args=None):
                         fp.write(f"Bulk Darcy Velocity (ft/year): {vd_fy:.6f}\n")
             except Exception as exc:
                 print(f"[load_optimal] gwvelocity_inputs.txt write failed: {exc}")
+
+            # v108: restore heterogeneity_inputs.txt (volfrac + difflen)
+            # from the snapshot so the vd x Transmissive Fraction scaling is
+            # exact after Load Optimal (belt-and-suspenders alongside not
+            # deleting the calibrated file above).
+            try:
+                _het = {}
+                with open(path, encoding="utf-8") as _fh:
+                    for _ln in _fh:
+                        _ln = _ln.strip()
+                        if _ln.startswith("het."):
+                            _kk, _, _vv = _ln[4:].partition("=")
+                            _het[_kk.strip()] = _vv.strip()
+                if _het.get("volfrac") not in (None, ""):
+                    _hp = os.path.join(d, "heterogeneity_inputs.txt")
+                    with open(_hp, "w", encoding="utf-8") as _fh:
+                        _fh.write("Heterogeneity Calculator Results\n")
+                        _fh.write(f"mdflag: {_het.get('mdflag', '2')}\n")
+                        _fh.write("Transmissive Fraction of Model (-): "
+                                  f"{_het['volfrac']}\n")
+                        _fh.write(f"Diffusion Length (m): {_het.get('difflen', '0.25')}\n")
+            except Exception as exc:
+                print(f"[load_optimal] heterogeneity restore failed: {exc}")
 
             # (2) Push Mid → §1-§7 inputs.  Now that the sidecar
             #     exists with the correct K, _push's trailing
@@ -1175,104 +1333,24 @@ def run_script(macro_name, extra_args=None):
                                 f"{path}\n\n"
                                 "§3 v_darcy = K × i  (computed jointly).\n"
                                 "§5 retardation, §6 alphax, etc. restored.\n"
-                                "Click '5. Run Optimal Model' to run.")
+                                "Click '4. Run Optimal Model' to run.")
         except Exception as exc:
             messagebox.showerror("Load Optimal Data",
                                  f"Could not parse {path}:\n{exc}")
         return
 
     if macro_name == "Save_Optimal_Model":
-        # Save the calibration ranges + the §3 source values used to
-        # produce them so Load Optimal Data can deterministically
-        # restore the model state.  Format: one block per row, each
-        # block tagged with the row label so re-ordering rows in
-        # main.py won't desync past saves.
-        #
-        # v90: prefer best_calib.json (written by cali_1 right after
-        # the optimizer finishes) over v_calib_mid for the calibration
-        # rows.  v_calib_mid can drift after the post-calibration
-        # callbacks (push to source cells, apply multipliers, trace
-        # refreshes) — best_calib.json is the canonical record of the
-        # iteration with the lowest RMSLE.
+        # v108: the optimal snapshot is now written AUTOMATICALLY at the end
+        # of each calibration run (cali_1._on_done -> _write_optimal_snapshot),
+        # so this manual button was removed from the panel.  Kept as an
+        # on-demand fallback that writes into the active calibration folder.
         if _app_ref is None:
             return
-        best_overrides = {}
-        best_rmsle_str = ""
         try:
-            best_path = os.path.join(BASE_DIR, "best_calib.json")
-            if os.path.exists(best_path):
-                import json as _json
-                with open(best_path, "r", encoding="utf-8") as fp:
-                    bp = _json.load(fp)
-                for lbl, val in zip(bp.get("labels", []),
-                                    bp.get("best_x", [])):
-                    best_overrides[lbl] = val
-                if bp.get("best_rmsle") is not None:
-                    best_rmsle_str = f"{bp['best_rmsle']:.6g}"
+            _p = _write_optimal_snapshot(_app_ref, _active_dir())
+            messagebox.showinfo("Save Optimal Model", f"Saved to:\n{_p}")
         except Exception as exc:
-            print(f"[Save Optimal] best_calib.json read failed: {exc}")
-        try:
-            path = os.path.join(BASE_DIR, "optimal_model.txt")
-            with open(path, "w", encoding="utf-8") as fp:
-                fp.write("REMFluor-MD Optimal Model snapshot v4\n")
-                if best_rmsle_str:
-                    fp.write(f"Best RMSLE: {best_rmsle_str}\n")
-                fp.write(f"Iterations: {_app_ref.v_n_iter.get()}\n")
-                # Snapshot the §3 / §5 / §6 source cells —
-                # Load Optimal Data uses these to restore inputs
-                # exactly (and to set v_darcy for the K row).
-                src_snapshot = {
-                    "v_yr_start":   _app_ref.v_yr_start,
-                    "v_darcy":      _app_ref.v_darcy,
-                    "v_porf":       _app_ref.v_porf,
-                    "v_alpha_l":    _app_ref.v_alpha_l,
-                    "v_ret_trans1": _app_ref.v_ret_trans1,
-                    "v_ret_trans2": _app_ref.v_ret_trans2,
-                    "v_ret_trans3": _app_ref.v_ret_trans3,
-                    "v_ret_trans4": _app_ref.v_ret_trans4,
-                }
-                fp.write("# Source cell snapshot (§3 / §5 / §6)\n")
-                for k, v in src_snapshot.items():
-                    try: fp.write(f"src.{k}={v.get()}\n")
-                    except Exception: pass
-                # v3 ADDITION: §7 source-zone concentration grid.
-                # Loading these directly avoids the compounding bug
-                # where re-applying the multiplier on top of an
-                # already-multiplied §7 produced v × m² values.
-                fp.write("\n# §7 source zone (post-multiplier values)\n")
-                for col, lst in (("pfaa1", _app_ref.v_src_pfaa1),
-                                  ("pfaa2", _app_ref.v_src_pfaa2),
-                                  ("pre1",  _app_ref.v_src_pre1),
-                                  ("pre2",  _app_ref.v_src_pre2)):
-                    for i, var in enumerate(lst):
-                        try:
-                            fp.write(f"s7.{col}[{i}]={var.get()}\n")
-                        except Exception:
-                            pass
-                fp.write("\n# Step 4 calibration rows\n")
-                for i, label in enumerate(_CALIB_PARAMS):
-                    if i >= min(len(_app_ref.v_calib_chk),
-                                 len(_app_ref.v_calib_low),
-                                 len(_app_ref.v_calib_mid),
-                                 len(_app_ref.v_calib_high)):
-                        break
-                    # v90: prefer best_calib.json's value over v_calib_mid
-                    # for this row when the optimizer wrote one.
-                    if label in best_overrides:
-                        mid_val = f"{best_overrides[label]:g}"
-                    else:
-                        mid_val = _app_ref.v_calib_mid[i].get()
-                    fp.write(f"row[{i}]\n")
-                    fp.write(f"  label={label}\n")
-                    fp.write(f"  use={_app_ref.v_calib_chk[i].get()}\n")
-                    fp.write(f"  lo={_app_ref.v_calib_low[i].get()}\n")
-                    fp.write(f"  mid={mid_val}\n")
-                    fp.write(f"  hi={_app_ref.v_calib_high[i].get()}\n")
-            messagebox.showinfo("Save Optimal Model",
-                                f"Saved to:\n{path}")
-        except Exception as exc:
-            messagebox.showerror("Save Optimal Model",
-                                 f"Save failed:\n{exc}")
+            messagebox.showerror("Save Optimal Model", f"Save failed:\n{exc}")
         return
 
     if macro_name == "Help_Calibration":
@@ -2009,11 +2087,65 @@ class REMFluorApp(tk.Tk):
         scr_h = self.winfo_screenheight()
         win_w = min(int(1500 * scale), scr_w - 60)
         win_h = min(int(950  * scale), scr_h - 100)
+        # This computed size is the RESTORE size (used when the user
+        # un-maximizes); set it first, then start maximized.
         self.geometry(f"{win_w}x{win_h}")
+        # v108 (client request): launch maximized (full screen) on
+        # whichever monitor the app is opened on.  state("zoomed") fills
+        # the current monitor and keeps the title bar / window controls
+        # (unlike true -fullscreen, which would trap the user).  Fall back
+        # to the Linux "-zoomed" attribute, then to a manual full-work-area
+        # geometry if neither is supported.
+        def _refresh_scrollregion():
+            # v108: after a PROGRAMMATIC maximize the scrollable canvas
+            # kept the scrollregion it computed at the smaller startup
+            # size, so the bottom (§11 / Run Model) was clipped until the
+            # user resized by hand.  Force the geometry to settle, re-sync
+            # the inner width to the new canvas width, then recompute the
+            # scrollregion so the whole form is reachable on a clean launch.
+            try:
+                self.update_idletasks()
+                self.canvas.itemconfig(
+                    self.canvas_win,
+                    width=max(self.canvas.winfo_width(),
+                              self.inner.winfo_reqwidth(), 1300))
+                self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            except Exception:
+                pass
+        def _maximize_window():
+            try:
+                self.state("zoomed")
+            except Exception:
+                try:
+                    self.attributes("-zoomed", True)
+                except Exception:
+                    try:
+                        self.geometry(f"{scr_w}x{scr_h}+0+0")
+                    except Exception:
+                        pass
+            # Recompute the scroll region once now and again shortly after
+            # (Windows applies the zoom via the event loop, not instantly),
+            # so §11 is never clipped from a clean start.
+            _refresh_scrollregion()
+            for _delay in (120, 350):
+                try:
+                    self.after(_delay, _refresh_scrollregion)
+                except Exception:
+                    pass
+        # Defer one tick so the window exists before we maximize it.
+        try:
+            self.after(0, _maximize_window)
+        except Exception:
+            _maximize_window()
 
         # v105: UI fully built — allow the dropdown change handlers to do
         # their normal auto-fill from here on (genuine user selections).
         self._building = False
+        # v108: expose the optimal-snapshot writer so cali_1 can auto-save
+        # optimal_model.txt into the calibration folder at the end of a run.
+        self._write_optimal_snapshot = (
+            lambda folder=None: _write_optimal_snapshot(
+                self, folder or _active_dir()))
 
     # ── Named fonts + zoom ───────────────────────────────────────────────
     def _init_named_fonts(self):
@@ -4161,13 +4293,26 @@ class REMFluorApp(tk.Tk):
         # XLSM cell T8 — present in BOTH Simple and Detailed sheets.
         # Bigger font + wider canvas for legibility; spans only the 11
         # year rows (rows 2..12), leaving the totals row 13 untouched.
-        rot_h = 28 * 11
-        rot = tk.Canvas(f, width=26, height=rot_h,
+        # v108 (client fix): the rotated label clipped "Years" at high DPI
+        # because the text was drawn at a FIXED half-height (rot_h//2) while
+        # the canvas is stretched taller by the 11-row rowspan and the font
+        # scales with DPI.  Redraw it CENTERED in the canvas's ACTUAL height
+        # on every <Configure> so it always fits, and scale the width so the
+        # rotated glyph thickness never clips either.
+        _rot_scale = getattr(self, "_dpi_scale", 1.0)
+        rot_h = int(28 * 11 * _rot_scale)
+        rot = tk.Canvas(f, width=max(26, int(24 * _rot_scale)), height=rot_h,
                         bg=BG_MAIN, highlightthickness=0)
-        rot.create_text(13, rot_h // 2,
-                        text="Go to Section 2 to Change Years",
-                        font=("Calibri", 11, "italic"),
-                        fill=FG_BTN_NAVY, angle=90)
+        def _draw_rot_label(_evt=None, _cv=rot):
+            _cv.delete("rotlbl")
+            _w = _cv.winfo_width() or int(24 * _rot_scale)
+            _h = _cv.winfo_height() or rot_h
+            _cv.create_text(_w // 2, _h // 2,
+                            text="Go to Section 2 to Change Years",
+                            font=("Calibri", 11, "italic"),
+                            fill=FG_BTN_NAVY, angle=90, tags="rotlbl")
+        rot.bind("<Configure>", _draw_rot_label)
+        _draw_rot_label()
         rot.grid(row=2, column=1, rowspan=11, sticky="ns",
                  padx=(0, 6), pady=(0, 0))
 
@@ -6156,13 +6301,13 @@ class REMFluorApp(tk.Tk):
         actwrap = tk.Frame(outer, bg=BG_MAIN)
         actwrap.pack(pady=(16, 4))
 
+        # v108: buttons follow the workflow 1->4.  "1. Run Calibration"
+        # merges the old Save+Run (it prompts for the folder, saves the
+        # setup there, and runs).  The old "6. Save Optimal Model" was
+        # removed -- the optimal snapshot is saved automatically at the end
+        # of a run.  Buttons 2/3/4 read/run from that same folder.
         actrow1 = tk.Frame(actwrap, bg=BG_MAIN); actrow1.pack(pady=3)
-        make_btn(actrow1, "1. Save\nCalibration Data",
-                 "Save_Data_Calibration",
-                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
-                 padx=BTN_PX, pady=BTN_PY,
-                 bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
-        make_btn(actrow1, "2. Run Machine\nBased Calibration",
+        make_btn(actrow1, "1. Run\nCalibration",
                  "Run_Machine_Based_Calibration",
                  fg=FG_BTN_RED, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
@@ -6174,17 +6319,17 @@ class REMFluorApp(tk.Tk):
                  bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
 
         actrow2 = tk.Frame(actwrap, bg=BG_MAIN); actrow2.pack(pady=3)
-        make_btn(actrow2, "3. See All\nCalibration Data",
+        make_btn(actrow2, "2. See All\nCalibration Data",
                  "See_Calibration_Data",
                  fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
                  bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
-        make_btn(actrow2, "4. Load\nOptimal Data",
+        make_btn(actrow2, "3. Load\nOptimal Data",
                  "Load_Optimal_Data",
                  fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
                  bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
-        make_btn(actrow2, "5. Run Optimal\nModel",
+        make_btn(actrow2, "4. Run Optimal\nModel",
                  "Run_Optimal_Model",
                  fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
@@ -6194,13 +6339,6 @@ class REMFluorApp(tk.Tk):
                  fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
                  bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
-
-        actrow3 = tk.Frame(actwrap, bg=BG_MAIN); actrow3.pack(pady=3)
-        make_btn(actrow3, "6. Save\nOptimal Model",
-                 "Save_Optimal_Model",
-                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
-                 padx=BTN_PX, pady=BTN_PY,
-                 bg=BTN_FILL, width=BTN_W).pack(padx=BTN_GAP)
 
         # Initial state — hide the Detailed-only widgets I just registered
         # if we're starting in Simple mode (default).  Mirrors the pattern

@@ -726,8 +726,11 @@ def launch_dashboard(parent=None, sheet_name="Simple"):
                   "browser in a few seconds.")
 
 
-def run(app, parent=None) -> bool:
-    """Run the model pipeline.  Returns True if launch succeeded."""
+def run(app, parent=None, target_dir=None) -> bool:
+    """Run the model pipeline.  Returns True if launch succeeded.
+
+    target_dir: when given (e.g. from the calibration panel's
+    "Run Optimal Model"), run in that folder WITHOUT prompting."""
     # Step 0 (v105): validation gate.  Refuse to run on a partially-filled
     # form and tell the user EXACTLY which required inputs are missing for
     # their current options — no silent fallback to built-in defaults.
@@ -755,25 +758,30 @@ def run(app, parent=None) -> bool:
     from .state import get_state as _gs
     import glob as _glob
     _state = _gs()
-    _cur = getattr(_state, "work_dir", "") or os.getcwd()
-    _dst = _fd.askdirectory(
-        title="Choose a folder to save the model input + results",
-        initialdir=_cur, mustexist=False, parent=parent or app)
-    if not _dst:
-        return False   # user cancelled the save-location prompt
-    # Overwrite guard: list any model files already in the target folder.
-    _existing = [f for f in (["input.inp"] + list(DASHBOARD_RESULT_FILES))
-                 if os.path.exists(os.path.join(_dst, f))]
-    _existing += sorted(os.path.basename(_p) for _p in
-                        _glob.glob(os.path.join(_dst, "obs_well*.out")))
-    if _existing:
-        _lst = "\n".join(f"  {f}" for f in sorted(set(_existing))[:12])
-        if not messagebox.askyesno(
-                "Overwrite Existing Files?",
-                "This folder already contains model files that Run Model "
-                f"will overwrite:\n{_dst}\n\n{_lst}\n\nOverwrite them?",
-                parent=parent or app):
-            return False   # user chose not to overwrite
+    if target_dir:
+        # Reuse the given folder (calibration "Run Optimal Model") without
+        # re-prompting or re-warning -- it is already the active run folder.
+        _dst = target_dir
+    else:
+        _cur = getattr(_state, "work_dir", "") or os.getcwd()
+        _dst = _fd.askdirectory(
+            title="Choose a folder to save the model input + results",
+            initialdir=_cur, mustexist=False, parent=parent or app)
+        if not _dst:
+            return False   # user cancelled the save-location prompt
+        # Overwrite guard: list any model files already in the folder.
+        _existing = [f for f in (["input.inp"] + list(DASHBOARD_RESULT_FILES))
+                     if os.path.exists(os.path.join(_dst, f))]
+        _existing += sorted(os.path.basename(_p) for _p in
+                            _glob.glob(os.path.join(_dst, "obs_well*.out")))
+        if _existing:
+            _lst = "\n".join(f"  {f}" for f in sorted(set(_existing))[:12])
+            if not messagebox.askyesno(
+                    "Overwrite Existing Files?",
+                    "This folder already contains model files that Run Model "
+                    f"will overwrite:\n{_dst}\n\n{_lst}\n\nOverwrite them?",
+                    parent=parent or app):
+                return False   # user chose not to overwrite
     try:
         os.makedirs(_dst, exist_ok=True)
         _state.work_dir = _dst

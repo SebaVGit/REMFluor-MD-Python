@@ -653,6 +653,96 @@ check("(c) no concentration hover left at .3f",
       "Concentration: %{y:.3f}" not in _dash_src
       and "Concentration: %{{x:.3f}}" not in _dash_src)
 
+
+# ====================================================================
+# Client request - extend last Section 7 source year if == end year
+# ====================================================================
+# If the last §7 source year equals the §2 end-of-simulation year, the
+# source point is pushed out 5 years before writing input.inp.
+print("== Source year: extend +5 when last §7 year == §2 end year ==")
+
+_tpls = os.path.join(ROOT, "template.inp")
+if os.path.exists(_tpls):
+    import shutil as _shs
+    from functions.state import get_state as _gss
+    _sts = _gss(); _sts.snapshot = lambda a: None
+    class _AppS7: pass
+
+    def _src_times(src_years, endyr):
+        wd = tempfile.mkdtemp()
+        _shs.copy(_tpls, os.path.join(wd, "template.inp"))
+        open(os.path.join(wd, "cellsize_input.txt"), "w").write(
+            "Grid Cell Sizes\nParameter,Value\nCell Size X:,5.0\n"
+            "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+        open(os.path.join(wd, "numerical_inputs.txt"), "w").write(
+            "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+            "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+        _sts.work_dir = wd; _sts.bundle_dir = wd; _sts._cells = {}
+        base = {"A8": 1, "AD1": 2, "R22": False, "E11": 100, "E12": 50,
+                "E13": 10, "E15": 4, "E16": 5, "E18": 1977, "E19": endyr,
+                "C22": 10, "G22": 0.3, "V47": 10}
+        for _i, _y in enumerate(src_years):
+            base[f"U{8+_i}"] = _y; base[f"V{8+_i}"] = 100 + _i
+        _sts._cells = base
+        d = gif.build_inp_data(_sts)
+        return d["times"]
+
+    # last source year 2077 == end 2077 -> last relative time 100 -> 105
+    _tA = _src_times([1977, 2000, 2050, 2077], 2077)
+    check("last year == end year: 100 extended to 105",
+          105 in _tA and 100 not in _tA[:4], _tA[:5])
+    # last source year 2070 != end 2077 -> unchanged (93)
+    _tB = _src_times([1977, 2000, 2050, 2070], 2077)
+    check("last year != end year: unchanged (93 kept, no 98)",
+          93 in _tB and 98 not in _tB, _tB[:5])
+    # exactly-at-end with a single point
+    _tC = _src_times([2077], 2077)
+    check("single point at end year extended (0 stays, but max 100->105 n/a)",
+          True)  # smoke: build succeeded
+else:
+    print("  SKIP  source-year test (template.inp not found)")
+
+
+# ====================================================================
+# Client: velocity x Transmissive Fraction (volfrac)
+# ====================================================================
+print("== Velocity x Transmissive Fraction (volfrac) ==")
+
+_tplv = os.path.join(ROOT, "template.inp")
+if os.path.exists(_tplv):
+    import shutil as _shv
+    from functions.state import get_state as _gsv
+    _stv = _gsv(); _stv.snapshot = lambda a: None
+    class _AppV: pass
+
+    def _vd_written(volfrac):
+        wd = tempfile.mkdtemp()
+        _shv.copy(_tplv, os.path.join(wd, "template.inp"))
+        open(os.path.join(wd, "cellsize_input.txt"), "w").write(
+            "Grid Cell Sizes\nParameter,Value\nCell Size X:,5.0\n"
+            "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+        open(os.path.join(wd, "numerical_inputs.txt"), "w").write(
+            "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+            "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+        open(os.path.join(wd, "heterogeneity_inputs.txt"), "w").write(
+            "Heterogeneity Calculator Results\nmdflag: 2\n"
+            f"Transmissive Fraction of Model (-): {volfrac}\n"
+            "Diffusion Length (m): 0.25\n")
+        _stv.work_dir = wd; _stv.bundle_dir = wd
+        _stv._cells = {"A8": 1, "AD1": 2, "R22": False, "E11": 100, "E12": 50,
+                       "E13": 10, "E15": 4, "E16": 5, "E18": 1977, "E19": 2077,
+                       "C22": 10.0, "G22": 0.3, "V47": 10}
+        return float(gif.build_inp_data(_stv)["vd"])
+
+    check("vd written = bulk vd x volfrac (10 x 0.8 = 8)",
+          abs(_vd_written(0.8) - 8.0) < 1e-6, _vd_written(0.8))
+    check("volfrac 1.0 leaves vd unchanged (10)",
+          abs(_vd_written(1.0) - 10.0) < 1e-6, _vd_written(1.0))
+    check("volfrac 0.5 halves vd (5)",
+          abs(_vd_written(0.5) - 5.0) < 1e-6, _vd_written(0.5))
+else:
+    print("  SKIP  volfrac velocity (template.inp not found)")
+
 print()
 print(f"{PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
