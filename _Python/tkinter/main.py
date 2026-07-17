@@ -459,12 +459,18 @@ def _write_optimal_snapshot(app, folder):
         # Load Optimal Data.  Read from the calibration folder's
         # heterogeneity_inputs.txt (calibration wrote the OPTIMAL volfrac).
         try:
-            _mdf, _vf, _dl = generate_input_file._read_hetero(
-                os.path.join(folder, "heterogeneity_inputs.txt"))
-            fp.write("\n# Heterogeneity (velocity x Transmissive Fraction)\n")
-            fp.write(f"het.mdflag={_mdf}\n")
-            fp.write(f"het.volfrac={_vf}\n")
-            fp.write(f"het.difflen={_dl}\n")
+            _het_path = os.path.join(folder, "heterogeneity_inputs.txt")
+            # v108 FIX: only record het.* when the file actually exists.
+            # _read_hetero returns DEFAULTS (mdflag 0, volfrac 1.0,
+            # difflen 0.1) for a missing file; recording those and later
+            # restoring them on Load Optimal silently clobbered the
+            # user's real Transmissive Fraction (e.g. 0.8 -> 1.0).
+            if os.path.exists(_het_path):
+                _mdf, _vf, _dl = generate_input_file._read_hetero(_het_path)
+                fp.write("\n# Heterogeneity (velocity x Transmissive Fraction)\n")
+                fp.write(f"het.mdflag={_mdf}\n")
+                fp.write(f"het.volfrac={_vf}\n")
+                fp.write(f"het.difflen={_dl}\n")
         except Exception as _hexc:
             print(f"[optimal snapshot] heterogeneity read failed: {_hexc}")
         fp.write("\n# Section 7 source zone (post-multiplier values)\n")
@@ -702,6 +708,31 @@ def run_script(macro_name, extra_args=None):
     if _FUNCS_LOADED and _app_ref is not None:
 
         if macro_name == "Clear_Data":
+            # v108 (client): make Clear All Data explicit and safe.  Show
+            # the user exactly which files will be deleted from the active
+            # model folder -- including calibration results such as
+            # optimal_model.txt / best_calib.json -- and require an explicit
+            # Yes before wiping anything.  This is why "Load Optimal Data"
+            # reported nothing to load after a Clear: the snapshot was
+            # deleted silently.  Now the user decides with full knowledge.
+            from functions.state import INPUT_TXT_FILES as _CLR_FILES
+            _cdir = _active_dir()
+            _will = [f for f in _CLR_FILES
+                     if os.path.exists(os.path.join(_cdir, f))]
+            _calib_hits = [f for f in _will if f in (
+                "optimal_model.txt", "best_calib.json", "run_history.csv",
+                "calibration_inputs.txt")]
+            _msg = ("This clears EVERY input cell in the form"
+                    + (f" and deletes {len(_will)} file(s) from:\n{_cdir}\n\n"
+                       + "\n".join(f"  {f}" for f in _will[:14])
+                       if _will else " (no input files found to delete)."))
+            if _calib_hits:
+                _msg += ("\n\nWARNING: this includes calibration results\n"
+                         "(" + ", ".join(_calib_hits) + ") -- after clearing,\n"
+                         "'Load Optimal Data' will have nothing to load.")
+            _msg += "\n\nClear everything?"
+            if not messagebox.askyesno("Clear All Data?", _msg):
+                return
             deleted = clear_for_restore.run(_app_ref)
             msg = (f"Cleared {len(deleted)} file(s)." if deleted
                    else "Cells cleared. No .txt files found.")
@@ -5928,7 +5959,11 @@ class REMFluorApp(tk.Tk):
             """Return {'k_value': float, 'k_unit': str, 'gradient': float}
             from gwvelocity_inputs.txt (written by §3 GW Velocity
             Calculator).  Empty dict if the file's missing."""
-            path = os.path.join(BASE_DIR, "gwvelocity_inputs.txt")
+            # v108 FIX: read from the ACTIVE model folder (work_dir),
+            # not the install dir.  The GW Velocity Calculator writes to
+            # work_dir; reading BASE_DIR showed stale/default values in
+            # the calibration Mid column.
+            path = os.path.join(_active_dir(), "gwvelocity_inputs.txt")
             out = {}
             if not os.path.exists(path):
                 return out
@@ -5951,7 +5986,11 @@ class REMFluorApp(tk.Tk):
         def _read_hetero_inputs():
             """Return {'volfrac': float, 'difflen': float} from
             heterogeneity_inputs.txt.  Empty dict if missing."""
-            path = os.path.join(BASE_DIR, "heterogeneity_inputs.txt")
+            # v108 FIX: read from the ACTIVE model folder (work_dir) --
+            # the Section 4 Heterogeneity Calculator writes there.  Reading
+            # BASE_DIR made the calibration Mid column show volfrac 1.0
+            # when the user had set 0.8.
+            path = os.path.join(_active_dir(), "heterogeneity_inputs.txt")
             out = {}
             if not os.path.exists(path):
                 return out

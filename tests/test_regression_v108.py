@@ -743,6 +743,147 @@ if os.path.exists(_tplv):
 else:
     print("  SKIP  volfrac velocity (template.inp not found)")
 
+
+# ====================================================================
+# Client: calibrated volfrac survives Load Optimal; velocity is BULK
+# ====================================================================
+# Chain: calibration ends with v_darcy = K x i (BULK, no volfrac) and the
+# optimal volfrac in heterogeneity_inputs.txt + snapshot (het.volfrac).
+# Load Optimal restores the bulk velocity to the GUI and the volfrac file;
+# build_inp_data applies volfrac ONCE: input.inp vd = bulk x volfrac.
+print("== Calibrated volfrac + bulk velocity through Load Optimal ==")
+
+_tplc = os.path.join(ROOT, "template.inp")
+if os.path.exists(_tplc):
+    import shutil as _shc, re as _rec, json as _jsc
+    from functions.state import get_state as _gsc
+    _wd = tempfile.mkdtemp()
+    _shc.copy(_tplc, os.path.join(_wd, "template.inp"))
+    open(os.path.join(_wd, "cellsize_input.txt"), "w").write(
+        "Grid Cell Sizes\nParameter,Value\nCell Size X:,5.0\n"
+        "Cell Size Y:,5.0\nCell Size Z:,2.0\nUnit Flag:,2.0\n")
+    open(os.path.join(_wd, "numerical_inputs.txt"), "w").write(
+        "iTVD\niTVD, 1\n\n Zone\nParameter,\n"
+        "Timestep Size (yr) ,0.1\nConvergence Tolerance (ug/L),1.0\n\n")
+    open(os.path.join(_wd, "heterogeneity_inputs.txt"), "w").write(
+        "Heterogeneity Calculator Results\nmdflag: 2\n"
+        "Transmissive Fraction of Model (-): 0.7\nDiffusion Length (m): 0.25\n")
+    _jsc.dump({"labels": ["Hydraulic Conductivity (k)"],
+               "best_x": [25.0], "best_rmsle": 0.2},
+              open(os.path.join(_wd, "best_calib.json"), "w"))
+
+    _srcm = open(os.path.join(ROOT, "_Python", "tkinter", "main.py"),
+                 encoding="utf-8").read()
+    _mm = _rec.search(r'def _write_optimal_snapshot\(app, folder\):.*?\n    return path\n',
+                      _srcm, _rec.S)
+    _nsc = {"os": os, "_CALIB_PARAMS": ["Hydraulic Conductivity (k)"],
+            "generate_input_file": gif}
+    exec(_mm.group(0), _nsc)
+
+    class _Vc:
+        def __init__(self, v): self.v = str(v)
+        def get(self): return self.v
+    class _AppC: pass
+    _ac = _AppC()
+    _ac.v_n_iter = _Vc("50"); _ac.v_yr_start = _Vc("1977")
+    _ac.v_darcy = _Vc("15"); _ac.v_porf = _Vc("0.3"); _ac.v_alpha_l = _Vc("4.75")
+    for _n in ("v_ret_trans1", "v_ret_trans2", "v_ret_trans3", "v_ret_trans4"):
+        setattr(_ac, _n, _Vc("1"))
+    for _n in ("v_src_pfaa1", "v_src_pfaa2", "v_src_pre1", "v_src_pre2"):
+        setattr(_ac, _n, [_Vc("0") for _ in range(3)])
+    _ac.v_calib_chk = [_Vc("True")]; _ac.v_calib_low = [_Vc("4")]
+    _ac.v_calib_mid = [_Vc("25")]; _ac.v_calib_high = [_Vc("100")]
+    _snap = _nsc["_write_optimal_snapshot"](_ac, _wd)
+    _stxt = open(_snap).read()
+    check("snapshot stores BULK velocity (src.v_darcy=15, not x0.7)",
+          "src.v_darcy=15" in _stxt)
+    check("snapshot stores het.volfrac=0.7", "het.volfrac=0.7" in _stxt)
+
+    # Clear deletes het file; Load Optimal restores it from the snapshot
+    os.remove(os.path.join(_wd, "heterogeneity_inputs.txt"))
+    _hetc = {}
+    for _ln in open(_snap):
+        _ln = _ln.strip()
+        if _ln.startswith("het."):
+            _k, _, _v = _ln[4:].partition("="); _hetc[_k.strip()] = _v.strip()
+    open(os.path.join(_wd, "heterogeneity_inputs.txt"), "w").write(
+        "Heterogeneity Calculator Results\nmdflag: %s\n"
+        "Transmissive Fraction of Model (-): %s\nDiffusion Length (m): %s\n"
+        % (_hetc.get("mdflag", "2"), _hetc["volfrac"], _hetc.get("difflen", "0.25")))
+
+    _stc = _gsc(); _stc.work_dir = _wd; _stc.bundle_dir = _wd
+    _stc.snapshot = lambda a: None
+    _stc._cells = {"A8": 1, "AD1": 2, "R22": False, "E11": 100, "E12": 50,
+                   "E13": 10, "E15": 4, "E16": 5, "E18": 1977, "E19": 2077,
+                   "C22": 15.0, "G22": 0.3, "V47": 10}
+    _dc = gif.build_inp_data(_stc)
+    check("Run Optimal applies volfrac ONCE (15 x 0.7 = 10.5)",
+          abs(float(_dc["vd"]) - 10.5) < 1e-9, _dc["vd"])
+    check("volfrac itself written to input.inp data (0.7)",
+          abs(float(_dc["volfrac"]) - 0.7) < 1e-9, _dc["volfrac"])
+else:
+    print("  SKIP  volfrac chain (template.inp not found)")
+
+
+# ====================================================================
+# Client: het defaults must never clobber the real volfrac
+# ====================================================================
+# (1) The optimal snapshot must NOT record het.* lines when
+#     heterogeneity_inputs.txt is missing (defaults 1.0/0.1 would later
+#     be restored over the user's real 0.8 by Load Optimal).
+# (2) The calibration Mid-column readers must use the ACTIVE folder,
+#     not the install dir (BASE_DIR) -- Section 4's calculator writes
+#     to work_dir, so reading BASE_DIR showed volfrac 1.0 instead of 0.8.
+print("== Het defaults never clobber volfrac ==")
+
+import re as _reh
+_srcm2 = open(os.path.join(ROOT, "_Python", "tkinter", "main.py"),
+              encoding="utf-8").read()
+_mm2 = _reh.search(r'def _write_optimal_snapshot\(app, folder\):.*?\n    return path\n',
+                   _srcm2, _reh.S)
+_nsh = {"os": os, "_CALIB_PARAMS": ["Hydraulic Conductivity (k)"],
+        "generate_input_file": gif}
+exec(_mm2.group(0), _nsh)
+
+class _Vh:
+    def __init__(self, v): self.v = str(v)
+    def get(self): return self.v
+class _AppH: pass
+_ah = _AppH()
+_ah.v_n_iter = _Vh("50"); _ah.v_yr_start = _Vh("1977")
+_ah.v_darcy = _Vh("15"); _ah.v_porf = _Vh("0.3"); _ah.v_alpha_l = _Vh("4.75")
+for _n in ("v_ret_trans1", "v_ret_trans2", "v_ret_trans3", "v_ret_trans4"):
+    setattr(_ah, _n, _Vh("1"))
+for _n in ("v_src_pfaa1", "v_src_pfaa2", "v_src_pre1", "v_src_pre2"):
+    setattr(_ah, _n, [_Vh("0") for _ in range(3)])
+_ah.v_calib_chk = [_Vh("True")]; _ah.v_calib_low = [_Vh("4")]
+_ah.v_calib_mid = [_Vh("25")]; _ah.v_calib_high = [_Vh("100")]
+
+# (1) folder WITHOUT het file -> snapshot must have NO het.* lines
+_wdh = tempfile.mkdtemp()
+_snap_h = _nsh["_write_optimal_snapshot"](_ah, _wdh)
+_txt_h = open(_snap_h).read()
+check("snapshot with MISSING het file records no het.* lines",
+      "het.volfrac" not in _txt_h and "het.mdflag" not in _txt_h)
+
+# folder WITH het 0.8 -> snapshot records the real value
+_wdh2 = tempfile.mkdtemp()
+open(os.path.join(_wdh2, "heterogeneity_inputs.txt"), "w").write(
+    "Heterogeneity Calculator Results\nmdflag: 7\n"
+    "Transmissive Fraction of Model (-): 0.8\nDiffusion Length (m): 0.25\n")
+_snap_h2 = _nsh["_write_optimal_snapshot"](_ah, _wdh2)
+check("snapshot with het 0.8 records het.volfrac=0.8",
+      "het.volfrac=0.8" in open(_snap_h2).read())
+
+# (2) source-level: Mid-column sidecar readers use the active folder
+check("calibration Mid readers no longer read BASE_DIR (gwvelocity)",
+      'os.path.join(BASE_DIR, "gwvelocity_inputs.txt")' not in _srcm2)
+check("calibration Mid readers no longer read BASE_DIR (heterogeneity)",
+      'os.path.join(BASE_DIR, "heterogeneity_inputs.txt")' not in _srcm2)
+check("Mid readers use _active_dir()",
+      'os.path.join(_active_dir(), "heterogeneity_inputs.txt")' in _srcm2
+      and 'os.path.join(_active_dir(), "gwvelocity_inputs.txt")' in _srcm2)
+
 print()
 print(f"{PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
