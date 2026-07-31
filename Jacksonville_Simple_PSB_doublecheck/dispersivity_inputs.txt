@@ -1,0 +1,8 @@
+REMFluor Dispersivity Inputs (Section 6)
+==================================================
+Heterogeneity Mode:,Enter Your Own Value Below
+Units:,meters
+Longitudinal alphax:,15.0
+Transverse alphay:,1.5
+Vertical alphaz:,0.15
+Molecular Diffusion m2s:,3.49E-10

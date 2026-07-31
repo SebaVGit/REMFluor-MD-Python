@@ -1,0 +1,4 @@
+REMFluor-MD sensitivity analysis log
+runs=10  target=4.0 ng/L (0.004 ug/L)  plume_year=None  seed=9000  distribution=triangular
+parameters=['Hydraulic Conductivity (k)', 'Hydraulic Gradient (i)', 'Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n))']
+

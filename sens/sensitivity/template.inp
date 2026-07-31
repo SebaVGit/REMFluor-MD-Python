@@ -1,0 +1,60 @@
+***flags for choosing components to be simulated and presence of CAC barrier
+ncomp, ipre, iwall, iTVD
+{ncomp}, {ipre}, {iwall}, {iTVD}
+***source zone concentrations at 11 times
+stime(n) (yr), czero(1,n), czero(2,n), czero(3,n), czero(4,n) (ug/l)
+{source_zone_data}
+***source zone parameters
+lysource, lzsourcemax, lzsourcemin, vd (m/yr)
+{lysource}, {lzsourcemax}, {lzsourcemin}, {vd}
+***High K zone transport terms
+porf, tortf, bulkden (g/ml), foc, alphax (m), alphay (m), alphaz (m)
+{porf}, {tortf}, {bulkden}, {foc}, {alphax}, {alphay}, {alphaz}
+***High K zone organic carbon partition coeff
+ock(1), ock(2), ock(3), ock(4) (ml/g)
+{ock1}, {ock2}, {ock3}, {ock4}
+***distance to end of zone 1 and zone 2 for plume remediation
+x1, x2 (m)
+{x1}, {x2}
+***length of period 1 and period 2 for plume remediation
+tplume1, tplume2 (yr)
+{tplume1}, {tplume2}
+***Freundlich adsorption parameters for sorption barrier, exponent
+fra(1), fra(2), fra(3), fra(4),
+{fra1}, {fra2}, {fra3}, {fra4}
+***Freundlich adsorption fcac*Kf, units (ug/kg)(ug/L)**(-a)
+fcackf(1), fcackf(2), fcackf(3), fcackf(4)
+{fcackf1}, {fcackf2}, {fcackf3}, {fcackf4}
+***decay terms in high K zone -alwyas set yieldf(3)=0
+yieldf(2), yieldf(3), yieldf(4)
+{yieldf2}, {yieldf3}, {yieldf4}
+**Base decay rates in high k zone
+decayf(1), decayf(2), decayf(3), decayf(4) (1/yr)
+{decayf1}, {decayf2}, {decayf3}, {decayf4}
+*** Low K zone transport terms
+mdflag, porm, tortm, focm, diff (m^2/yr), volfrac, difflen (m)
+{mdflag}, {porm}, {tortm}, {focm}, {diff}, {volfrac}, {difflen}
+***decay terms in Low K zone
+yieldm(2), yieldm(3), yieldm(4) -alwyas set yieldf(3)=0
+{yieldm2}, {yieldm3}, {yieldm4}
+**Base decay rates in low K zone
+decaym(1), decaym(2), decaym(3), decaym(4) (1/yr)
+{decaym1}, {decaym2}, {decaym3}, {decaym4}
+***x-direction grid
+xmax (m), nx1, nxpsb, nx2
+{xmax}, {nx1}, {nxpsb}, {nx2}
+***y-direction locations
+dy (m), ny
+{dy}, {ny}
+***z-direction locations
+dz (m), nz
+{dz}, {nz}
+***timesteps
+dt (yr), nt, npt
+{dt}, {nt}, {npt}
+***numerical iteration parameters
+tol (ug/L), maxit
+{tol}, {maxit}
+***observation well locations x, y, top of screen, bottom of screen
+nwell(n), xwell(n) (m), ywell(n) (m), zwelltop(n) (m), zwellbot(n) (m)
+{observation_wells}

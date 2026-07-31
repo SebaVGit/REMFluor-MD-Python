@@ -92,6 +92,7 @@ try:
         popups_heterogeneity,
         run_model,
         cali_1,
+        sensitivity,
     )
     _FUNCS_LOADED = True
 except Exception as _e:
@@ -110,7 +111,12 @@ def _enable_high_dpi_awareness():
         return
     try:
         import ctypes
-        # Windows 8.1+: per-monitor DPI awareness (best)
+        # Windows 8.1+: per-monitor DPI awareness (best).
+        # (v109c briefly used system awareness (1) to work around
+        # cross-monitor drags; reverted — it changed how the MAIN
+        # window rendered at startup.  Popups opening on the wrong
+        # monitor are handled separately by centering them over the
+        # app window in functions/sensitivity.py.)
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(2)
             return
@@ -734,6 +740,13 @@ def run_script(macro_name, extra_args=None):
             if not messagebox.askyesno("Clear All Data?", _msg):
                 return
             deleted = clear_for_restore.run(_app_ref)
+            # v109: also blank the Step-4 Low/High range cells — they
+            # are seeded from the loaded model, so a cleared app should
+            # show them empty again.
+            cb = getattr(_app_ref, "_clear_calib_ranges", None)
+            if callable(cb):
+                try: cb()
+                except Exception: pass
             msg = (f"Cleared {len(deleted)} file(s)." if deleted
                    else "Cells cleared. No .txt files found.")
             messagebox.showinfo("Clear Data", msg)
@@ -742,7 +755,18 @@ def run_script(macro_name, extra_args=None):
         if macro_name == "Paste_Example":
             # Step 1: clear, Step 2: restore from example
             clear_for_restore.run(_app_ref)
+            cb = getattr(_app_ref, "_clear_calib_ranges", None)
+            if callable(cb):
+                try: cb()
+                except Exception: pass
             restore_from_example.run(_app_ref)
+            # v109: refresh Mids from the freshly-loaded inputs, then
+            # seed the (blank) Low/High cells from the Mid values.
+            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges"):
+                cb = getattr(_app_ref, _attr, None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
             return
 
         if macro_name == "Load_Data":
@@ -754,6 +778,13 @@ def run_script(macro_name, extra_args=None):
             # Step 2: restore from the saved folder.
             clear_for_restore.run(_app_ref, delete_files=False)
             restore_from_saved.run(_app_ref)
+            # v109: refresh Mids from the restored inputs, then seed
+            # blank Step-4 Low/High cells from the Mid values.
+            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges"):
+                cb = getattr(_app_ref, _attr, None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
             return
 
         if macro_name == "Visualize_Saved_Results":
@@ -1239,6 +1270,24 @@ def run_script(macro_name, extra_args=None):
                     _save_calibration_inputs(_app_ref)
                 except Exception as exc:
                     print(f"[cali] setup save failed: {exc}")
+        return
+
+    if macro_name == "Run_Sensitivity_Analysis":
+        # v109: Monte Carlo sensitivity / uncertainty analysis.
+        # sensitivity.run() reads the checked Step-4 rows, the
+        # Distribution selector (v_sens_dist) and the "Number of runs
+        # for sensitivity" box (v_sens_runs), asks for the output
+        # parent folder, and writes sensitivity_runs.csv + plume-
+        # length histogram PNG(s) into <parent>/sensitivity/.
+        if _FUNCS_LOADED and _app_ref is not None:
+            try:
+                sensitivity.run(_app_ref)
+            except Exception as exc:
+                import traceback
+                traceback.print_exc()
+                messagebox.showerror(
+                    "Run Sensitivity Analysis",
+                    f"Sensitivity analysis failed to start:\n{exc}")
         return
 
     if macro_name == "Load_Optimal_Data":
@@ -5462,8 +5511,11 @@ class REMFluorApp(tk.Tk):
         # step-line text instead of floating off in its own column.
         header_band = tk.Frame(outer, bg=BG_MAIN)
         header_band.pack(fill="x", pady=(0, 4))
-        header_band.columnconfigure(0, weight=1)   # left text grows
-        header_band.columnconfigure(1, weight=0)   # right block fixed
+        # v109c: 2:1 weights instead of 1:0 — the right block used to be
+        # pushed flush against the screen edge; now it sits ~2/3 across
+        # with breathing room that scales with the window width.
+        header_band.columnconfigure(0, weight=2)   # left text grows
+        header_band.columnconfigure(1, weight=1)   # right block floats left
 
         head_l = tk.Frame(header_band, bg=BG_MAIN)
         head_l.grid(row=0, column=0, sticky="nw")
@@ -5506,29 +5558,40 @@ class REMFluorApp(tk.Tk):
         # Right side: iterations + time remaining — sits flush against
         # the right edge of the step lines (small 24-px gap, not floating
         # to the far right of the panel).
+        # v109c: head_r is a 3-column GRID (label | entry | unit) so all
+        # four entry boxes line up in one column regardless of how wide
+        # each label is.
         head_r = tk.Frame(header_band, bg=BG_MAIN)
         head_r.grid(row=0, column=1, sticky="nw", padx=(24, 4))
-        nf = tk.Frame(head_r, bg=BG_MAIN); nf.pack(anchor="w")
-        tk.Label(nf, text="Number of iteration", font=FONT_LABEL,
-                 bg=BG_MAIN).pack(side="left")
+
+        def _head_row(r, label_text, var, *, locked=False, unit=""):
+            tk.Label(head_r, text=label_text, font=FONT_LABEL,
+                     bg=BG_MAIN, anchor="e"
+                     ).grid(row=r, column=0, sticky="e", pady=1)
+            if locked:
+                e = tk.Entry(head_r, textvariable=var, width=6,
+                             font=FONT_INPUT, bg=BG_LOCKED, fg=FG_LOCKED,
+                             relief="solid", bd=1, justify="right",
+                             readonlybackground=BG_LOCKED,
+                             state="readonly")
+            else:
+                e = tk.Entry(head_r, textvariable=var, width=6,
+                             font=FONT_INPUT, bg=BG_INPUT_BLUE,
+                             fg=FG_INPUT, relief="solid", bd=1,
+                             justify="right")
+            e.grid(row=r, column=1, sticky="w", padx=(6, 0), pady=1)
+            wu = tk.Label(head_r, text=unit, font=FONT_LABEL_SM,
+                          bg=BG_MAIN, anchor="w")
+            wu.grid(row=r, column=2, sticky="w", padx=(2, 0), pady=1)
+            return wu
+
         self.v_n_iter = tk.StringVar(value="50")
-        tk.Entry(nf, textvariable=self.v_n_iter, width=6,
-                 font=FONT_INPUT, bg=BG_INPUT_BLUE, fg=FG_INPUT,
-                 relief="solid", bd=1, justify="right"
-                 ).pack(side="left", padx=(6, 0))
-        tf = tk.Frame(head_r, bg=BG_MAIN); tf.pack(anchor="w", pady=(2, 0))
-        tk.Label(tf, text="Estim.Time Remaining", font=FONT_LABEL,
-                 bg=BG_MAIN).pack(side="left")
-        self.v_t_remain = tk.StringVar(value="0")
-        tk.Entry(tf, textvariable=self.v_t_remain, width=6,
-                 font=FONT_INPUT, bg=BG_LOCKED, fg=FG_LOCKED,
-                 relief="solid", bd=1, justify="right",
-                 readonlybackground=BG_LOCKED, state="readonly"
-                 ).pack(side="left", padx=(6, 0))
+        _head_row(0, "Number of iteration", self.v_n_iter)
         time_unit = "(hours)" if self.active_sheet == "Detailed_2" \
                     else "(minutes)"
-        tk.Label(tf, text=time_unit, font=FONT_LABEL_SM,
-                 bg=BG_MAIN).pack(side="left", padx=(2, 0))
+        self.v_t_remain = tk.StringVar(value="0")
+        _head_row(1, "Estim.Time Remaining", self.v_t_remain,
+                  locked=True, unit=time_unit)
 
         # ── Live update of Estim. Time Remaining ────────────────────────
         # Was a static black cell with hardcoded "2".  Now:
@@ -5585,10 +5648,19 @@ class REMFluorApp(tk.Tk):
             except Exception:
                 pass
         self._cali_progress_update = _cali_progress_update
-        tk.Label(head_r,
-                 text="(add explainer text here about\npossible run times)",
-                 font=FONT_LABEL_SMI, fg=FG_HELP, bg=BG_MAIN,
-                 justify="left").pack(anchor="w", pady=(4, 0))
+        # v109: "Number of runs for sensitivity" — replaces the old
+        # "(add explainer text about run times)" placeholder.  Read by
+        # functions/sensitivity.py as the default Monte Carlo run
+        # count (the user can still change it in the settings dialog
+        # that opens when the sensitivity analysis starts).
+        # v109d: the "Number of runs for sensitivity" and "Concentration
+        # for plume" boxes were REMOVED from this header — the settings
+        # dialog that opens on "Run Sensitivity Analysis" already asks
+        # for both (plus plume year + seed), so the panel boxes were
+        # redundant.  The StringVars stay so sensitivity.py's dialog
+        # defaults still work (and any saved values round-trip).
+        self.v_sens_runs = tk.StringVar(value="1000")
+        self.v_sens_target = tk.StringVar(value="4")
 
         # ── Three-box row: Step 2 | Step 3 | LEGEND ─────────────────────
         body = tk.Frame(outer, bg=BG_MAIN)
@@ -5785,34 +5857,41 @@ class REMFluorApp(tk.Tk):
                  ).grid(row=0, column=4, padx=2, pady=2)
 
         # Each row: (label, lo, mid, hi, unit, section)
+        # v109: Low / Mid / High start BLANK.  Previously these were
+        # hardcoded example literals (1965, 0.31536, even "#DIV/0!")
+        # that looked like random numbers on a fresh start.  Mid cells
+        # are live-filled by _refresh_calib_mids / BASELINE_MID from
+        # the user's real inputs; Low/High are seeded from Mid (x0.5 /
+        # x2) by _seed_calib_ranges after Paste Example / Load Data,
+        # or explicitly via the "Enter Default Low-High Ranges" button.
         simple_rows = [
-            ("Source Start Year (nt)",                     "1965",   "1977",   "1980",  "(xxxx)",     "Section 2"),
-            ("Hydraulic Conductivity (k)",                 "0.31536","3.15",   "31.536","(m/yr)",     "Section 3"),
-            ("Hydraulic Gradient (i)",                     "0.0004", "0.0038", "0.0380","(-)",        "Section 3"),
-            ("Effective Porosity (porf)",                  "0.16",   "0.20",   "0.24",  "(-)",        "Section 3"),
-            ("Transmissive Fraction of Model (volfrac)",   "0.6",    "1.00",   "0.85",  "(-)",        "Section 4"),
-            ("Average Diffusion Length (difflen)",         "1.5",    "0.00",   "6",     "(m)",        "Section 4"),
-            ("Retardation Factor of PFAA-1 (ock(2))",      "1.6",    "2.9",    "6.4",   "(-)",        "Section 5"),
-            ("Retardation Factor of PFAA-2 (ock(4))",      "1",      "0.0",    "4",     "(-)",        "Section 5"),
-            ("Longitudinal Dispersivity (alphax (m))",     "1",      "3.2",    "1.5",   "(m)",        "Section 6"),
+            ("Source Start Year (nt)",                     "", "", "", "(xxxx)",     "Section 2"),
+            ("Hydraulic Conductivity (k)",                 "", "", "", "(m/yr)",     "Section 3"),
+            ("Hydraulic Gradient (i)",                     "", "", "", "(-)",        "Section 3"),
+            ("Effective Porosity (porf)",                  "", "", "", "(-)",        "Section 3"),
+            ("Transmissive Fraction of Model (volfrac)",   "", "", "", "(-)",        "Section 4"),
+            ("Average Diffusion Length (difflen)",         "", "", "", "(m)",        "Section 4"),
+            ("Retardation Factor of PFAA-1 (ock(2))",      "", "", "", "(-)",        "Section 5"),
+            ("Retardation Factor of PFAA-2 (ock(4))",      "", "", "", "(-)",        "Section 5"),
+            ("Longitudinal Dispersivity (alphax (m))",     "", "", "", "(m)",        "Section 6"),
             ("Multiplier to PFAA-1 Source Concentration in #7 (czero(2,n))",
-                                                            "0.5",   "1",      "2",     "x(Ct)",      "Section 7"),
+                                                            "", "", "", "x(Ct)",      "Section 7"),
             ("Multiplier to PFAA-2 Source Concentration in #7 (czero(4,n))",
-                                                            "0.5",   "#DIV/0!","2",     "x(Ct)",      "Section 7"),
+                                                            "", "", "", "x(Ct)",      "Section 7"),
         ]
         precursor_rows = [
             ("First order decay rate coefficient for Precursors-1 (decayf(1))",
-                                                            "0.5",   "0.4",    "4.5",   "(per year)", "Section 5"),
+                                                            "", "", "", "(per year)", "Section 5"),
             ("First order decay rate coefficient for Precursors-2 (decayf(3))",
-                                                            "0.5",   "0.0",    "4.5",   "(per year)", "Section 5"),
+                                                            "", "", "", "(per year)", "Section 5"),
             ("Retardation Factor of Precursors-1 (ock(1))",
-                                                            "2",     "4.7",    "4",     "(-)",        "Section 5"),
+                                                            "", "", "", "(-)",        "Section 5"),
             ("Retardation Factor of Precursors-2 (ock(3))",
-                                                            "2",     "0.0",    "4",     "(-)",        "Section 5"),
+                                                            "", "", "", "(-)",        "Section 5"),
             ("Multiplier to Precursor-1 Source Concentration in #7 (czero(1,n))",
-                                                            "0.5",   "1.0",    "2",     "x(Ct)",      "Section 7"),
+                                                            "", "", "", "x(Ct)",      "Section 7"),
             ("Multiplier to Precursor-2 Source Concentration in #7 (czero(3,n))",
-                                                            "0.5",   "#DIV/0!","2",     "x(Ct)",      "Section 7"),
+                                                            "", "", "", "x(Ct)",      "Section 7"),
         ]
         # Pre-checked per the screenshot defaults
         # v88: Precursor-1 multiplier was previously hard-coded as
@@ -5900,6 +5979,44 @@ class REMFluorApp(tk.Tk):
         for r in simple_rows:
             _add_row(ridx, *r)
             ridx += 1
+
+        # ── v109: Distribution selector for the Sensitivity Analysis ──
+        # Sits in the empty area to the right of the Step-4 rows.
+        # Controls HOW the Monte Carlo sensitivity engine draws each
+        # checked parameter from its Lowest / Mid / Highest values.
+        # Read by functions/sensitivity.py via self.v_sens_dist.
+        self.v_sens_dist = tk.StringVar(value="triangular")
+        dist_box = tk.Frame(tbl, bg=BG_MAIN, bd=1, relief="solid",
+                            padx=10, pady=8)
+        dist_box.grid(row=1, column=7, rowspan=8, sticky="nw",
+                      padx=(24, 4), pady=(0, 4))
+        tk.Label(dist_box, text="Distribution for Sensitivity Analysis",
+                 font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
+                 ).pack(anchor="w", pady=(0, 4))
+        big_radio(dist_box, "Triangular (recommended default)",
+                  self.v_sens_dist, "triangular",
+                  bg=BG_MAIN).pack(anchor="w")
+        tk.Label(dist_box,
+                 text="Samples stay strictly between the Lowest and\n"
+                      "Highest Likely Values; the Mid-Range Value is\n"
+                      "the most likely (the peak of the triangle).",
+                 font=FONT_LABEL_SMI, fg="#555555", bg=BG_MAIN,
+                 justify="left").pack(anchor="w", padx=(24, 0),
+                                      pady=(0, 6))
+        big_radio(dist_box, "Log-normal",
+                  self.v_sens_dist, "lognormal",
+                  bg=BG_MAIN).pack(anchor="w")
+        tk.Label(dist_box,
+                 text="Skewed: most samples near the low end with a\n"
+                      "tail toward high values — typical for parameters\n"
+                      "spanning orders of magnitude (e.g. hydraulic\n"
+                      "conductivity).  Mid-Range Value = median;\n"
+                      "Lowest / Highest = 5th / 95th percentiles.\n"
+                      "Samples are still limited to the Low-High range.\n"
+                      "All three values must be > 0 (rows that are not\n"
+                      "fall back to Triangular automatically).",
+                 font=FONT_LABEL_SMI, fg="#555555", bg=BG_MAIN,
+                 justify="left").pack(anchor="w", padx=(24, 0))
         # Right-side red note next to the 2 PFAA multiplier rows
         note_pfaa = tk.Label(tbl,
             text="(All 11 source concentrations for PFAA-1\n"
@@ -6295,6 +6412,45 @@ class REMFluorApp(tk.Tk):
         # (year, K, porf, retardation, alphax) pull their values.
         _refresh_all_mids()  # initial paint
 
+        # ── v109: seed / clear helpers for the Low-High range cells ──
+        # Low/High start blank on a fresh app (no more hardcoded
+        # example numbers).  After Paste Example / Load Data the
+        # handlers below call _seed_calib_ranges() so every row with
+        # a numeric Mid gets Low = Mid x0.5 and High = Mid x2 (the
+        # same rule as the "Enter Default Low-High Ranges" button),
+        # WITHOUT overwriting anything the user already typed.
+        def _seed_calib_ranges(only_blank=True):
+            n = min(len(self.v_calib_low), len(self.v_calib_mid),
+                    len(self.v_calib_high))
+            for i in range(n):
+                try:
+                    m = float(str(self.v_calib_mid[i].get())
+                              .replace(",", "").strip())
+                except (ValueError, TypeError):
+                    continue
+                if m == 0:
+                    continue
+                lo_v, hi_v = sorted((m * 0.5, m * 2.0))
+                try:
+                    if (not only_blank
+                            or not str(self.v_calib_low[i].get()).strip()):
+                        self.v_calib_low[i].set(f"{lo_v:g}")
+                    if (not only_blank
+                            or not str(self.v_calib_high[i].get()).strip()):
+                        self.v_calib_high[i].set(f"{hi_v:g}")
+                except Exception:
+                    pass
+        self._seed_calib_ranges = _seed_calib_ranges
+
+        def _clear_calib_ranges():
+            for lst in (self.v_calib_low, self.v_calib_high):
+                for v in lst:
+                    try:
+                        v.set("")
+                    except Exception:
+                        pass
+        self._clear_calib_ranges = _clear_calib_ranges
+
         # ── K ↔ i linked checkboxes ──────────────────────────────────
         # The two go hand-in-hand for groundwater calibration: vd =
         # K × i, so the optimizer needs both perturbed together (or
@@ -6356,6 +6512,13 @@ class REMFluorApp(tk.Tk):
                  fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
                  padx=BTN_PX, pady=BTN_PY,
                  bg=BTN_FILL, width=BTN_W).pack(side="left", padx=BTN_GAP)
+        # v109: Monte Carlo sensitivity analysis — light sky-green fill
+        # so it stands apart from the calibration workflow buttons.
+        make_btn(actrow1, "Run Sensitivity\nAnalysis",
+                 "Run_Sensitivity_Analysis",
+                 fg=FG_BTN_NAVY, font=FONT_BTN_CALIB,
+                 padx=BTN_PX, pady=BTN_PY,
+                 bg="#CDEBD6", width=BTN_W).pack(side="left", padx=BTN_GAP)
 
         actrow2 = tk.Frame(actwrap, bg=BG_MAIN); actrow2.pack(pady=3)
         make_btn(actrow2, "2. See All\nCalibration Data",

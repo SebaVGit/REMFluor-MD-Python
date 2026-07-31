@@ -1,0 +1,16 @@
+PFAS Names from Excel
+PFAA 1 (E38):,PFOS
+PFAA 2 (G38):,PFOA
+
+Transmissive Zone
+Parameter,PFAA 1,PFAA 2
+Soil Bulk Density (g/ml),1.6
+
+foc (-),0.001
+
+Koc (L/kg),130.0,75.0
+
+Low-K Zone
+Parameter,PFAA 1,PFAA 2
+foc (-),0.0035
+
