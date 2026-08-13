@@ -250,7 +250,11 @@ def main(workbook_path=None, sheet_name=None):
             if len(sys.argv) > 2:
                 sheet_name = sys.argv[2]
 
-    if workbook_path and os.path.exists(workbook_path):
+    if workbook_path and os.path.isdir(workbook_path):
+        # v110: run_model now passes the run directory itself (the old
+        # phantom .xlsm path is retired).  Use it as-is.
+        workbook_dir = os.path.abspath(workbook_path)
+    elif workbook_path and os.path.exists(workbook_path):
         workbook_dir = os.path.dirname(os.path.abspath(workbook_path))
     elif workbook_path:
         parent = os.path.dirname(os.path.abspath(workbook_path))

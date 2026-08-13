@@ -317,6 +317,8 @@ HTML_CHICKLETS = {
     "OpenTable10_3":            ("Step10_FieldDataToCalibrate.html", "concentration-measured"),
     "OpenTable10_4":            ("Step10_FieldDataToCalibrate.html", "distance-from-source"),
     "OpenTable11_1":            ("Step11_ModelingParameters.html", "see-results-every"),
+    # v110: sensitivity-analysis chicklet (Distribution box "?")
+    "OpenTableSensitivity":     ("SensitivityAnalysis.html", ""),
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -538,6 +540,13 @@ def _save_calibration_inputs(app):
         fp.write("REMFluor-MD Calibration Inputs\n")
         fp.write("=" * 50 + "\n\n")
         fp.write(f"Iterations: {n_iter_val}\n")
+        # v110: record the unit system the ranges were typed in, so any
+        # future reader can interpret the length-typed rows (K, difflen,
+        # alphax) unambiguously.
+        try:
+            fp.write(f"Units: {app.v_units.get()}\n")
+        except Exception:
+            pass
         fp.write(f"PFAS species: {app.v_pfaa1.get()} / "
                  f"{app.v_pfaa2.get()}\n")
         fp.write(f"Calibrate against PFAA-1: "
@@ -743,10 +752,12 @@ def run_script(macro_name, extra_args=None):
             # v109: also blank the Step-4 Low/High range cells — they
             # are seeded from the loaded model, so a cleared app should
             # show them empty again.
-            cb = getattr(_app_ref, "_clear_calib_ranges", None)
-            if callable(cb):
-                try: cb()
-                except Exception: pass
+            for _attr in ("_clear_calib_ranges", "_refresh_het_status",
+                         "_refresh_grid_status"):
+                cb = getattr(_app_ref, _attr, None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
             msg = (f"Cleared {len(deleted)} file(s)." if deleted
                    else "Cells cleared. No .txt files found.")
             messagebox.showinfo("Clear Data", msg)
@@ -762,7 +773,8 @@ def run_script(macro_name, extra_args=None):
             restore_from_example.run(_app_ref)
             # v109: refresh Mids from the freshly-loaded inputs, then
             # seed the (blank) Low/High cells from the Mid values.
-            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges"):
+            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges",
+                          "_refresh_het_status", "_refresh_grid_status"):
                 cb = getattr(_app_ref, _attr, None)
                 if callable(cb):
                     try: cb()
@@ -780,7 +792,8 @@ def run_script(macro_name, extra_args=None):
             restore_from_saved.run(_app_ref)
             # v109: refresh Mids from the restored inputs, then seed
             # blank Step-4 Low/High cells from the Mid values.
-            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges"):
+            for _attr in ("_refresh_calib_mids", "_seed_calib_ranges",
+                          "_refresh_het_status", "_refresh_grid_status"):
                 cb = getattr(_app_ref, _attr, None)
                 if callable(cb):
                     try: cb()
@@ -1136,6 +1149,10 @@ def run_script(macro_name, extra_args=None):
                 popups_cellsize.run(_app_ref)
             except Exception as exc:
                 messagebox.showerror("Cell Size", f"Popup failed:\n{exc}")
+            cb = getattr(_app_ref, "_refresh_grid_status", None)
+            if callable(cb):
+                try: cb()
+                except Exception: pass
         return
 
     if macro_name in HTML_APPENDIX:
@@ -1218,13 +1235,20 @@ def run_script(macro_name, extra_args=None):
         # Default literature low/high = mid * 0.5 / mid * 2 (per the
         # button caption: "Experience (default +/- x2)")
         try:
-            for cv, lo, mid, hi in zip(_app_ref.v_calib_chk,
-                                       _app_ref.v_calib_low,
-                                       _app_ref.v_calib_mid,
-                                       _app_ref.v_calib_high):
+            for lbl, cv, lo, mid, hi in zip(_CALIB_PARAMS,
+                                            _app_ref.v_calib_chk,
+                                            _app_ref.v_calib_low,
+                                            _app_ref.v_calib_mid,
+                                            _app_ref.v_calib_high):
                 try:
                     m = float(str(mid.get()).replace(",", ""))
                 except (ValueError, TypeError):
+                    continue
+                # v110: Source Start Year is a calendar year — ×0.5/×2
+                # gave 995/3980.  Offset by −15/+5 years instead.
+                if lbl == "Source Start Year (nt)":
+                    lo.set(str(int(m) - 15))
+                    hi.set(str(int(m) + 5))
                     continue
                 lo.set(f"{m * 0.5:g}")
                 hi.set(f"{m * 2.0:g}")
@@ -1457,7 +1481,7 @@ def run_script(macro_name, extra_args=None):
     if macro_name == "Authors":
         messagebox.showinfo(
             "REMFluor-MD Authors",
-            "REMFluor-MD v2.6\n\n"
+            "REMFluor-MD v3.0\n\n"
             "Singh et al. (2025)\n"
             "Falta et al. (2025)\n\n"
             "ESTCP – Environmental Security Technology Certification Program"
@@ -1568,10 +1592,11 @@ def run_script(macro_name, extra_args=None):
             # Refresh §calibration Step 4 — Heterogeneity Calculator
             # writes heterogeneity_inputs.txt which feeds volfrac /
             # difflen Mid cells.
-            cb = getattr(_app_ref, "_refresh_calib_mids", None)
-            if callable(cb):
-                try: cb()
-                except Exception: pass
+            for _attr in ("_refresh_calib_mids", "_refresh_het_status"):
+                cb = getattr(_app_ref, _attr, None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
             return
         if macro_name == "HeterogeneityCalculator_Fractured_Rock":
             try:
@@ -1580,10 +1605,11 @@ def run_script(macro_name, extra_args=None):
             except Exception as exc:
                 messagebox.showerror("Heterogeneity Calculator",
                                      f"Popup failed:\n{exc}")
-            cb = getattr(_app_ref, "_refresh_calib_mids", None)
-            if callable(cb):
-                try: cb()
-                except Exception: pass
+            for _attr in ("_refresh_calib_mids", "_refresh_het_status"):
+                cb = getattr(_app_ref, _attr, None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
             return
 
     messagebox.showinfo(
@@ -2040,7 +2066,7 @@ def _load_logo_image(target_height: int = 50):
 class REMFluorApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("REMFluor-MD Model Input Screen  v2.6")
+        self.title("REMFluor-MD Model Input Screen  v3.0")
         self.configure(bg=BG_MAIN)
         self.resizable(True, True)
 
@@ -3523,7 +3549,7 @@ class REMFluorApp(tk.Tk):
 
         # Title styled per the Excel storyboard reference: "REMFluor-MD"
         # (the product name) is greenish (#DAF2D0); " Model Input Screen"
-        # and "Vers. 2.6" are white.  All three labels use the bold
+        # and "Vers. 3.0" are white.  All three labels use the bold
         # AppTitle / AppVersion fonts.
         title_fr = tk.Frame(bar, bg=BG_HEADER_BAR)
         title_fr.pack(side="left", padx=18)
@@ -3534,7 +3560,7 @@ class REMFluorApp(tk.Tk):
                  font=FONT_TITLE, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left")
 
-        tk.Label(bar, text="Vers. 2.6",
+        tk.Label(bar, text="Vers. 3.0",
                  font=FONT_VERSION, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left", padx=10)
 
@@ -3953,6 +3979,75 @@ class REMFluorApp(tk.Tk):
         _cs_help.place(x=w1 + gap_px + opt_btn.winfo_reqwidth() + 6,
                        y=8 + shift_px + 4)
 
+        # ── v110 (GSI feedback): grid-size status under the button ──
+        # The cell-size popup persists to cellsize_input.txt but the
+        # main screen gave no hint whether custom gridding was set —
+        # after Load Data users could not tell it had loaded.  Show a
+        # green "✓ Custom grid" line with the dX/dY/dZ values (in the
+        # CURRENT unit, converting from the sidecar's own Unit Flag)
+        # when the sidecar exists, or a gray "Automatic gridding"
+        # otherwise.
+        self._grid_status_lbl = tk.Label(
+            img_box, text="", font=FONT_LABEL_SMI, bg=BG_MAIN,
+            fg="#1E7B34", justify="left", anchor="w")
+        self._grid_status_lbl.place(
+            x=w1 + gap_px,
+            y=8 + shift_px + opt_btn.winfo_reqheight() + 4)
+
+        def _refresh_grid_status(*_):
+            lbl = getattr(self, "_grid_status_lbl", None)
+            if lbl is None:
+                return
+            try:
+                from functions.state import get_state
+                wd = get_state().work_dir or os.getcwd()
+            except Exception:
+                wd = os.getcwd()
+            vals = {}
+            path = os.path.join(wd, "cellsize_input.txt")
+            if os.path.exists(path):
+                try:
+                    with open(path, encoding="utf-8") as fp:
+                        for ln in fp:
+                            if "," not in ln:
+                                continue
+                            k, _, v = ln.partition(",")
+                            try:
+                                vals[k.strip()] = float(v.strip())
+                            except ValueError:
+                                pass
+                except Exception:
+                    pass
+            dx = vals.get("Cell Size X:")
+            if dx is None:
+                lbl.config(text="Automatic gridding (model defaults)",
+                           fg="#888888")
+                return
+            # Convert from the sidecar's own unit to the display unit.
+            file_ft = int(vals.get("Unit Flag:", 2)) == 1
+            ui_ft = (self._unit_len() == "ft")
+            f = 1.0
+            if file_ft and not ui_ft:
+                f = 0.3048
+            elif ui_ft and not file_ft:
+                f = 1.0 / 0.3048
+            u = self._unit_len()
+            parts = [f"dX={dx * f:g}"]
+            for key, tag in (("Cell Size Y:", "dY"),
+                             ("Cell Size Z:", "dZ")):
+                if vals.get(key) is not None:
+                    parts.append(f"{tag}={vals[key] * f:g}")
+            lbl.config(fg="#1E7B34",
+                       text="✓ Custom grid set: "
+                            + ", ".join(parts) + f" {u}")
+        self._refresh_grid_status = _refresh_grid_status
+        _refresh_grid_status()
+        try:
+            self.v_units.trace_add("write",
+                                   lambda *_: _refresh_grid_status())
+        except Exception:
+            pass
+
         # ── approx run time: next to Section2_2.  Because Section2_2
         #    is narrower, this starts further LEFT than the Optional
         #    button does (x = w2 + gap). ──────────────────────────
@@ -4072,6 +4167,65 @@ class REMFluorApp(tk.Tk):
                  "HeterogeneityCalculator_Fractured_Rock",
                  font=FONT_BTN_SM, width=30, bg=BTN_FILL, padx=4, pady=4
                  ).grid(row=2, column=0, sticky="w", pady=("0.1i", 0))
+
+        # ── v110 (GSI review): completion indicator.  After the user
+        # clicks OK in a Heterogeneity Calculator the popup writes
+        # heterogeneity_inputs.txt — surface that on the main screen so
+        # it's clear the step is done.  Refreshed via
+        # self._refresh_het_status() from the calculator macro handlers
+        # and from Paste Example / Load Data / Clear Data.
+        self._het_status_lbl = tk.Label(
+            bcol, text="", font=FONT_LABEL_SMI, bg=BG_MAIN,
+            fg="#1E7B34", justify="left", anchor="w")
+        self._het_status_lbl.grid(row=3, column=0, sticky="nw",
+                                  pady=(4, 0))
+
+        def _refresh_het_status(*_):
+            lbl = getattr(self, "_het_status_lbl", None)
+            if lbl is None:
+                return
+            try:
+                from functions.state import get_state
+                wd = get_state().work_dir or os.getcwd()
+            except Exception:
+                wd = os.getcwd()
+            path = os.path.join(wd, "heterogeneity_inputs.txt")
+            volfrac = difflen = None
+            if os.path.exists(path):
+                try:
+                    with open(path, encoding="utf-8") as fp:
+                        for ln in fp:
+                            ln = ln.strip()
+                            if ln.startswith("Transmissive Fraction") \
+                                    and ":" in ln:
+                                volfrac = float(ln.split(":", 1)[1])
+                            elif ln.startswith("Diffusion Length") \
+                                    and ":" in ln:
+                                difflen = float(ln.split(":", 1)[1])
+                except Exception:
+                    pass
+            if volfrac is None and difflen is None:
+                lbl.config(text="Heterogeneity Calculator not yet run",
+                           fg="#888888")
+                return
+            u = self._unit_len()
+            dl = difflen if difflen is not None else 0.0
+            if u == "ft":
+                dl = dl / 0.3048    # sidecar stores metres
+            lbl.config(
+                fg="#1E7B34",
+                text=("✓ Heterogeneity data entered\n"
+                      f"   Transmissive Fraction = "
+                      f"{volfrac if volfrac is not None else '?'}\n"
+                      f"   Avg Diffusion Length = {dl:g} {u}"))
+        self._refresh_het_status = _refresh_het_status
+        _refresh_het_status()
+        # Repaint in the right unit when §1 units toggle.
+        try:
+            self.v_units.trace_add("write",
+                                   lambda *_: _refresh_het_status())
+        except Exception:
+            pass
 
         # ── MIDDLE: Section4_1.png with 1.5" gaps on either side
         #            (6× the previous 0.25" — separating it from the
@@ -5214,7 +5368,7 @@ class REMFluorApp(tk.Tk):
         helper_fr.pack(anchor="e", pady=(16, 0))
         # Helper notes — black italic (Excel uses red only on the
         # Distance-from-Source column, not on these helper notes).
-        for txt in ["Enter up to 7 shallow",
+        for txt in ["Enter 7 shallow",
                     "centerline wells",
                     "for key monitoring event"]:
             tk.Label(helper_fr, text=txt, font=FONT_LABEL_SMI,
@@ -5990,9 +6144,14 @@ class REMFluorApp(tk.Tk):
                             padx=10, pady=8)
         dist_box.grid(row=1, column=7, rowspan=8, sticky="nw",
                       padx=(24, 4), pady=(0, 4))
-        tk.Label(dist_box, text="Distribution for Sensitivity Analysis",
+        _dist_hdr = tk.Frame(dist_box, bg=BG_MAIN)
+        _dist_hdr.pack(anchor="w", fill="x", pady=(0, 4))
+        tk.Label(_dist_hdr, text="Distribution for Sensitivity Analysis",
                  font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
-                 ).pack(anchor="w", pady=(0, 4))
+                 ).pack(side="left")
+        # v110: "?" chicklet → docs/data_chicklets/SensitivityAnalysis.html
+        help_link(_dist_hdr, "OpenTableSensitivity"
+                  ).pack(side="left", padx=(6, 0))
         big_radio(dist_box, "Triangular (recommended default)",
                   self.v_sens_dist, "triangular",
                   bg=BG_MAIN).pack(anchor="w")
@@ -6138,8 +6297,16 @@ class REMFluorApp(tk.Tk):
             if "k_value" in d:
                 k_myr = d["k_value"] * UNIT_TO_MYR.get(
                     d.get("k_unit", "m/day"), 365.25)
+                # v110 (GSI review): the row's unit label follows the §1
+                # toggle ((m/yr) / (ft/yr)) but the value was ALWAYS
+                # m/yr — 50 ft/d showed as 5566 under an (ft/yr) label
+                # instead of 18,263.  Convert to the display unit.
+                if self._unit_len() == "ft":
+                    k_myr = k_myr / 0.3048
                 return f"{k_myr:g}"
             # Fall back to v_darcy IF it has a value — else blank.
+            # (v_darcy is a registered length var, already in the
+            # display unit.)
             try:
                 v = str(self.v_darcy.get()).strip()
                 return v if v else ""
@@ -6161,7 +6328,12 @@ class REMFluorApp(tk.Tk):
         def _src_difflen():
             d = _read_hetero_inputs()
             if "difflen" in d:
-                return f"{d['difflen']:g}"
+                v = d["difflen"]
+                # v110: heterogeneity_inputs.txt stores metres; the row
+                # label follows the §1 unit toggle — convert to match.
+                if self._unit_len() == "ft":
+                    v = v / 0.3048
+                return f"{v:g}"
             return ""
 
         SRC_MAP = {
@@ -6412,6 +6584,35 @@ class REMFluorApp(tk.Tk):
         # (year, K, porf, retardation, alphax) pull their values.
         _refresh_all_mids()  # initial paint
 
+        # ── v110: unit-consistency for the length-typed Step-4 rows ──
+        # Low/High are user-typed in the DISPLAY unit; register them so
+        # the §1 feet/meters toggle converts them like every other
+        # length cell.  Mid is NOT registered for these rows — it is
+        # re-pulled from its (unit-aware) source by the refresh below,
+        # so registering it too would double-convert.
+        _LEN_ROWS = {
+            "Hydraulic Conductivity (k)":              "rate",
+            "Average Diffusion Length (difflen)":      "length",
+            "Longitudinal Dispersivity (alphax (m))":  "length",
+        }
+        for _lbl, _kind in _LEN_ROWS.items():
+            try:
+                _li = _CALIB_PARAMS.index(_lbl)
+            except ValueError:
+                continue
+            for _lst in (self.v_calib_low, self.v_calib_high):
+                if _li < len(_lst):
+                    self._register_length_var(_lst[_li], _kind)
+        # After _apply_units converts the registered cells, re-pull the
+        # Mid column so unit-aware sources (_src_K, _src_difflen,
+        # v_alpha_l) repaint in the new unit.  Trace order guarantees
+        # _apply_units (registered at startup) runs first.
+        try:
+            self.v_units.trace_add(
+                "write", lambda *_: self._refresh_calib_mids())
+        except Exception:
+            pass
+
         # ── v109: seed / clear helpers for the Low-High range cells ──
         # Low/High start blank on a fresh app (no more hardcoded
         # example numbers).  After Paste Example / Load Data the
@@ -6430,7 +6631,12 @@ class REMFluorApp(tk.Tk):
                     continue
                 if m == 0:
                     continue
-                lo_v, hi_v = sorted((m * 0.5, m * 2.0))
+                # v110: years are OFFSETS, not multipliers — ×0.5/×2 on
+                # 1990 produced 995/3980.  Use −15/+5 years instead.
+                if _CALIB_PARAMS[i] == "Source Start Year (nt)":
+                    lo_v, hi_v = int(m) - 15, int(m) + 5
+                else:
+                    lo_v, hi_v = sorted((m * 0.5, m * 2.0))
                 try:
                     if (not only_blank
                             or not str(self.v_calib_low[i].get()).strip()):

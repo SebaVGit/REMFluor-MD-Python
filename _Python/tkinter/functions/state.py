@@ -334,6 +334,29 @@ class AppState:
         """Write state back to UI widgets.  See snapshot() for the
         scalar-first / list-fallback resolution rules."""
         import tkinter as tk
+        # v110 (unit-safety): set the §1 unit radio FIRST, before any
+        # numeric cell is written, and neutralize the _apply_units
+        # conversion for this programmatic switch.  The loaded numbers
+        # below are ALREADY in the saved model's unit — previously the
+        # unit flag was pushed AFTER the values, so loading a feet
+        # model while the UI sat in meters fired the m→ft conversion
+        # trace on values that were already feet (×3.28 corruption).
+        ad1 = self.get("AD1")
+        if ad1 is not None:
+            unit = getattr(app, 'v_units', None)
+            if unit is not None:
+                try:
+                    ad1i = int(float(ad1))
+                    new_u = "feet" if ad1i == 1 else "meters"
+                except (ValueError, TypeError):
+                    new_u = str(ad1)
+                try:
+                    # prev == new → _apply_units computes no factor and
+                    # only refreshes the unit labels.
+                    app._prev_units = new_u
+                except Exception:
+                    pass
+                unit.set(new_u)
         for addr, var_name in CELL_MAP.items():
             val = self.get(addr)
             # 1) scalar StringVar (handles v_psb_a_1..4, v_pfaa3/4, etc.)
@@ -359,16 +382,8 @@ class AppState:
                 try: a8i = int(float(a8))
                 except (ValueError, TypeError): a8i = 1
                 ver.set("Simple Version" if a8i == 1 else "Detailed Version")
-        ad1 = self.get("AD1")
-        if ad1 is not None:
-            unit = getattr(app, 'v_units', None)
-            if unit:
-                try: ad1i = int(float(ad1))
-                except (ValueError, TypeError):
-                    # Already a string like "feet" / "meters" — pass through
-                    unit.set(str(ad1))
-                else:
-                    unit.set("feet" if ad1i == 1 else "meters")
+        # (v110: the AD1 units flag is now pushed at the TOP of this
+        # method, before the numeric cells — see comment there.)
         # v103: heterogeneity (A1).  Stored as either:
         #   int 1/2/3 (from state.snapshot)  → map back to High/Medium/Weak
         #   string "High"/"Medium"/"Weak"/"Enter…" (from inp_to_state)

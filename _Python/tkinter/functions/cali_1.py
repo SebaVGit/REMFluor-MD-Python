@@ -938,6 +938,19 @@ def run(app, parent=None) -> bool:
                 if k_val is None:
                     try: k_val = float(app.v_darcy.get()) / max(i_val, 1e-12)
                     except Exception: k_val = 0.0
+                # v110 (unit-safety): the Mid cells hold the DISPLAY
+                # unit (ft/yr when §1 is feet), but this sidecar's
+                # "Unit: m/year" line is canonical — convert before
+                # writing, otherwise a feet-mode calibration wrote a
+                # ft/yr number labelled m/year and every later reader
+                # (_src_K, generate_input_file) mis-scaled it.
+                try:
+                    _is_ft = (str(app.v_units.get()).strip().lower()
+                              == "feet")
+                except Exception:
+                    _is_ft = False
+                if _is_ft:
+                    k_val = k_val * 0.3048       # ft/yr → m/yr
                 vd_my = k_val * i_val
                 vd_fy = vd_my / 0.3048
                 gw_path = os.path.join(project, "gwvelocity_inputs.txt")

@@ -212,12 +212,12 @@ def _cleanup_dashboard_on_exit():
         pass
 
 
-def _xlsm_path() -> str:
-    # Only used to hand the dashboard a DIRECTORY to chdir into (it reads
-    # the .out files + dashboard_state.json from there).  Point it at the
-    # active run dir so the dashboard reads the current model's results.
-    return os.path.join(_run_dir(),
-                        "REMFluor-MD Interface Storyboard v2.6.xlsm")
+def _dashboard_dir() -> str:
+    # v110: hand the dashboard the run DIRECTORY directly (it reads the
+    # .out files + dashboard_state.json from there).  Previously this
+    # passed a phantom "…Storyboard v2.6.xlsm" path whose dirname the
+    # dashboard extracted — a fossil from the Excel era, now removed.
+    return _run_dir()
 
 
 def _dashboard_script() -> str:
@@ -674,7 +674,7 @@ def launch_dashboard(parent=None, sheet_name="Simple"):
                        f"modules: {', '.join(missing)}\n\n"
                        f"Run:  pip install {' '.join(pkgs)}")
 
-    workbook_path = _xlsm_path()
+    workbook_path = _dashboard_dir()
     if getattr(sys, "frozen", False):
         cmd = [py, "--mode=dashboard", workbook_path, sheet_name]
     else:
@@ -843,7 +843,7 @@ def run(app, parent=None, target_dir=None) -> bool:
         return False
 
     sheet_name = getattr(app, "active_sheet", "Simple")
-    workbook_path = _xlsm_path()
+    workbook_path = _dashboard_dir()
 
     # Step 3: runtime-clock popup ------------------------------------------
     root = tk.Toplevel(parent or app)

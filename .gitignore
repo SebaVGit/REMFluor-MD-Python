@@ -3,11 +3,10 @@
 # ============================================================
  
 # --- Folders to exclude entirely from version control ---
-env/
-Meters/
-Feet/
-Det_Meter/
-Det_Feet/
+Jacksonville_Simple_PSB_doublecheck/
+sens/
+Test/
+tests/
  
 # --- Python compiled / cache files inside _Python (and anywhere else) ---
 # Ignore all .pyc files but keep .py files tracked

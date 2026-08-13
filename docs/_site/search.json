@@ -43,22 +43,11 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step8_SourceRemediation.html#remediation-started-in-year",
-    "href": "data_chicklets/Step8_SourceRemediation.html#remediation-started-in-year",
+    "objectID": "data_chicklets/Step8_SourceRemediation.html#source-treatment-year",
+    "href": "data_chicklets/Step8_SourceRemediation.html#source-treatment-year",
     "title": "Step 8: Source Remediation",
-    "section": "Remediation Started in Year",
-    "text": "Remediation Started in Year\n\n\n\n\n\n\n\n\nParameter\nSource treatment year\n\n\n\n\nUnits\nYear (YYYY) or yrs.\n\n\nDescription\nTime when source remediation starts. Note that the Toolkit assumes that the year of simulation is the year when the source release occurs.\n\n\nSource Of Data\nSite history or remediation plans.\n\n\nHow To Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 8: Source Remediation"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step8_SourceRemediation.html#remediation-ended-in-year",
-    "href": "data_chicklets/Step8_SourceRemediation.html#remediation-ended-in-year",
-    "title": "Step 8: Source Remediation",
-    "section": "Remediation Ended in Year",
-    "text": "Remediation Ended in Year\n\n\n\n\n\n\n\n\nParameter\nREMEDIATION ENDED IN YEAR\n\n\n\n\nDescription\nTime when source remediation ends. Note that the Toolkit assumes that the simulation time starts at zero, when the source release occurs.\n\n\nUnits\nYear (YYYY) or yrs.\n\n\nSource of Data\nSite history or remediation plans.\n\n\nHow to Enter Data\nEnter directly.",
+    "section": "Source Treatment Year",
+    "text": "Source Treatment Year\n\n\n\n\n\n\n\n\nParameter\nSource Treatment Year\n\n\n\n\nUnits\nYear (YYYY) or yrs.\n\n\nDescription\nTime when source remediation starts. Note that the Toolkit assumes that the year of simulation is the year when the source release occurs.\n\n\nSource Of Data\nSite history or remediation plans.\n\n\nHow To Enter Data\nEnter directly.",
     "crumbs": [
       "Data Chicklets",
       "Step 8: Source Remediation"
@@ -114,17 +103,6 @@
     "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
     "section": "",
     "text": "See these Appendices for more information:\nREMFluor-MD can account for matrix diffusion into and out of aquitards overlying or underlying the transmissive zone. Additionally, REMFluor-MD can represent embedded subsurface heterogeneity within the transmissive zone based on three geologic factors that are entered by the user or calculated by the model:\nSelect either the “Use Unconsolidated Media Heterogeneity Calculator” button or the “Use Fractured Rock Heterogeneity Calculator” button in the interface to start the heterogeneity data entry process. See Appendix 4.1 Using the Heterogeneity Calculator for more information.\nChoose if you are modeling an unconsolidated aquifer or a fractured rock aquifer. You will be directed to specific screens for each of the two options.\nUnconsolidated Aquifers\nHow is a “Low-Permeability (Low-k)” Geologic Media Defined? In general, a low-k unit is a saturated soil type that has a hydraulic conductivity that is 10x or more less permeable than the saturated soil type in the transmissive zone. For example, a clay aquitard in contact with a sandy aquifer or a clay layer embedded in a sandy aquifer would be classified as “Low-k” units in the REMFluor-MD framework. A triangle chart of all of the different combinations of Unified Soil Classification System (USCS), reproduced below, can be seen by selecting the “What is a ”Low-k” Geologic Unit” button in the interface. See Appendix 4.2 What is a Low-k Unit for more information.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#unconsolidated-aquifers",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#unconsolidated-aquifers",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Unconsolidated Aquifers",
-    "text": "Unconsolidated Aquifers\nHow is a “Low-Permeability (Low-k) Geologic Media Defined? In general, a low-k unit is a saturated soil type that has a hydraulic conductivity that is 10x or more less permeable that the saturated soil type in the transmissive zone. For example, having a clay aquitard in contract with a sandy aquifer or a clay layer embedded in a sandy aquifer would be classified as”Low-k” units in the REMFluor-MD framework. A triangle chart of all of the different combinations of Universal Soil Classification System (USCS), reproduced below” can be seen by clicking on the “What is a”Low-k” Geologic Unit” Button in the interface. See Appendix 4.2 What is a Low-k Unit for more info.\n\nHydraulic conductivity (K) ratios. K ratios are shown for every USCS soil pair. Green indicates matrix diffusion is likely to be a factor in groundwater transport and therefore represents a transmissive/low-k interface using a 10X ratio metric.",
     "crumbs": [
       "Data Chicklets",
       "Step 4: Hydrogeologic Setting and Matrix Diffusion"
@@ -197,22 +175,22 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-size-in-direction-of-groundwater-flow-y-direction",
-    "href": "data_chicklets/Step2_ModelConfiguration.html#model-size-in-direction-of-groundwater-flow-y-direction",
+    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-half-width-perpendicular-to-flow-y-direction",
+    "href": "data_chicklets/Step2_ModelConfiguration.html#model-half-width-perpendicular-to-flow-y-direction",
     "title": "Step 2: Model Configuration",
-    "section": "Model Size in Direction of Groundwater Flow (Y Direction)",
-    "text": "Model Size in Direction of Groundwater Flow (Y Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Width Perpendicular to Flow (Y Direction)\n\n\n\n\nDescription\nModeling parameter representing the model domain in the y-direction. Note that the model is symmetric around y=0.\n\n\nUnits\nft (or m).\n\n\nTypical Values\n10 - 1000 ft (3 - 300 m).\n\n\nSource of Data\nPlume maps.\n\n\nHow to Enter Data\nEnter directly.",
+    "section": "Model Half-Width Perpendicular to Flow (Y Direction)",
+    "text": "Model Half-Width Perpendicular to Flow (Y Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Half-Width Perpendicular to Flow (Y Direction)\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nModeling parameter representing the model domain in the y-direction. Note that the model is symmetrical around y=0, so this is the halfwidth.\n\n\nTypical Values\n10 - 1000 ft (3 - 300 m).\n\n\nSource of Data\nPlume maps.\n\n\nHow to Enter Data\nEnter directly.",
     "crumbs": [
       "Data Chicklets",
       "Step 2: Model Configuration"
     ]
   },
   {
-    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-size-in-direction-of-groundwater-flow-z-direction",
-    "href": "data_chicklets/Step2_ModelConfiguration.html#model-size-in-direction-of-groundwater-flow-z-direction",
+    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-depth-below-water-table-z-direction",
+    "href": "data_chicklets/Step2_ModelConfiguration.html#model-depth-below-water-table-z-direction",
     "title": "Step 2: Model Configuration",
-    "section": "Model Size in Direction of Groundwater Flow (Z Direction)",
-    "text": "Model Size in Direction of Groundwater Flow (Z Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Depth Below Water Table (Z Direction)\n\n\n\n\nDescription\nModeling parameter representing the model domain in the z-direction.\n\n\nUnits\nft (or m).\n\n\nTypical Values\n1 - 60 ft (0.3 - 20 m).\n\n\nSource of Data\nPlume cross-sections.\n\n\nHow to Enter Data\nEnter directly.",
+    "section": "Model Depth Below Water Table (Z Direction)",
+    "text": "Model Depth Below Water Table (Z Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Depth Below Water Table (Z Direction)\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nModeling parameter representing the model domain in the z-direction.\n\n\nTypical Values\n3 - 60 ft (1 - 20 m).\n\n\nSource of Data\nPlume cross-sections.\n\n\nHow to Enter Data\nEnter directly.",
     "crumbs": [
       "Data Chicklets",
       "Step 2: Model Configuration"
@@ -296,17 +274,6 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step11_ModelingParameters.html#maximum-number-of-iterations",
-    "href": "data_chicklets/Step11_ModelingParameters.html#maximum-number-of-iterations",
-    "title": "Step 11: Modeling Parameters",
-    "section": "Maximum Number of Iterations",
-    "text": "Maximum Number of Iterations\n\n\n\n\n\n\n\n\nParameter\nMAXIMUM NUMBER OF ITERATIONS\n\n\n\n\nDescription\nFinite difference modeling parameter. The maximum number of Gauss Siedell iterations to prevent an endless convergence loop.\n\n\nUnits\nUnitless.\n\n\nTypical Values\n100-500.\n\n\nSource of Data\nTrial and error. If the simulation doesn’t converge, sometimes it can help to increase the number of iterations (but not often).\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 11: Modeling Parameters"
-    ]
-  },
-  {
     "objectID": "data_chicklets/Step11_ModelingParameters.html#convergence-tolerance",
     "href": "data_chicklets/Step11_ModelingParameters.html#convergence-tolerance",
     "title": "Step 11: Modeling Parameters",
@@ -340,25 +307,125 @@
     ]
   },
   {
-    "objectID": "architecture.html",
-    "href": "architecture.html",
-    "title": "Architecture",
+    "objectID": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-results",
+    "href": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-results",
+    "title": "Step 11: Modeling Parameters",
+    "section": "REMFluor-MD Results",
+    "text": "REMFluor-MD Results\n\nOutput Screens\n\n\n\nRun Model\n\n\nConcentration in T-Zone vs. Distance in X-Direction\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. DISTANCE IN X-DIRECTION\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. distance in the x-direction. The user may scroll down the various “Time”, “Y”, and “Z” values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration in T-Zone vs. Distance from Bottom of Model\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. DISTANCE FROM BOTTOM OF MODEL\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. distance from the bottom of the model. The user may scroll down the various “Time”, “X”, and “Y” values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.Note that if only one “Z” cell is modeled, then the output will be in terms of a single point for each component rather than a line.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration in T-Zone vs. Time\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. TIME\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. the simulated time. The user may scroll down the various “X”, “Y”, and “Z” values in the boxes to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration vs. Time in Observation Well\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION VS. TIME IN OBSERVATION WELL\n\n\n\n\nDescription\nConcentration vs. the simulated time in an observation well specified on the input screen. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass Discharge vs. Time in T-Zone\n\n\n\n\n\n\n\n\nParameter\nMASS DISCHARGE VS. TIME IN T-ZONE\n\n\n\n\nDescription\nMass discharge vs. time in the transmissive zone. The user may scroll down the various “X” values in the box to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass vs. Time in T-Zone\n\n\n\n\n\n\n\n\nParameter\nMASS VS. TIME IN T-ZONE\n\n\n\n\nDescription\nMass vs. time in the transmissive zone. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass vs. Time in Low-K Zone\n\n\n\n\n\n\n\n\nParameter\nMASS VS. TIME IN LOW-K ZONE\n\n\n\n\nDescription\nMass vs. time in the low-k zone. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nCalculate T-Zone Mass Discharge\n\n\n\n\n\n\n\n\nParameter\nCALCULATE T-ZONE MASS DISCHARGE\n\n\n\n\nDescription\nThe user may calculate the mass discharge at any X and Time by entering the desired inputs in the white cells to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided inputs are rounded down to the closest X and Timestep in the model.\n\n\n\n\n\n\nCalculate Mass\n\n\n\n\n\n\n\n\nParameter\nCALCULATE MASS\n\n\n\n\nDescription\nThe user may calculate the mass at any Time in both the low-k and transmissive zones by entering the desired input in the white cell to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided input is rounded down to the closest Timestep in the model.",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 11: Modeling Parameters"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-output-files",
+    "href": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-output-files",
+    "title": "Step 11: Modeling Parameters",
+    "section": "REMFluor-MD Output Files",
+    "text": "REMFluor-MD Output Files\n\n\n\n\n\n\n\n\nParameter\nREMFLUOR-MD OUTPUT FILES\n\n\n\n\nDescription\nREMFluor-MD outputs text files created by the FORTRAN model code may be viewed externally. The files are generated in the same folder as the REMFluor-MD software. If a simulation is saved by the User, all output files associated with that simulation are moved to the location selected by the User. Output files include:• Discharge.out – mass discharge output. Data is output as:  ○ Time (yrs), X-direction location (m),  ○ Mass discharge for component 1 (kg/yr),  ○ Mass discharge for component 2 (kg/yr),  ○ Mass discharge for component 3 (kg/yr), and  ○ Mass discharge for component 4 (kg/yr).• Obs_well#.out – observation well output for well number # (1-7). Data is output as:  ○ Time (yrs),  ○ Concentration of component 1 (g/L),  ○ Concentration of component 2 (g/L),  ○ Concentration of component 3 (g/L), and  ○ Concentration of component 4 (g/L).• Plume_mass.out – plume mass output in both the low-k and transmissive zones. Data is output as:  ○ Time (yrs),  ○ Mass of component 1 in the low-k zone (kg),  ○ Mass of component 1 in the transmissive zone (kg),  ○ Mass of component 2 in the low-k zone (kg),  ○ Mass of component 2 in the transmissive zone (kg),  ○ Mass of component 3 in the low-k zone (kg),  ○ Mass of component 3 in the transmissive zone (kg),  ○ Mass of component 4 in the low-k zone (kg),  ○ Mass of component 4 in the transmissive zone (kg).• REMFluor-MD.out – concentration in the transmissive zone. Data is output as:  ○ Time (yrs),  ○ X-direction location (m),  ○ Y-direction location (m),  ○ Z-direction location (m),  ○ Concentration for component 1 (g/L),  ○ Concentration for component 2 (g/L),  ○ Concentration for component 3 (g/L),  ○ Concentration for component 4 (g/L).",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 11: Modeling Parameters"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html",
+    "href": "data_chicklets/SensitivityAnalysis.html",
+    "title": "Sensitivity / Uncertainty Analysis",
     "section": "",
-    "text": "The backend is built on Django + Django REST Framework, with Celery for asynchronous tasks and Postgres/PostGIS for data storage. The frontend is served via R Shiny. The backend exposes a RESTful API consumed by the R Shiny frontend, handling all business logic including geometry validation, chemistry data lookup, report creation, and asynchronous report generation.\nThe system is containerized using Docker and orchestrated with Docker Compose, allowing for easy deployment and scalability."
+    "text": "REMFluor-MD includes a Monte Carlo sensitivity / uncertainty analysis that answers a question the calibration alone cannot: given that the site parameters are not known exactly, how uncertain are the model’s predictions? Instead of one “best” simulation, the model is run many times (1,000 by default), each time with a different — but plausible — combination of parameter values, and the spread of the results is reported.\nThe analysis reuses the Step 4 calibration table: every parameter whose “Use this Parameter?” button is selected is varied between its Lowest Likely Value and Highest Likely Value, with the Mid-Range Value as the most likely. Parameters that are not selected stay fixed at their current model values.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
   },
   {
-    "objectID": "architecture.html#overview",
-    "href": "architecture.html#overview",
-    "title": "Architecture",
-    "section": "Overview",
-    "text": "Overview\nThe system is composed of:\n\nAPI Layer REST endpoints for geometry operations, chemistry queries, report creation, and downloading generated reports.\nDatabase Layer PostgreSQL with PostGIS enabled. Stores:\n\nUser accounts\nReports\nReport grid payloads (JSON)\nChemistry results\nDataset versioning metadata\n\nTask Layer (Celery) Used for:\n\nRunning spatial operations\nGenerating PDF reports\nHeavy GIS or data-processing tasks\n\nStatic + Reverse Proxy Layer Caddy serves:\n\nThe R Shiny frontend\nDjango API backend\nStatic assets\nInternal documentation\n\nFrontend Layer R Shiny application providing the GUI for users to interact with the system."
+    "objectID": "data_chicklets/SensitivityAnalysis.html#how-it-works",
+    "href": "data_chicklets/SensitivityAnalysis.html#how-it-works",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "How it works",
+    "text": "How it works\n\nSelect the parameters to vary in Step 4 and enter their Lowest / Mid-Range / Highest Likely Values (exactly as for a calibration).\nChoose the sampling distribution in the “Distribution for Sensitivity Analysis” box (see below).\nClick “Run Sensitivity Analysis”. Enter the number of runs, the plume boundary (target) concentration, an optional year for the plume-length calculation, and a random seed, then choose the folder where results should be saved.\nThe model generates the parameter combinations by Latin Hypercube Sampling (a stratified sampling method that covers the whole parameter range evenly with far fewer runs than plain random sampling), runs the full REMFluor-MD solver for each combination, and collects two things from every run: the model-to-data misfit (RMSE / RMSLE against the Section 10 monitoring-well data) and the plume length at the target concentration.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
   },
   {
-    "objectID": "architecture.html#data-flow",
-    "href": "architecture.html#data-flow",
-    "title": "Architecture",
-    "section": "Data Flow",
-    "text": "Data Flow\n\nClient interacts with the R Shiny frontend.\nFrontend makes REST API calls to the Django backend for operations.\nBackend processes requests, performing spatial operations and data lookups as needed.\nFor long-running tasks (e.g., report generation), backend enqueues tasks in Celery.\nCelery workers process tasks asynchronously, updating the database with results.\nFrontend retrieves results from the backend and displays them to the user."
+    "objectID": "data_chicklets/SensitivityAnalysis.html#inputs",
+    "href": "data_chicklets/SensitivityAnalysis.html#inputs",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Inputs",
+    "text": "Inputs\n\n\n\n\n\n\n\nParameter\nDescription\n\n\n\n\nNumber of runs\nHow many Monte Carlo simulations to perform. Default 1,000. More runs give smoother histograms and more stable percentile estimates but take proportionally longer — each run is a complete REMFluor-MD simulation. A quick scoping pass with 50–100 runs is a good way to estimate total runtime before launching the full set.\n\n\nPlume boundary (target) concentration\nThe concentration contour that defines the leading edge of the plume, entered in ng/L (e.g. 4 ng/L). For each run, the plume length is the greatest distance from the source at which the simulated concentration still equals or exceeds this value. The interface converts to the solver’s internal units automatically.\n\n\nYear for plume length\nThe calendar year at which plume length is measured. Leave blank to use the end of the simulation.\n\n\nRandom seed\nControls the random number generator. Re-running with the same seed and the same inputs reproduces the identical set of parameter combinations — useful for documentation and review.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html#choosing-a-distribution",
+    "href": "data_chicklets/SensitivityAnalysis.html#choosing-a-distribution",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Choosing a distribution",
+    "text": "Choosing a distribution\n\n\n\n\n\n\n\nDistribution\nWhen to use it\n\n\n\n\nTriangular (recommended default)\nValues are drawn between the Lowest and Highest Likely Values, with the Mid-Range Value as the most likely (the peak). Nothing outside the Low–High range is ever sampled. A transparent, defensible choice when the plausible range of a parameter is reasonably well known — porosity, retardation factors, source multipliers.\n\n\nLog-normal\nA skewed distribution: most samples near the low end with a tail toward high values. Appropriate for parameters that naturally vary over orders of magnitude — hydraulic conductivity is the classic example (field studies routinely find K to be log-normally distributed). The Mid-Range Value is used as the median, the Lowest / Highest Likely Values as the 5th / 95th percentiles, and samples are still limited to the Low–High range. All three values must be greater than zero; rows that cannot support the mapping (e.g. Source Start Year) automatically fall back to Triangular and are reported.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html#outputs",
+    "href": "data_chicklets/SensitivityAnalysis.html#outputs",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Outputs",
+    "text": "Outputs\nAll results are written to a sensitivity folder created inside the location you choose:\n\n\n\n\n\n\n\nFile\nContents\n\n\n\n\nsensitivity_runs.csv\nOne row per run: the sampled value of every varied parameter (one column each), the RMSE and RMSLE versus the Section 10 field data, the observed and simulated concentration at each monitoring well, the plume length for each simulated constituent, and a status flag (failed runs are marked and excluded from the statistics).\n\n\nplume_length_histograms.png\nOne combined figure with a panel per simulated constituent (PFAA-1, PFAA-2, and Precursors in the Detailed model). Each panel shows the histogram of plume lengths (left axis = count of runs) with a smoothed probability-density curve (right axis), the shaded 90% interval (P5–P95), and the median and mean.\n\n\nrmse_histogram.png\nThe distribution of model-to-data misfit (RMSE) across all runs — one panel, since RMSE is a single metric for the whole model.\n\n\nsensitivity_log.txt\nRun settings (number of runs, target concentration, seed, distribution) and diagnostics for any failed runs.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html#reading-the-results",
+    "href": "data_chicklets/SensitivityAnalysis.html#reading-the-results",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Reading the results",
+    "text": "Reading the results\nThe headline numbers are the P5 / P50 / P95 plume lengths printed on the figure. For example: “at 4 ng/L the median predicted plume length is 250 m, and there is a 90% probability it lies between 180 m and 315 m given the stated parameter uncertainty.” A wide interval means the checked parameters matter a great deal for this prediction; a narrow one means the prediction is robust to them.\nThe RMSE histogram shows how much the quality of fit varies across the sampled parameter space. If many runs fit the field data almost as well as the calibrated optimum, the calibration is non-unique — other parameter combinations explain the data equally well — which is precisely why reporting a plume-length range is more defensible than a single number.\nBecause every run is recorded in sensitivity_runs.csv with one column per parameter, the table can also be used for simple sensitivity screening: sort or plot plume length against each parameter to see which ones drive the spread.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html#example",
+    "href": "data_chicklets/SensitivityAnalysis.html#example",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Example",
+    "text": "Example\nA Simple-model PFOS site: check Hydraulic Conductivity, Hydraulic Gradient, and the PFAA-1 Source Concentration Multiplier in Step 4; select Log-normal (K spans orders of magnitude); run 1,000 simulations at a 4 ng/L boundary. Result: plume_length_histograms.png shows P5 = 182 m, P50 = 247 m, P95 = 314 m — the plume-length prediction carries roughly ±30% uncertainty from these three parameters, and the CSV shows the spread is driven mostly by the conductivity range.\n\n\n\n\n\nExample plume-length figure (illustrative data): histogram of runs (left axis), probability density (right axis), 90% interval band, median and mean.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/SensitivityAnalysis.html#notes-and-guidance",
+    "href": "data_chicklets/SensitivityAnalysis.html#notes-and-guidance",
+    "title": "Sensitivity / Uncertainty Analysis",
+    "section": "Notes and guidance",
+    "text": "Notes and guidance\n\nRun the calibration first. A sensible workflow is: calibrate, push the optimal values into the model, then run the sensitivity analysis with ranges centered on the calibrated values.\nRuntime scales linearly with the number of runs: 1,000 runs take roughly 1,000 × the time of one Run Model. Time a single run first.\nFailed runs (solver errors, unphysical combinations) are flagged in the CSV and excluded from the histograms — a small number is normal at wide parameter ranges.\nIf the plume reaches the edge of the model domain at the target concentration, the reported plume length is limited by the model size (Section 2). A histogram piled up against a single maximum value is the sign — enlarge the model X size and re-run.",
+    "crumbs": [
+      "Data Chicklets",
+      "Sensitivity / Uncertainty Analysis"
+    ]
+  },
+  {
+    "objectID": "appendix/appendix_9_2.html",
+    "href": "appendix/appendix_9_2.html",
+    "title": "APPENDIX 9.2 CAC BARRIER PAPER",
+    "section": "",
+    "text": "Download this open access paper here: https://onlinelibrary.wiley.com/doi/10.1002/rem.70017\n\nNewell, C. J., Smith, W. B., Kearney, K., Clay, S., Javed, H., Carey, G. R., Richardson, S. D., & Werth, C. J. (2025). Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater. Remediation Journal, 35(3), e70017. https://doi.org/10.1002/rem.70017",
+    "crumbs": [
+      "Appendices",
+      "APPENDIX 9.2  CAC BARRIER PAPER"
+    ]
   },
   {
     "objectID": "appendix/appendix_8_1.html",
@@ -427,6 +494,24 @@
     ]
   },
   {
+    "objectID": "appendix/appendix_11_1.html",
+    "href": "appendix/appendix_11_1.html",
+    "title": "APPENDIX 11.1 CALIBRATING THE MODEL",
+    "section": "",
+    "text": "Contributors: Singh, Hort, Falta\nOVERVIEW\nThere are two calibration options: Manual Calibration or Auto-Calibration.\nMANUAL CALIBRATION (TRIAL BY ERROR)\nFor the Manual Calibration, follow these general steps:\n\nCompare model outputs to observed plume data, focusing on matching concentrations and plume length\nAdjust key parameters through multiple model runs, in particular:\n\nSource concentration and source mass\nHydraulic conductivity and porosity of transmissive zone\nRetardation factors\nDecay rates (if any degradation is occurring)\n\nIteratively refine parameters to improve match between simulated and observed concentrations\nFocus on matching the overall plume extent and concentration trends rather than exact point values\nDocument calibration steps and final parameter set\n\nThe Manual Calibration process requires scientific judgment to determine which parameters to adjust. Sensitivity analyses can help identify the most influential parameters. The goal is to achieve a reasonable match to observed data while maintaining physically realistic parameter values. Multiple calibration targets (e.g., concentrations at different distances/times and for different PFAS) should be considered.\nAUTO-CALIBRATION\nAutomated calibration methodologies—such as parameter estimation approaches (e.g., PEST) and the implemented Dynamically Dimensioned Search (DDS; Tolson, 2007) use algorithms to iteratively adjust groundwater model parameters so that simulated outputs closely match observed data. The auto-calibration process begins with user-defined values for 11 key parameters, around which permissible parameter ranges are specified. The optimization algorithms then perform thousands of model realizations, systematically adjusting parameter values to minimize the discrepancy between model predictions and observed measurements, as quantified by an objective function. For both simple and detailed implementations, the objective function is defined as the root mean squared logarithmic error (RMSLE). RMSLE is calculated using observed concentration data from all monitoring wells, providing a compound-specific, plume-wide measure of goodness-of-fit. Results can be evaluated in the REMFluor-MD Output Dashboard by selecting the analysis type “Concentration vs. Time at Observation Wells.” Similar to Monte Carlo approaches, the calibration process requires a large number of model runs to identify parameter combinations that achieve an acceptable fit to calibration targets. In the detailed implementation, additional flexibility is provided by allowing observations at individual wells to be weighted, in addition to incorporating expanded time-series data across the monitoring network.\n\nThe calibration process starts with a set of initial parameter estimates which are then systematically varied. The sensitivity of the model outputs to changes in parameters is analyzed to direct the optimization process, facilitating the identification of parameter sets that produce the most accurate and realistic simulations. This process not only improves the model’s predictive accuracy but also enhances the understanding of the physical processes represented by the model. The DDS methodology implemented for this work is a heuristic global search designed to scale the search space with respect to maximum function evaluations. The algorithm begins with a broad search across all decision variables and progressively reduces the number of perturbed dimensions as iterations proceed, shifting from global exploration to local exploitation. At each iteration, a probabilistically selected subset of parameters is perturbed using a Gaussian distribution, while unselected parameters remain fixed. This dynamic reduction in search dimensionality allows DDS to efficiently navigate large parameter spaces, making it particularly well suited for complex environmental and hydrologic model calibration problems where objective function evaluations are computationally expensive.",
+    "crumbs": [
+      "Appendices",
+      "APPENDIX 11.1 CALIBRATING THE MODEL"
+    ]
+  },
+  {
+    "objectID": "api/index.html",
+    "href": "api/index.html",
+    "title": "Anniston SMP REST API Documentation",
+    "section": "",
+    "text": "TEST Backend Overview\nThe backend is responsible for handling all business logic that the R Shiny frontend relies on. Core responsibilities include:\n\nGeometry validation, buffering, and grid generation\nChemistry data lookup\nReport creation and validation\nAsynchronous report generation (PDF)\nPermissions and user authentication\nDataset versioning for chemistry results\n\nThis document summarizes each component and links to deeper sections.\nUse the sidebar to navigate to specific topics."
+  },
+  {
     "objectID": "api/authentication.html",
     "href": "api/authentication.html",
     "title": "Authentication",
@@ -462,11 +547,26 @@
     "text": "Permissions Model\nAuthentication establishes who the user is. Authorization determines what that user can do.\nThe backend uses standard DRF permissions combined with model logic:\n\nAuthenticated users can:\n\nCreate reports\nView their own reports\nDownload generated PDFs\nStaff / reviewers can:\nView all reports\nModify review fields (rev_time, rev_user)\nApprove or reject reports (if implemented later)\n\nAnonymous users:\n\nCannot access any protected endpoints"
   },
   {
-    "objectID": "api/index.html",
-    "href": "api/index.html",
-    "title": "Anniston SMP REST API Documentation",
+    "objectID": "appendix/appendix_10_1.html",
+    "href": "appendix/appendix_10_1.html",
+    "title": "APPENDIX 10.1 ENTERING FIELD DATA FOR CALIBRATION",
     "section": "",
-    "text": "TEST Backend Overview\nThe backend is responsible for handling all business logic that the R Shiny frontend relies on. Core responsibilities include:\n\nGeometry validation, buffering, and grid generation\nChemistry data lookup\nReport creation and validation\nAsynchronous report generation (PDF)\nPermissions and user authentication\nDataset versioning for chemistry results\n\nThis document summarizes each component and links to deeper sections.\nUse the sidebar to navigate to specific topics."
+    "text": "Contributors: Hort, Singh\nOVERVIEW\nThe approach for entering field data depends on the level of complexity selected for calibration. Two options are available: Simple and Detailed. Each option differs in the type and amount of field data required, as well as how the data are incorporated into the calibration process.\nSIMPLE OPTION\nUnder the Simple option, the user is required to enter the monitoring well name, the measured concentration (µg/L), and the distance from the source. Only one data point per well, sampled within a single year, can be used for calibration. This approach is intended to represent general site conditions rather than temporal trends.\nIn the Simple option, the spatial configuration of monitoring wells is also simplified. All wells are assumed to be located along the plume centerline extending from the source, regardless of their actual lateral position. As a result, the distance from the source is treated as a one-dimensional parameter, which reduces spatial complexity and facilitates rapid calibration.\n\nDETAILED OPTION\nUnder the Detailed option, monitoring well data are entered using a standardized Excel template. After clicking the Enter Monitoring Well Data button, the Calibration Data Upload dialog box appears, allowing the user to select the Excel file (e.g., CalibrationTemplate_test.xlsx) from their local directory.\n\nThe Excel template contains two worksheets: Model Location and Model Data. The Model Location worksheet defines the spatial configuration of monitoring wells and includes the following required fields:\n\nMonitoring well name\nDistance from the source\nMonitoring well Y-distance\nDistance from model top to screen top (m)\nDistance from model top to screen bottom (m)\n\nUnlike the Simple option, the Detailed option allows the user to account for spatial variability in lateral position and well screen depth. If calibration is focused on a specific screened interval, the model grid should be discretized in the vertical (z) direction to align with the screen top and bottom depths provided in the template.\nThe Model Data worksheet contains the monitoring results and includes:\n\nSampling date (month, day, and year)\nMonitoring well name\nAnalyte\nMeasured concentration\nUnit\n\nAnalyte names can be any valid name except for the reserved fields “PFAA 1-able” and “PFAA 2-able”. The concentration unit must always be µg/L. Unlike the Simple option, the Detailed option allows multiple sampling dates per well, enabling evaluation of temporal trends in PFAS concentrations.",
+    "crumbs": [
+      "Appendices",
+      "APPENDIX 10.1 ENTERING FIELD DATA FOR CALIBRATION"
+    ]
+  },
+  {
+    "objectID": "appendix/appendix_11_2.html",
+    "href": "appendix/appendix_11_2.html",
+    "title": "APPENDIX 11.2 CHANGING NUMERICAL PARAMETERS",
+    "section": "",
+    "text": "Contributors: Newell, Falta, Hort\nOVERVIEW\nThe numerical parameters in REMFluor-MD control both the accuracy of the solution and the run time of the model. For most screening- and intermediate-level applications, the default values provide a conservative and stable starting point:\n\nInitial time step (Δt): 0.1 years\nMaximum number of Gauss–Seidel iterations: 500\nConvergence tolerance: 1 ng/L\nOutput interval (“See Results Every”): 10–20 years\n\nThese values are intentionally conservative and are appropriate for most plume-scale simulations using the default grid (e.g., Δx = 5 m or 10 ft).\nIMPROVING SIMULATION ACCURACY\nAccuracy in REMFluor-MD is primarily controlled by:\n\nTime step (Δt)\nGrid resolution (Δx, Δy, Δz)\nConvergence tolerance\nVerification of numerical stability (Courant number)\n\nA summary of some key actions related to these parameters is provided below.\n1. Reduce the Time Step to Increase Accuracy\nTo get accurate output, the time step should satisfy this formula where C (Courant number) should be less than 1.0.\n\\[\nC = \\frac{v \\, \\Delta t}{\\Delta x}\n\\]\nWith a default Δt of 0.1 years, most moderate-velocity groundwater systems will remain stable.\nIf you need to improve accuracy:\n\nReduce Δt from 0.1 years to 0.05 years or 0.02 years.\nThis is especially important if:\n\nGroundwater velocity is high,\nΔx is relatively coarse,\nYou are modeling sharp fronts (e.g., near a PSB),\nLongitudinal dispersivity is small.\n\n\nSmaller time steps reduce artificial plume smearing and improve representation of steep gradients, but they increase run time proportionally.\n2. Refine the Spatial Grid to Reduce Model Runtimes\nReducing Δx decreases numerical dispersion. For example:\n\nDefault Δx = 5 m\nRefining to Δx = 2.5 m doubles the number of X-cells and improves resolution of longitudinal dispersion.\n\nHowever, total cells = (Nx × Ny × Nz). Since run time scales directly with total cells, doubling Nx roughly doubles run time.\nFor higher accuracy:\n\nRefine Δx in regions of steep gradients (e.g., near a permeable sorption barrier).\nKeep total cells ideally below ~10,000 when possible.\nAvoid exceeding the 50-cell vertical limit.\n\nIn many cases, reducing Δx below ~0.5–1 m in barrier zones does not materially improve results.\n3. Tighten Convergence Tolerance to Increase Accuracy\nDefault: 1 ng/L\nThis corresponds to roughly 6 orders of magnitude below a strong PFAS source concentration and is generally sufficient.\nFor higher precision:\n\nReduce to 0.1 ng/L if modeling very low regulatory thresholds.\nOnly do this if breakthrough timing or very low-level concentrations are critical.\n\nNote: Tightening tolerance increases iteration count and run time.\n4. Increase Maximum Iterations (If Needed)\nDefault: 500 iterations\nThis is usually sufficient. Increasing this to 800–1,000 may help convergence in difficult cases, but it rarely improves solution accuracy. It mainly prevents premature stopping.\nREDUCING RUN TIME OVERVIEW\nRun time increases with:\n\nTotal number of cells\nNumber of time steps\nNumber of Gauss–Seidel iterations required per step\n\nTo reduce run time:\n1. Increase Time Step (Carefully)\nΔt can be increased from 0.1 years to:\n\n0.2 or 0.25 years, provided the Courant number remains acceptable.\n\nThis reduces the number of time steps by half or more.\nHowever:\n\nIncreasing Δt too much increases numerical dispersion.\nAlways check that plume shape and breakthrough timing remain similar.\n\n2. Coarsen the Grid\nIf total cells exceed ~10,000:\n\nIncrease Δx (e.g., from 5 m to 10 m).\nReduce number of Y-cells if lateral detail is unnecessary (but keep at least 5 cells in Y-direction and keep the width in the Y-direction about the width of the downgradient plume or 2× the source width).\nReduce Z-cells if vertical discretization is not needed; many shallow plumes may only need one layer in the Z-direction.\n\nFor screening runs, the simple model (1 Y-cell) dramatically reduces computation time.\n3. Relax Convergence Tolerance\nIf 1 ng/L is more precise than necessary:\n\nIncrease to 5 ng/L or 10 ng/L for faster convergence.\n\nThis is appropriate when source concentrations are mg/L and regulatory targets are in µg/L.\n4. Increase Output Interval\n“See Results Every” only affects plotting, not computation, but:\n\nIncreasing from 10 years to 20 years or more reduces output storage and speeds visualization.\n\nRECOMMENDED WORKFLOW FOR SPEED OPTIMIZATION\nIf users adjust parameters to increase run speed:\n\nFirst run the model with conservative settings\n\nΔt = 0.1 yr\nMax iterations = 500\nConvergence tolerance = 1 ng/L\nDefault grid\n\nCreate a faster version\n\nLarger Δt\nSlightly coarser grid\nSlightly relaxed tolerance\n\nCompare results directly\n\nPlume length\nBreakthrough timing\nPeak concentrations\nMass removal predictions\n\n\nIf results differ materially (more than a few percent in timing or concentration), revert to the more conservative setup.\nBEST PRACTICE RECOMMENDATION\nWhen increasing run speed:\nAlways compare the modified faster run to the original conservative run to confirm that plume shape, breakthrough timing, and concentration magnitudes remain essentially unchanged.\nIf results change meaningfully, the faster model is introducing numerical dispersion or insufficient convergence and should not be used for decision-level analysis.\nPRACTICAL GUIDANCE SUMMARY\n\n\n\n\n\n\n\n\nGoal\nRecommended Adjustment\nTradeoff\n\n\n\n\nImprove accuracy\nReduce Δt\nLonger run time\n\n\nImprove accuracy\nReduce Δx\nMore cells\n\n\nImprove accuracy\nTighten tolerance\nMore iterations\n\n\nReduce run time\nIncrease Δt\nRisk of dispersion\n\n\nReduce run time\nCoarsen grid\nReduced spatial detail\n\n\nReduce run time\nRelax tolerance\nSlight loss of precision\n\n\n\nIn practice, the time step and longitudinal grid spacing are the two most important parameters controlling both numerical dispersion and computational cost. For most REMFluor-MD applications, the default Δt of 0.1 years and Δx of 5 m provide a good balance between stability, accuracy, and efficiency.",
+    "crumbs": [
+      "Appendices",
+      "APPENDIX 11.2 CHANGING NUMERICAL PARAMETERS"
+    ]
   },
   {
     "objectID": "appendix/appendix_2_2.html",
@@ -543,6 +643,49 @@
     "crumbs": [
       "Appendices",
       "APPENDIX 9.1  MODELING SORPTION IN CAC BARRIERS WITH FREUNDLICH ISOTHERMS"
+    ]
+  },
+  {
+    "objectID": "architecture.html",
+    "href": "architecture.html",
+    "title": "Architecture",
+    "section": "",
+    "text": "The backend is built on Django + Django REST Framework, with Celery for asynchronous tasks and Postgres/PostGIS for data storage. The frontend is served via R Shiny. The backend exposes a RESTful API consumed by the R Shiny frontend, handling all business logic including geometry validation, chemistry data lookup, report creation, and asynchronous report generation.\nThe system is containerized using Docker and orchestrated with Docker Compose, allowing for easy deployment and scalability."
+  },
+  {
+    "objectID": "architecture.html#overview",
+    "href": "architecture.html#overview",
+    "title": "Architecture",
+    "section": "Overview",
+    "text": "Overview\nThe system is composed of:\n\nAPI Layer REST endpoints for geometry operations, chemistry queries, report creation, and downloading generated reports.\nDatabase Layer PostgreSQL with PostGIS enabled. Stores:\n\nUser accounts\nReports\nReport grid payloads (JSON)\nChemistry results\nDataset versioning metadata\n\nTask Layer (Celery) Used for:\n\nRunning spatial operations\nGenerating PDF reports\nHeavy GIS or data-processing tasks\n\nStatic + Reverse Proxy Layer Caddy serves:\n\nThe R Shiny frontend\nDjango API backend\nStatic assets\nInternal documentation\n\nFrontend Layer R Shiny application providing the GUI for users to interact with the system."
+  },
+  {
+    "objectID": "architecture.html#data-flow",
+    "href": "architecture.html#data-flow",
+    "title": "Architecture",
+    "section": "Data Flow",
+    "text": "Data Flow\n\nClient interacts with the R Shiny frontend.\nFrontend makes REST API calls to the Django backend for operations.\nBackend processes requests, performing spatial operations and data lookups as needed.\nFor long-running tasks (e.g., report generation), backend enqueues tasks in Celery.\nCelery workers process tasks asynchronously, updating the database with results.\nFrontend retrieves results from the backend and displays them to the user."
+  },
+  {
+    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html",
+    "href": "data_chicklets/Step10_FieldDataToCalibrate.html",
+    "title": "Step 10: Field Data to Calibrate",
+    "section": "",
+    "text": "Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 10: Field Data to Calibrate"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#simple-version",
+    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#simple-version",
+    "title": "Step 10: Field Data to Calibrate",
+    "section": "",
+    "text": "Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 10: Field Data to Calibrate"
     ]
   },
   {
@@ -700,6 +843,28 @@
     ]
   },
   {
+    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-simple-model",
+    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-simple-model",
+    "title": "Step 10: Field Data to Calibrate",
+    "section": "Machine Calibration Input Screen for Simple Model:",
+    "text": "Machine Calibration Input Screen for Simple Model:",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 10: Field Data to Calibrate"
+    ]
+  },
+  {
+    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-detailed-model",
+    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-detailed-model",
+    "title": "Step 10: Field Data to Calibrate",
+    "section": "Machine Calibration Input Screen for Detailed Model:",
+    "text": "Machine Calibration Input Screen for Detailed Model:",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 10: Field Data to Calibrate"
+    ]
+  },
+  {
     "objectID": "data_chicklets/Step1_SystemUnits.html",
     "href": "data_chicklets/Step1_SystemUnits.html",
     "title": "Step 1: Starting Information",
@@ -777,99 +942,11 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#retardation-factor-in-t-zone-transmissive-zone",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#retardation-factor-in-t-zone-transmissive-zone",
+    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#section-5-detailed-model-only-precursor-transformation-to-pfaas",
+    "href": "data_chicklets/Step5_PFASTransportProperties.html#section-5-detailed-model-only-precursor-transformation-to-pfaas",
     "title": "Step 5: PFAS Transport Properties",
-    "section": "Retardation Factor in T-Zone (Transmissive Zone)",
-    "text": "Retardation Factor in T-Zone (Transmissive Zone)\n\n\n\n\n\n\n\n\nParameter\nRETARDATION FACTOR IN T-ZONE (TRANSMISSIVE ZONE)\n\n\n\n\nDescription\nThe retardation factor (R) is the ratio of the dissolved plus sorbed constituent mass to the dissolved constituent mass in the aqueous phase in a unit volume of aquifer. It is a function of both transmissive zone soil type and contaminant properties.\n\n\nUnits\nUnitless.\n\n\nTypical Values\nFor transmissive zones, these retardation factors are commonly observed:• 1-6 (typical for long-chained PFAAs)• 1-2 (typical for short-chained PFAAs)One modeling study (Stockwell et al., 2025) reported the following retardation factors in the transmissive zone for the final calibrated model of a PFAS groundwater research site:\n\n\nSource of Data\nUsually estimated from soil and chemical data using the following expression:R = 1 + Kd · ρd / nwhere Kd = Koc · focwhere ρd = bulk density, n = porosity, Koc = organic carbon-water partition coefficient, Kd = distribution coefficient, and foc = fraction organic carbon on uncontaminated soil.\n\n\nHow to Enter Data\n• Enter directly, or• Calculate by filling in the other input data in the Retardation Factor pop-up box\n\n\n\n\nSee these two appendices for more info: - Appendix 5.1 Modeling PFAS Sorption in Native Aquifer Material: Key Input Data - Appendix 5.2 Modeling PFAS Sorption In Native Aquifer Material: Theory",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#retardation-factor-in-low-k-media",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#retardation-factor-in-low-k-media",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Retardation Factor in Low-K Media",
-    "text": "Retardation Factor in Low-K Media\n\n\n\n\n\n\n\n\nParameter\nRETARDATION FACTOR IN LOW-K MEDIA\n\n\n\n\nDescription\nThe retardation factor is the ratio of the dissolved plus sorbed constituent mass to the dissolved constituent mass in the aqueous phase in a unit volume of aquifer. It is a function of both aquifer and constituent properties.\n\n\nUnits\nUnitless.\n\n\nTypical Values\nSome researchers suggest that retardation factors may be higher in low-k zones than transmissive zones. Currently, there are few sites where these values have been determined, however.One modeling study (Stockwell et al., 2025) reported the following retardation factors in the low-K zone for the final calibrated model of a PFAS groundwater research site:\n\n\nSource of Data\nUsually estimated from soil and chemical data using the following expression:R = 1 + Kd · ρd / nwhere Kd = Koc · focwhere ρd = bulk density, n = porosity, Koc = organic carbon-water partition coefficient, Kd = distribution coefficient, and foc = fraction organic carbon on uncontaminated soil.\n\n\nHow to Enter Data\n• Enter directly, or• Calculate by filling in the other input data in the Retardation Factor pop-up box",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#soil-bulk-density-in-t-zone",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#soil-bulk-density-in-t-zone",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Soil Bulk Density in T-Zone",
-    "text": "Soil Bulk Density in T-Zone\n\n\n\n\n\n\n\n\nParameter\nSOIL BULK DENSITY IN T-ZONE\n\n\n\n\nDescription\nDensity of the saturated transmissive zone aquifer material (referred to as “soil”), excluding soil moisture.\n\n\nUnits\ng/mL.\n\n\nTypical Values\nAlthough this value can be measured in the lab, in most cases estimated values are used. A value of 1.7 g/mL is used frequently.\n\n\nSource of Data\nEither from an analysis of soil samples at a geotechnical lab or more commonly, application of estimated values such as 1.7 g/mL.\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#soil-bulk-density-in-low-k",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#soil-bulk-density-in-low-k",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Soil Bulk Density in Low-K",
-    "text": "Soil Bulk Density in Low-K\n\n\n\n\n\n\n\n\nParameter\nSOIL BULK DENSITY IN LOW-K\n\n\n\n\nDescription\nDensity of the saturated low k zone (referred to as “soil”), excluding soil moisture.\n\n\nUnits\ng/mL.\n\n\nTypical Values\nAlthough this value can be measured in the lab, in most cases estimated values are used. A value of 1.7 g/mL is used frequently for unconsolidated media. Representative values for specific geologic media are shown below (Lovanh et al., 2000; derived from Domenico and Schwartz, 1990):Clay: ranges from 1.0 to 2.4Loess: 0.75 to 1.6Sandstone: 1.6 to 2.68Shale: 1.54 to 3.17Limestone: 1.74 to 2.79Granite: 2.24 to 2.46Basalt: 2 to 2.7Medium Sand: 1.34 – 1.81Koerner (1984) reports these values for unit weight for saturated soils (note, no dry bulk density values are reported for these materials):Glacial till, very mixed grain: 2.32 g/mLSoft glacial clay: 1.77Stiff glacial clay: 2.07Soft slightly organic clay: 1.58Soft very organic clay: 1.43Soft bentonite: 1.27\n\n\nSource of Data\nEither from an analysis of soil samples at a geotechnical lab or more commonly, application of estimated values such as 1.7 g/mL.\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#fraction-organic-carbon-in-t-zone",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#fraction-organic-carbon-in-t-zone",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Fraction Organic Carbon in T-Zone",
-    "text": "Fraction Organic Carbon in T-Zone\n\n\n\n\n\n\n\n\nParameter\nFRACTION ORGANIC CARBON IN T-ZONE\n\n\n\n\nDescription\nFraction of the aquifer material comprised of natural organic carbon in uncontaminated areas. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix.\n\n\nUnits\nUnitless (gram per gram).\n\n\nTypical Values\n0.0002 - 0.02 for transmissive zones.\n\n\nSource of Data\nThe fraction organic carbon value should be measured, if possible, by collecting a sample of aquifer material from an uncontaminated saturated zone and performing a laboratory analysis for transmissive zones (e.g. ASTM Method 2974-87 or equivalent). If unknown, a default value of 0.001 is often used (e.g., ASTM 1995).\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#fraction-organic-carbon-in-low-k",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#fraction-organic-carbon-in-low-k",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Fraction Organic Carbon in Low-K",
-    "text": "Fraction Organic Carbon in Low-K\n\n\n\n\n\n\n\n\nParameter\nFRACTION ORGANIC CARBON IN LOW-K\n\n\n\n\nDescription\nFraction of the aquifer material comprised of natural organic carbon in uncontaminated areas. More natural organic carbon means higher adsorption of organic constituents on the aquifer matrix.\n\n\nUnits\nUnitless (gram per gram).\n\n\nTypical Values\nAlthough based on limited data, 0.0002 - 0.10 for low-K zones is a likely range. But some sites may be higher or lower.Examples:• At the Moffatt Field site, the foc of the clay fraction foc was about 0.0066 (Roberts et al., 1990).• Domenico and Schwartz (1990) report these values: silt (Wildwood Ontario): 0.00102; from Oconee River sediment: Coarse silt: 0.029; Medium silt: 0.02; fine silt; 0.0226.• Chapman and Parker (2005) report a foc of glaciolacustrine aquitard composed of varved silts and clays: 0.0024 to 0.00104 with an average of 0.00054.• Adamson (2012) reports foc = 0.001 for a clay layer in Jacksonville Florida and foc values for silts at the MMR site in Massachusetts ranging from &lt;0.0005 to 0.0022 (median value = 0.0014) for one core using a Leco carbon analyzer; a second core had foc values &lt; 0.005 for 10 samples and two samples with 0.00067 and 0.00084 (gram per gram). Values for foc using Walkley-Black wet oxidation method were generally higher by a factor of 2 to 3.• Values ranging from 0 to 0.078 have been reported for silts at F.W. Warren site in Wyoming, with a median value of 0.\n\n\nSource of Data\nThe fraction organic carbon value should be measured, if possible, by collecting a sample of aquifer material from an uncontaminated saturated zone and performing a laboratory analysis (e.g. ASTM Method 2974-87 or equivalent). If unknown, a default value of 0.002 could be used (twice the typical default of 0.001 value used for transmissive systems).\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#organic-carbon-partitioning-coefficient",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#organic-carbon-partitioning-coefficient",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Organic Carbon Partitioning Coefficient",
-    "text": "Organic Carbon Partitioning Coefficient\n\n\n\n\n\n\n\n\nParameter\nORGANIC CARBON PARTITIONING COEFFICIENT\n\n\n\n\nDescription\nChemical-specific partition coefficient between soil organic carbon and the aqueous phase. Larger values indicate greater affinity of organic constituents for the organic carbon fraction of soil. This value is chemical specific and can be found in chemical reference books.\n\n\nUnits\nmL/g.\n\n\nTypical Values\nRepresentative Koc values for several PFAAs are shown below:\n\n\nSource of Data\nSource of data for table above:• Values represent mean values of Koc derived from aggregated lab or field-based measurements.• Number of field-based investigations in study = 20 (in-situ measurements). Mean values applied for aquifer media.• Number of laboratory-based investigations in study = 20.• Source: Brusseau, M., 2024. Field versus Laboratory Measurements of PFAS Sorption by Soils and Sediment. Journal of Hazardous Materials Advances. 16,• Koc = soil organic carbon-water partition coefficient.\n\n\nHow to Enter Data\nPFAAs selected in the pull down menu will show the Koc from the table above as a default value.Alternatively you can enter your own value directly.For the Detailed Model, Koc’s are needed for the precursor group for PFAA-1 and PFAA-2 (if PFAA-2 is being modeled). There are little data in the literature on what are representative Koc’s for precursors, so as an approximation you can assume the precursor group Koc is similar to the PFAA they are degrading to Koc.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#detailed-model-only-precursor-transformation-to-pfaas",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#detailed-model-only-precursor-transformation-to-pfaas",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "(Detailed Model Only) Precursor Transformation to PFAAs",
-    "text": "(Detailed Model Only) Precursor Transformation to PFAAs\nSee Appendix 5.3 PFAS Precursor Transformation for more info.\n\nPrecursor Transformation Rate\n\n\n\n\n\n\n\n\nParameter\nPRECURSOR TRANSFORMATION RATE\n\n\n\n\nDescription\nAs of 2024, modeling transformation of PFAS precursors to PFAAs is still experimental and typically needs extensive site characterization data including non-target analysis to identify key precursors that are present in the plume. Therefore, at most sites modeling precursor transformation will not be possible. However, REMFluor-MD includes a general method for modeling precursor transformation in REMFluor-MD that uses non-target analytical results to provide a high-level approximation of the style of precursor transformation effects (as opposed to a rigorous exact simulation of known processes). This method is described in Stockwell et al. (2025) and in Appendix X.\n\n\nUnits\n1/yr.\n\n\nTypical Values\nREMFluor-MD can simulate transformation of one parent compound to one degradation product. Therefore, to be able to model precursor transformation in REMFluor-MD, a key simplifying assumption is to group precursors based on their potential transformation to specific PFAAs. Potential precursors for each PFAA can be defined as follows, similar to the approach taken by Ruyle et al. (2023):• “PFOS-able” precursors are PFSA precursors with 8 fully fluorinated carbons• “PFOA-able” precursors are PFCA precursors with 7 or 8 fully fluorinated carbons• “PFHxS-able” precursors are PFSA precursors with 6 fully fluorinated carbons• “PFBS-able” precursors are PFSA precursors with 4 fully fluorinated carbonsThis simplifying assumption is based on previous studies that show that PFSA precursor transformation generally yields PFSAs with the same chain length, whereas PFCA precursor transformation typically yields PFCAs with the same or n-1 chain length. See Appendix X for more details on modeling precursor transformation to PFAAs.One modeling study (Stockwell et al., 2025) reported the following precursor transformation half-lives for the final calibrated model of a PFAS groundwater research site:\n\n\nSource of Data\nSee Appendix X.\n\n\nHow to Enter Data\nSelect component and enter directly.\n\n\n\n\nSee Appendix 5.3 PFAS Precursor Transformation for more info.\n\n\nMicrobial Yield Factor\n\n\n\n\n\n\n\n\nParameter\nMICROBIAL YIELD FACTOR\n\n\n\n\nDescription\nMass of progeny created by first order decay of one unit of the parent component. Calculated based on molecular weight ratios using the following equation:MWPFAA / MWPrecursorsWhere MWPFAA is the molecular weight of the PFAA, and MWPrecursors is the average molecular weight of the respective precursors.For PFOA only, the calculated precursor yield can be divided by two to account for precursor transformation to PFAAs other than PFOA (specifically shorter-chain PFCAs), as has been observed in other studies (Dasu et al., 2013; Dong et al., 2023; Hamid et al., 2020; Wang et al., 2009).\n\n\nUnits\nUnitless.\n\n\nTypical Values\nFor PFAS:• PFOS: 0.70 to 0.93• PFOA: 0.32 to 0.40• PFHxS: 0.68 to 0.85• PFBS: 0.63 to 0.90One modeling study (Stockwell et al., 2025) reported the following precursor microbial yield factors for the final calibrated model of a PFAS groundwater research site:\n\n\nHow to Enter Data\nUse the “Enter Custom Microbial Terms” button to overwrite the default values.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#molecular-diffusion-coefficient-in-free-water",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#molecular-diffusion-coefficient-in-free-water",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "Molecular Diffusion Coefficient in Free Water",
-    "text": "Molecular Diffusion Coefficient in Free Water\n\n\n\n\n\n\n\n\nParameter\nMOLECULAR DIFFUSION COEFFICIENT IN FREE WATER (PFAS INFO)\n\n\n\n\nUnits\ncm2/sec, m2/sec.\n\n\nDescription\nA factor of proportionality representing the amount of substance diffusing across a unit area through a unit concentration gradient in unit time.\n\n\nTypical Values\nFor PFAS1. PFOS: 3.52 × 10-6 cm2/s (MDEQ, 2015); 5.4 × 10-6 cm2/s (Schaefer et al. 2019)2. PFOA: 5.79 × 10-6 cm2/s (MDEQ, 2015); 4.9 × 10-6 cm2/s (Schaefer et al. 2019)3. PFHxS: 4.50 × 10-6 cm2/s (Schaefer 2015)4. PFHxA: 7.8 × 10-6 cm2/s (Schaefer et al. 2019)5. PFBS: 1.10 × 10-5 cm2/s (Schaefer 2015)6. PFNA: 4.70 × 10-6 cm2/s (Higgins 2021)7. PFBA: 2.5 × 10-5 cm2/s (Schaefer et al. 2019)8. PFPeA: 1.2 × 10-5 cm2/s (Schaefer et al. 2019)9. PFHpA: 9.3 × 10-6 cm2/s (Schaefer et al. 2019)10. PFHpS: 6.4 × 10-6 cm2/s (Schaefer et al. 2019)\n\n\nSource of Data\nSchaefer, C. E., Andaya, C., Urtiaga, A., McKenzie, E. R., & Higgins, C. P. (2015). Electrochemical treatment of perfluorooctanoic acid (PFOA) and perfluorooctane sulfonic acid (PFOS) in groundwater impacted by aqueous film forming foams (AFFFs). Journal of Hazardous Materials, 295, 170-175.Schaefer et al. (2019). Additional values from experimental measurements of aqueous diffusivity for various PFAS compounds.\n\n\nHow to Enter Data\n1) Select units, and2) Enter directly. (Note that if the constituent is selected from the drop down list, the Toolkit provides a default value for the parameter.)",
+    "section": "(Section 5 Detailed Model Only) Precursor Transformation to PFAAs",
+    "text": "(Section 5 Detailed Model Only) Precursor Transformation to PFAAs\nSee Appendix 5.3 PFAS Precursor Transformation for more information.\n\nPrecursor Transformation Rate Constant\n\n\n\n\n\n\n\n\nParameter\nPrecursor Transformation Rate Constant\n\n\n\n\nUnits\n1/yr.\n\n\nDescription\nAs of 2026, modeling transformation of PFAS precursors to PFAAs is still experimental. However, REMFluor-MD includes a general method for modeling precursor transformation to provide a high-level approximation of the style of precursor transformation effects (as opposed to a rigorous exact simulation of known processes). This method is described in Stockwell et al. (2026) and in Appendix 5.3. The method provided in Stockwell et al. (2026) utilizes non-target PFAS analytical results, which will likely not be available at the vast majority of PFAS sites. While precursor transformation modeling may be attempted using PFAS analytical results via USEPA Method 1633, care should be taken as USEPA Method 1633 will not identify any potential PFHxS or PFBS precursors, and may or may not identify the majority of PFOS and PFOA precursors.\n\n\nTypical Values\nREMFluor-MD can simulate transformation of one parent compound to one degradation product. Therefore, to be able to model precursor transformation in REMFluor-MD, a key simplifying assumption is to group precursors based on their potential transformation to specific PFAAs. Potential precursors for each PFAA can be defined as follows, similar to the approach originally taken by Ruyle et al. (2023) and used in Stockwell et al. (2026):1. “PFOS-able” precursors are PFSA precursors w/ 8 fully fluorinated carbons2. “PFOA-able” precursors are PFCA precursors w/ 7-8 fully fluorinated carbon3. “PFHxS-able” precursors are PFSA precursors w/ 6 fully fluorinated carbons4. “PFBS-able” precursors are PFSA precursors w/ 4 fully fluorinated carbonsThis simplifying assumption is based on previous studies that show that PFSA precursor transformation generally yields PFSAs with the same chain length, whereas PFCA precursor transformation typically yields PFCAs with the same or n-1 chain length. See Appendix 5.3 for more details on modeling precursor transformation to PFAAs.The Stockwell et al. (2026) method was designed to use a complete non-target PFAS analysis rather than USEPA Method 1633 data. However, at one research site described by Adamson et al. (2020), precursors measured by USEPA Method 1633 captured 85-99% of the total PFOS-able and PFOA-able precursors, but captured 0% of the PFHxS-able and PFBS-able precursors. Therefore, precursor transformation modeling of PFOS-able and PFOA-able precursors may be possible using USEPA Method 1633 data.Using this method, Stockwell et al. (2026) reported the following precursor transformation half-lives for the final calibrated model of a PFAS groundwater research site:See Appendix 5.3 PFAS Precursor Transformation for more information.\n\n\nSource Of Data\nSee Appendix 5.3.\n\n\nHow To Enter Data\nSelect component and enter directly.\n\n\n\n\n\n\nYield Factor\n\n\n\n\n\n\n\n\nParameter\nYield Factor\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nMass of transformation product created by first order decay per mass of the parent component. Calculated based on molecular weight ratios using the following equation:\\[\\frac{{MW}_{PFAA}}{{MW}_{Precursors}}\\]Where \\({MW}_{PFAA}\\) is the molecular weight of the PFAA, and \\({MW}_{Precursors}\\) is the average molecular weight of the respective precursors.For PFOA only, the calculated precursor yield can be divided by two to account for precursor transformation to PFAAs other than PFOA (specifically shorter-chain PFCAs), as has been observed in other studies (Dasu et al., 2013; Dong et al., 2023; Hamid et al., 2020; Wang et al., 2009).\n\n\nTypical Values\nFor PFAS:     • PFOS: 0.70 to 0.93     • PFOA: 0.32 to 0.40     • PFHxS: 0.68 to 0.85     • PFBS: 0.63 to 0.90 One modeling study (Stockwell et al., 2026) reported the following precursor yield factors for the final calibrated model of a PFAS groundwater research site:\n\n\nHow To Enter Data\nUse the “Enter Custom Yield Factor” button to overwrite the default values.",
     "crumbs": [
       "Data Chicklets",
       "Step 5: PFAS Transport Properties"
@@ -887,11 +964,11 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step7_PFASSourceTerm.html#initial-source-concentration",
-    "href": "data_chicklets/Step7_PFASSourceTerm.html#initial-source-concentration",
+    "objectID": "data_chicklets/Step7_PFASSourceTerm.html#source-concentration",
+    "href": "data_chicklets/Step7_PFASSourceTerm.html#source-concentration",
     "title": "Step 7: PFAS Source Term",
-    "section": "Initial Source Concentration",
-    "text": "Initial Source Concentration\n\n\n\n\n\n\n\n\nParameter\nINITIAL SOURCE CONCENTRATION\n\n\n\n\nDescription\nInitial source zone concentration when the simulation starts.\n\n\nUnits\nμg/L\n\n\nTypical Values\n0.01 to 1000 μg/L.\n\n\nSource of Data\n• This concentration represents the concentration in a vertical plane source leaving the source and forming the plume.• The user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.• One practical approach for selecting the representative source concentration is to evaluate plume maps with concentration contours and identify a modeled source-plane width that appears to capture approximately 75% or more of the high-concentration zone leaving the source area.• There are three general options for modeling a PFAS source in groundwater in units of ng/L or μg/L over time are to use:1. A simple constant source term (this is the only selection for the (“Simple Version”).2. A flexible source term where users enter their own concentration vs. time (“Detailed Version”).3. A tool to upload concentration data from models such as PFAS-leach (“Detailed Version”).See Appendix 7.1 REMFluor-MD Source Concentrations for more info.\n\n\nHow to Enter Data\nEnter directly.",
+    "section": "Source Concentration",
+    "text": "Source Concentration\n\n\n\n\n\n\n\n\nParameter\nSource Concentration\n\n\n\n\nUnits\nµg/L.\n\n\nDescription\nSource zone concentration when the simulation starts (Simple Version) or source concentrations over time (Detailed Version).\n\n\nTypical Values\n0.01 to 10,000 µg/L.\n\n\nSource Of Data\n• This concentration represents the concentration in a vertical plane source leaving the source and forming the plume.• The user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.• One practical approach for selecting the representative source concentration is to evaluate plume maps with concentration contours and identify a source-plane width that appears to capture approximately 75% or more of the high-concentration zone leaving the source area.• There are three general options for modeling a PFAS source in groundwater in units of µg/L over time:1. A simple constant source term that is constant over time (this is the only selection for the “Simple Version”). 2. A tool to upload concentration data from the PFAS-LEACH model (“Detailed Version” only). 3. A flexible source term where the user enters their own concentration vs. time (“Detailed Version” only). See [Appendix 7.1 REMFluor-MD Source Concentrations] for more information.\n\n\nHow To Enter Data\n1) Enter directly into the first row, then select Option 1 “Assume Constant” to autofill the rest of the rows with the same value.2) Select Option 2 “Upload PFAS Concentrations from PFAS-LEACH” to link a PFAS-LEACH output file and autofill the rows with data from PFAS-LEACH.3) Enter directly into each row.",
     "crumbs": [
       "Data Chicklets",
       "Step 7: PFAS Source Term"
@@ -942,6 +1019,17 @@
     ]
   },
   {
+    "objectID": "data_chicklets/Step9_PlumeRemediationPSB.html#psb-distance-from-source",
+    "href": "data_chicklets/Step9_PlumeRemediationPSB.html#psb-distance-from-source",
+    "title": "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)",
+    "section": "PSB Distance From Source",
+    "text": "PSB Distance From Source\n\n\n\n\n\n\n\n\nParameter\nPSB Distance From Source\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nThis is the distance downgradient that a PSB has been installed.\n\n\nTypical Values\nFor source control PSBs: 1-10 mFor mid-plume PSBs: 200 to 800 mFor edge-of-plume PSBs: 400 to 1,600 m\n\n\nSource Of Data\nBased on remediation design team PSB options.\n\n\nHow To Enter Data\nEnter directly.",
+    "crumbs": [
+      "Data Chicklets",
+      "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)"
+    ]
+  },
+  {
     "objectID": "data_chicklets/Step9_PlumeRemediationPSB.html#total-width-of-psb-in-x-direction",
     "href": "data_chicklets/Step9_PlumeRemediationPSB.html#total-width-of-psb-in-x-direction",
     "title": "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)",
@@ -964,171 +1052,6 @@
     ]
   },
   {
-    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-half-width-perpendicular-to-flow-y-direction",
-    "href": "data_chicklets/Step2_ModelConfiguration.html#model-half-width-perpendicular-to-flow-y-direction",
-    "title": "Step 2: Model Configuration",
-    "section": "Model Half-Width Perpendicular to Flow (Y Direction)",
-    "text": "Model Half-Width Perpendicular to Flow (Y Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Half-Width Perpendicular to Flow (Y Direction)\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nModeling parameter representing the model domain in the y-direction. Note that the model is symmetrical around y=0, so this is the halfwidth.\n\n\nTypical Values\n10 - 1000 ft (3 - 300 m).\n\n\nSource of Data\nPlume maps.\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 2: Model Configuration"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step2_ModelConfiguration.html#model-depth-below-water-table-z-direction",
-    "href": "data_chicklets/Step2_ModelConfiguration.html#model-depth-below-water-table-z-direction",
-    "title": "Step 2: Model Configuration",
-    "section": "Model Depth Below Water Table (Z Direction)",
-    "text": "Model Depth Below Water Table (Z Direction)\n\n\n\n\n\n\n\n\nParameter\nModel Depth Below Water Table (Z Direction)\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nModeling parameter representing the model domain in the z-direction.\n\n\nTypical Values\n3 - 60 ft (1 - 20 m).\n\n\nSource of Data\nPlume cross-sections.\n\n\nHow to Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 2: Model Configuration"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#option-3-unconsolidated-embedded-conditions-manual-entry",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#option-3-unconsolidated-embedded-conditions-manual-entry",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Option 3 Unconsolidated – Embedded Conditions: Manual Entry",
-    "text": "Option 3 Unconsolidated – Embedded Conditions: Manual Entry\n\n\n\n\n\n\n\n\nParameter\nOption 3 Uconsolidated – Embedded Conditions: Manual Entry\n\n\n\n\nDescription\nIf the Manual Entry option is selected in Step 2, enter values for the three key REMFluor-MD heterogeneity parameters used for unconsolidated media sites: 1) Transmissive Zone Volume Fraction, 2) Average Diffusion Length, and 3) Surface Area of Low-k Interfaces in the gridlocks. Note that the top and bottom low-k layers identified in Step 1 should not be counted here, just the embedded low-k layers/lenses.\n\n\nSource Of Data\nGeologic boring logs, cone penetrometer data, direct push hydraulic testing data, geologic cross sections, sequence stratigraphy information, geophysics, or other hydrogeologic data.\n\n\nHow To Enter Data\nSelect radio button and follow prompts.\n\n\n\n\nUnconsolidated Aquifers - Low-K Media Details",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#low-k-zone-unconsolidated-soil-type",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#low-k-zone-unconsolidated-soil-type",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Low-k Zone Unconsolidated Soil Type",
-    "text": "Low-k Zone Unconsolidated Soil Type\n\n\n\n\n\n\n\n\nParameter\nLow-k Zone UnconsolidateD Soil Type\n\n\n\n\nDescription\nDescription of the predominate low-k zone soil (geologic media) type. Your selection will be used in a look-up table to provide an estimate of the low-k unit permeability, which will then be used to estimate the Low-k Zone Total Porosity and the Low-k Zone Pore Tortuosity for REMFluor-MD’s diffusion calculations.Toolkit default values are the geometric means of the ranges below:[Hydraulic Conductivity (K)]Clay: 1x10-11 - 4.7x10-9 m/s (Geomean used: 2.2 x10-10 m/s )Silt: 1x10-9 - 2x10-5 m/s (Geomean used: 1.4 x10-7 m/s )(Newell et al., 1996; Freeze and Cherry, 1979; Domenico and Schwartz, 1990.)\n\n\nHow To Enter Data\nChoose from drop-down list or enter directly.\n\n\n\n\n##Low K Zone Total Porosity\n\n\n\n\n\n\n\n\nParameter\nLow-K Zone Total Porosity\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nDimensionless ratio of the volume of voids to the bulk volume of the surface soil column matrix, but excluding secondary porosity (fractures, solution cavities, etc.). Total porosity is the ratio of all voids (including non-connected voids) to the bulk volume of the aquifer matrix. Effective porosity and any porosity data with secondary porosity information should not be used.\n\n\nTypical Values\nToolkit default values provided are averages of the ranges below:Clay: 0.34 - 0.60 (Payne et al., 2008, Table 2.3.)Silt: 0.34 - 0.61 (Payne et al., 2008, Table 2.3.)\n\n\nSource Of Data\nTypically estimated. Occasionally obtained through physical property testing of site soil samples.\n\n\nHow To Enter Data\nUse the default values based on the Low-k Zone Media type or enter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#low-k-zone-tortuosity",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#low-k-zone-tortuosity",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Low-k Zone Tortuosity",
-    "text": "Low-k Zone Tortuosity\n\n\n\n\n\n\n\n\nParameter\nLow-k Zone Tortuosity\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nTortuosity (τ) represents molecular diffusion in a porous medium. For unconsolidated systems, estimations of τ can be obtained using the relationship:\\(\\tau = {0.77K}^{0.040}\\) (1)Where K is the hydraulic conductivity in m/s from the value entered above (Carey et al., 2016).In the Toolkit, Equation 1 is used to calculate the default tortuosity for all unconsolidated materials.\n\n\nHow To Enter Data\n1) Enter directly, or2) Calculate by selecting the “Default    Tortuosity’” button. (Note that if the zone description is selected from the drop-down list, the Toolkit provides a default value for the parameter.)\n\n\n\n\nFractured Rock Aquifers\nLow-k Media in Fractured Rock Aquifers: In fractured rock systems, fluid flow occurs primarily through fractures, while the surrounding geologic matrix (e.g., limestone, dolomite, granite) typically has lower hydraulic conductivity.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-1-upper-and-lower-aquitards",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-1-upper-and-lower-aquitards",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Fractured Rock/Media: Step 1 – Upper and Lower Aquitards",
-    "text": "Fractured Rock/Media: Step 1 – Upper and Lower Aquitards\n\n\n\n\n\n\n\n\nParameter\nFractured Rock/Media: Step 1 – Upper and Lower Aquitards\n\n\n\n\nDescription\nDetermination of the presence of matrix diffusion in the unfractured upper and lower aquitards.Select one of four options:• No Matrix Diffusion into the upper and lower boundaries of the model. This option is appropriate if the fracture spacing is large.• Matrix Diffusion in Unfractured Underlying Low-k Unit – assumes an underlying low-k unit (≥ 3 ft (1 m) thick) is present at the site, [but not] a top overlying low-k unit.• Matrix Diffusion in Unfractured Overlying Low-k Unit – assumes an overlying low-k unit (≥ 3 ft (1 m) thick) is present at the site, [but not] a bottom underlying low-k unit.• Matrix Diffusion in [both] Under- and Overlying Low-k Units – assumes both an underlying (≥ 3 ft (1 m) thick) and an overlying (≥ 3 ft (1 m) thick) low-k unit are present at the site.\n\n\nSource Of Data\nFractured rock: geologic boring logs, geologic cross sections, geophysics, or other hydrogeologic data.Fractured clay: cone penetrometer data, direct push hydraulic testing data, or other data may be useful.\n\n\nHow To Enter Data\nSelect radio button and follow prompts.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-2-typical-distance-between-parallel-fractures",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-2-typical-distance-between-parallel-fractures",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Fractured Rock/Media: Step 2 – Typical distance between Parallel Fractures",
-    "text": "Fractured Rock/Media: Step 2 – Typical distance between Parallel Fractures\n\n\n\n\n\n\n\n\nParameter\nFractured Rock/Media: Step 2 – Typical distance between Parallel Fractures\n\n\n\n\nDescription\nTypical distance between parallel fractures (they can be in the X-, Y-, or any direction). REMFluor-MD is not able to model fractures in two directions at the same location, but will provide a reasonable simulation of the style of matrix diffusion in a fractured media.\n\n\nTypical Values\n1 to 30 ft (0.3 to 10 m).\n\n\nSource Of Data\nFractured rock/media site characterization tools (borehole flowmeters, borehole geophysics, geologic logs, evaluation of surface expression of fractures, geophysics, borehole video, etc.).\n\n\nHow To Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-2-typical-thickness-of-aperturefracture",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rockmedia-step-2-typical-thickness-of-aperturefracture",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Fractured Rock/Media: Step 2 – Typical Thickness of Aperture/Fracture",
-    "text": "Fractured Rock/Media: Step 2 – Typical Thickness of Aperture/Fracture\n\n\n\n\n\n\n\n\nParameter\nFractured Rock/Media: Step 2 – Typical Thickness of Aperture/Fracture\n\n\n\n\nDescription\nTypical thickness of the aperture/fracture best representative of the site being modeled.\n\n\nTypical Values\n3×10-6 to 0.3 ft (1×10-6 to 0.1 m)\n\n\nSource Of Data\nFractured rock/media site characterization tools (borehole flowmeters, borehole geophysics, geologic logs, evaluation of surface expression of fractures, geophysics, borehole video, etc.)\n\n\nHow To Enter Data\nEnter directly.\n\n\n\n\nFractured Rock Aquifers - Low-K Media Details",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rock-setting",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rock-setting",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Fractured Rock Setting",
-    "text": "Fractured Rock Setting\n\n\n\n\n\n\n\n\nParameter\nFractured Rock Setting\n\n\n\n\nDescription\nDescription of the predominate fractured rock/media matrix (geologic media) type. Your selection will be used in a look-up table to provide an estimate of the low-k unit permeability, which will then be used to estimate the Low-k Zone Total Porosity and the Low-k Zone Pore Tortuosity for REMFluor-MD’s diffusion calculations.  Toolkit default values for K are the geometric means of the ranges below:  Horizontal K  • Fractured Clay: 1x10-7 - 4.7x10-9 m/s (Geomean: 2.2 x10-10 m/s)  • Fractured Sandstone: 1x10-8 - 1x10-4 m/s (Geomean: 2.2 x10-10 m/s)  • Granite: 3x10-6 - 5.2x10-5 m/s (Geomean: 1.3 x10-5 m/s)  • Limestone/Dolomite: 1x10-9 - 6x10-6 m/s (Geomean: 7.8 x10-8 m/s)  • Permeable Basalt: 4x10-7 – 2 x10-2 m/s (Geomean: 9.0 x10-5 m/s)  • Sandstone: 3x10-10 - 6x10-6 m/s (Geomean: 4.2 x10-8 m/s)  • Shale: 1x10-13 - 2x10-9 m/s (Geomean: 1.4 x10-11 m/s)  (Newell et al., 1996; Freeze and Cherry, 1979; Domenico and Schwartz, 1990; GSI, 2018.)\n\n\nHow To Enter Data\nChoose from drop-down list or enter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rock-matrix-porosity",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#fractured-rock-matrix-porosity",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Fractured Rock Matrix Porosity",
-    "text": "Fractured Rock Matrix Porosity\n\n\n\n\n\n\n\n\nParameter\nFractured Rock Matrix Porosity\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nDimensionless ratio of the volume of voids to the bulk volume of the fractured media matrix, but excluding secondary porosity (fractures, solution cavities, etc.).\n\n\nTypical Values\nToolkit default values provided are averages of the ranges below:Clay: 0.34 - 0.60 (Payne et al., 2008, Table 2.3)Limestone/Dolomite: 0 - 0.40 (Domenico and Schwartz, 1990, Table 2.2)Sandstone: 0.05 - 0.15 (Domenico and Schwartz, 1990, Table 2.2)Shale: 0.01 - 0.10 (Domenico and Schwartz, 1990, Table 2.2)Granite: 0.006 (Payne et al., 2008, Table 2.3)Permeable Basalt: 0.03 - 0.35 (GSI Environmental, 2018)\n\n\nSource Of Data\nTypically estimated. Occasionally obtained through physical property testing of site soil samples.\n\n\nHow To Enter Data\nEnter directly. (Note that if the low-k zone description is selected from the drop-down list, the Toolkit provides a default value for the parameter.)",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#matrix-tortuosity",
-    "href": "data_chicklets/Step4_HydrogeologicSettingAndMatrixDiffusion.html#matrix-tortuosity",
-    "title": "Step 4: Hydrogeologic Setting and Matrix Diffusion",
-    "section": "Matrix Tortuosity",
-    "text": "Matrix Tortuosity\n\n\n\n\n\n\n\n\nParameter\nMatrix Tortuosity\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nTortuosity (τ) represents molecular diffusion in a porous medium. For unconsolidated systems, estimations of τ can be obtained using the relationship:\\(\\tau = {0.77K}^{0.040}\\) (1)Where K is the hydraulic conductivity in m/s from the value entered above (Carey et al., 2016).For fractured systems, estimations of τ can be obtained using the relationship:$ = ^{p}$ (2)Where Do is the molecular diffusion coefficient in free water, De is the effective diffusion coefficient, 𝞥 is the porosity, and p the Apparent Tortuosity Factor Exponent.Depending on the geologic medium, values for p can vary between 0.3 and 5.4 (Charbeneau, 2000; Pankow and Cherry, 1996; Dullien, 1992; Lerman, 1979; and Millington and Quirk, 1961). Note: Some of these references use a diffusion equation based on a different formulation of Fick's Law, where the effective diffusion coefficient is a function of porosity and frequently referred to as De'.Typical values for the Apparent Tortuosity Factor Exponent include:Sandstone/Shale: 1 (calculated from Pankow and Cherry (1996) Table 12.2). The apparent tortuosity factor exponent for sandstone/shale will likely be similar or smaller than silt or clay.Granite: 0.55 (calculated from Pankow and Cherry (1996) Table 12.2). The apparent tortuosity factor exponent for granite will likely be smaller than silt or clay.Limestone/Dolomite: 1Basalt: 0.55In the Toolkit, Equation 1 is used to calculate the default tortuosity for fractured clay and Equation 2 is used for all other materials.\n\n\nHow To Enter Data\n1) Enter directly, or2) Calculate by selecting the “Default    Tortuosity” button. (Note that if the zone description is selected from the drop-down list, the Toolkit provides a default value for the parameter.)",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 4: Hydrogeologic Setting and Matrix Diffusion"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step5_PFASTransportProperties.html#section-5-detailed-model-only-precursor-transformation-to-pfaas",
-    "href": "data_chicklets/Step5_PFASTransportProperties.html#section-5-detailed-model-only-precursor-transformation-to-pfaas",
-    "title": "Step 5: PFAS Transport Properties",
-    "section": "(Section 5 Detailed Model Only) Precursor Transformation to PFAAs",
-    "text": "(Section 5 Detailed Model Only) Precursor Transformation to PFAAs\nSee Appendix 5.3 PFAS Precursor Transformation for more information.\n\nPrecursor Transformation Rate Constant\n\n\n\n\n\n\n\n\nParameter\nPrecursor Transformation Rate Constant\n\n\n\n\nUnits\n1/yr.\n\n\nDescription\nAs of 2026, modeling transformation of PFAS precursors to PFAAs is still experimental. However, REMFluor-MD includes a general method for modeling precursor transformation to provide a high-level approximation of the style of precursor transformation effects (as opposed to a rigorous exact simulation of known processes). This method is described in Stockwell et al. (2026) and in Appendix 5.3. The method provided in Stockwell et al. (2026) utilizes non-target PFAS analytical results, which will likely not be available at the vast majority of PFAS sites. While precursor transformation modeling may be attempted using PFAS analytical results via USEPA Method 1633, care should be taken as USEPA Method 1633 will not identify any potential PFHxS or PFBS precursors, and may or may not identify the majority of PFOS and PFOA precursors.\n\n\nTypical Values\nREMFluor-MD can simulate transformation of one parent compound to one degradation product. Therefore, to be able to model precursor transformation in REMFluor-MD, a key simplifying assumption is to group precursors based on their potential transformation to specific PFAAs. Potential precursors for each PFAA can be defined as follows, similar to the approach originally taken by Ruyle et al. (2023) and used in Stockwell et al. (2026):1. “PFOS-able” precursors are PFSA precursors w/ 8 fully fluorinated carbons2. “PFOA-able” precursors are PFCA precursors w/ 7-8 fully fluorinated carbon3. “PFHxS-able” precursors are PFSA precursors w/ 6 fully fluorinated carbons4. “PFBS-able” precursors are PFSA precursors w/ 4 fully fluorinated carbonsThis simplifying assumption is based on previous studies that show that PFSA precursor transformation generally yields PFSAs with the same chain length, whereas PFCA precursor transformation typically yields PFCAs with the same or n-1 chain length. See Appendix 5.3 for more details on modeling precursor transformation to PFAAs.The Stockwell et al. (2026) method was designed to use a complete non-target PFAS analysis rather than USEPA Method 1633 data. However, at one research site described by Adamson et al. (2020), precursors measured by USEPA Method 1633 captured 85-99% of the total PFOS-able and PFOA-able precursors, but captured 0% of the PFHxS-able and PFBS-able precursors. Therefore, precursor transformation modeling of PFOS-able and PFOA-able precursors may be possible using USEPA Method 1633 data.Using this method, Stockwell et al. (2026) reported the following precursor transformation half-lives for the final calibrated model of a PFAS groundwater research site:See Appendix 5.3 PFAS Precursor Transformation for more information.\n\n\nSource Of Data\nSee Appendix 5.3.\n\n\nHow To Enter Data\nSelect component and enter directly.\n\n\n\n\n\n\nYield Factor\n\n\n\n\n\n\n\n\nParameter\nYield Factor\n\n\n\n\nUnits\nUnitless.\n\n\nDescription\nMass of transformation product created by first order decay per mass of the parent component. Calculated based on molecular weight ratios using the following equation:\\[\\frac{{MW}_{PFAA}}{{MW}_{Precursors}}\\]Where \\({MW}_{PFAA}\\) is the molecular weight of the PFAA, and \\({MW}_{Precursors}\\) is the average molecular weight of the respective precursors.For PFOA only, the calculated precursor yield can be divided by two to account for precursor transformation to PFAAs other than PFOA (specifically shorter-chain PFCAs), as has been observed in other studies (Dasu et al., 2013; Dong et al., 2023; Hamid et al., 2020; Wang et al., 2009).\n\n\nTypical Values\nFor PFAS:     • PFOS: 0.70 to 0.93     • PFOA: 0.32 to 0.40     • PFHxS: 0.68 to 0.85     • PFBS: 0.63 to 0.90 One modeling study (Stockwell et al., 2026) reported the following precursor yield factors for the final calibrated model of a PFAS groundwater research site:\n\n\nHow To Enter Data\nUse the “Enter Custom Yield Factor” button to overwrite the default values.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 5: PFAS Transport Properties"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step7_PFASSourceTerm.html#source-concentration",
-    "href": "data_chicklets/Step7_PFASSourceTerm.html#source-concentration",
-    "title": "Step 7: PFAS Source Term",
-    "section": "Source Concentration",
-    "text": "Source Concentration\n\n\n\n\n\n\n\n\nParameter\nSource Concentration\n\n\n\n\nUnits\nµg/L.\n\n\nDescription\nSource zone concentration when the simulation starts (Simple Version) or source concentrations over time (Detailed Version).\n\n\nTypical Values\n0.01 to 10,000 µg/L.\n\n\nSource Of Data\n• This concentration represents the concentration in a vertical plane source leaving the source and forming the plume.• The user has to translate the groundwater monitoring data from the source zone to a representative concentration of the high concentration plume core leaving the source.• One practical approach for selecting the representative source concentration is to evaluate plume maps with concentration contours and identify a source-plane width that appears to capture approximately 75% or more of the high-concentration zone leaving the source area.• There are three general options for modeling a PFAS source in groundwater in units of µg/L over time:1. A simple constant source term that is constant over time (this is the only selection for the “Simple Version”). 2. A tool to upload concentration data from the PFAS-LEACH model (“Detailed Version” only). 3. A flexible source term where the user enters their own concentration vs. time (“Detailed Version” only). See [Appendix 7.1 REMFluor-MD Source Concentrations] for more information.\n\n\nHow To Enter Data\n1) Enter directly into the first row, then select Option 1 “Assume Constant” to autofill the rest of the rows with the same value.2) Select Option 2 “Upload PFAS Concentrations from PFAS-LEACH” to link a PFAS-LEACH output file and autofill the rows with data from PFAS-LEACH.3) Enter directly into each row.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 7: PFAS Source Term"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step8_SourceRemediation.html#source-treatment-year",
-    "href": "data_chicklets/Step8_SourceRemediation.html#source-treatment-year",
-    "title": "Step 8: Source Remediation",
-    "section": "Source Treatment Year",
-    "text": "Source Treatment Year\n\n\n\n\n\n\n\n\nParameter\nSource Treatment Year\n\n\n\n\nUnits\nYear (YYYY) or yrs.\n\n\nDescription\nTime when source remediation starts. Note that the Toolkit assumes that the year of simulation is the year when the source release occurs.\n\n\nSource Of Data\nSite history or remediation plans.\n\n\nHow To Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 8: Source Remediation"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step9_PlumeRemediationPSB.html#psb-distance-from-source",
-    "href": "data_chicklets/Step9_PlumeRemediationPSB.html#psb-distance-from-source",
-    "title": "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)",
-    "section": "PSB Distance From Source",
-    "text": "PSB Distance From Source\n\n\n\n\n\n\n\n\nParameter\nPSB Distance From Source\n\n\n\n\nUnits\nft (or m).\n\n\nDescription\nThis is the distance downgradient that a PSB has been installed.\n\n\nTypical Values\nFor source control PSBs: 1-10 mFor mid-plume PSBs: 200 to 800 mFor edge-of-plume PSBs: 400 to 1,600 m\n\n\nSource Of Data\nBased on remediation design team PSB options.\n\n\nHow To Enter Data\nEnter directly.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)"
-    ]
-  },
-  {
     "objectID": "data_chicklets/Step9_PlumeRemediationPSB.html#number-of-grid-cells-in-x-direction-in-the-psb",
     "href": "data_chicklets/Step9_PlumeRemediationPSB.html#number-of-grid-cells-in-x-direction-in-the-psb",
     "title": "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)",
@@ -1137,116 +1060,6 @@
     "crumbs": [
       "Data Chicklets",
       "Step 9: Plume Remediation: Install Permeable Sorption Barrier (PSB)"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html",
-    "href": "data_chicklets/Step10_FieldDataToCalibrate.html",
-    "title": "Step 10: Field Data to Calibrate",
-    "section": "",
-    "text": "Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 10: Field Data to Calibrate"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#simple-version",
-    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#simple-version",
-    "title": "Step 10: Field Data to Calibrate",
-    "section": "",
-    "text": "Note: This version assumes all wells are located along the centerline from the source, simplifying the spatial arrangement.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 10: Field Data to Calibrate"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-simple-model",
-    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-simple-model",
-    "title": "Step 10: Field Data to Calibrate",
-    "section": "Machine Calibration Input Screen for Simple Model:",
-    "text": "Machine Calibration Input Screen for Simple Model:",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 10: Field Data to Calibrate"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-detailed-model",
-    "href": "data_chicklets/Step10_FieldDataToCalibrate.html#machine-calibration-input-screen-for-detailed-model",
-    "title": "Step 10: Field Data to Calibrate",
-    "section": "Machine Calibration Input Screen for Detailed Model:",
-    "text": "Machine Calibration Input Screen for Detailed Model:",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 10: Field Data to Calibrate"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-results",
-    "href": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-results",
-    "title": "Step 11: Modeling Parameters",
-    "section": "REMFluor-MD Results",
-    "text": "REMFluor-MD Results\n\nOutput Screens\n\n\n\nRun Model\n\n\nConcentration in T-Zone vs. Distance in X-Direction\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. DISTANCE IN X-DIRECTION\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. distance in the x-direction. The user may scroll down the various “Time”, “Y”, and “Z” values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration in T-Zone vs. Distance from Bottom of Model\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. DISTANCE FROM BOTTOM OF MODEL\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. distance from the bottom of the model. The user may scroll down the various “Time”, “X”, and “Y” values in the boxes to the left of the chart to see the output at a particular time and location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.Note that if only one “Z” cell is modeled, then the output will be in terms of a single point for each component rather than a line.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration in T-Zone vs. Time\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION IN T-ZONE VS. TIME\n\n\n\n\nDescription\nConcentration in the transmissive zone vs. the simulated time. The user may scroll down the various “X”, “Y”, and “Z” values in the boxes to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nConcentration vs. Time in Observation Well\n\n\n\n\n\n\n\n\nParameter\nCONCENTRATION VS. TIME IN OBSERVATION WELL\n\n\n\n\nDescription\nConcentration vs. the simulated time in an observation well specified on the input screen. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass Discharge vs. Time in T-Zone\n\n\n\n\n\n\n\n\nParameter\nMASS DISCHARGE VS. TIME IN T-ZONE\n\n\n\n\nDescription\nMass discharge vs. time in the transmissive zone. The user may scroll down the various “X” values in the box to the left of the chart to see the output at a particular location. Additionally, graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass vs. Time in T-Zone\n\n\n\n\n\n\n\n\nParameter\nMASS VS. TIME IN T-ZONE\n\n\n\n\nDescription\nMass vs. time in the transmissive zone. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nMass vs. Time in Low-K Zone\n\n\n\n\n\n\n\n\nParameter\nMASS VS. TIME IN LOW-K ZONE\n\n\n\n\nDescription\nMass vs. time in the low-k zone. Graphs for individual components may be turned on and off using the check boxes under “Select Component”. The “Total” option displays the sum of all the individual components.The user may use the LogLinear button to see the results on a semi-log plot.\n\n\n\n\n\n\nCalculate T-Zone Mass Discharge\n\n\n\n\n\n\n\n\nParameter\nCALCULATE T-ZONE MASS DISCHARGE\n\n\n\n\nDescription\nThe user may calculate the mass discharge at any X and Time by entering the desired inputs in the white cells to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided inputs are rounded down to the closest X and Timestep in the model.\n\n\n\n\n\n\nCalculate Mass\n\n\n\n\n\n\n\n\nParameter\nCALCULATE MASS\n\n\n\n\nDescription\nThe user may calculate the mass at any Time in both the low-k and transmissive zones by entering the desired input in the white cell to the right of the chart. Note that because the Toolkit is a grid-based model, the user provided input is rounded down to the closest Timestep in the model.",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 11: Modeling Parameters"
-    ]
-  },
-  {
-    "objectID": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-output-files",
-    "href": "data_chicklets/Step11_ModelingParameters.html#remfluor-md-output-files",
-    "title": "Step 11: Modeling Parameters",
-    "section": "REMFluor-MD Output Files",
-    "text": "REMFluor-MD Output Files\n\n\n\n\n\n\n\n\nParameter\nREMFLUOR-MD OUTPUT FILES\n\n\n\n\nDescription\nREMFluor-MD outputs text files created by the FORTRAN model code may be viewed externally. The files are generated in the same folder as the REMFluor-MD software. If a simulation is saved by the User, all output files associated with that simulation are moved to the location selected by the User. Output files include:• Discharge.out – mass discharge output. Data is output as:  ○ Time (yrs), X-direction location (m),  ○ Mass discharge for component 1 (kg/yr),  ○ Mass discharge for component 2 (kg/yr),  ○ Mass discharge for component 3 (kg/yr), and  ○ Mass discharge for component 4 (kg/yr).• Obs_well#.out – observation well output for well number # (1-7). Data is output as:  ○ Time (yrs),  ○ Concentration of component 1 (g/L),  ○ Concentration of component 2 (g/L),  ○ Concentration of component 3 (g/L), and  ○ Concentration of component 4 (g/L).• Plume_mass.out – plume mass output in both the low-k and transmissive zones. Data is output as:  ○ Time (yrs),  ○ Mass of component 1 in the low-k zone (kg),  ○ Mass of component 1 in the transmissive zone (kg),  ○ Mass of component 2 in the low-k zone (kg),  ○ Mass of component 2 in the transmissive zone (kg),  ○ Mass of component 3 in the low-k zone (kg),  ○ Mass of component 3 in the transmissive zone (kg),  ○ Mass of component 4 in the low-k zone (kg),  ○ Mass of component 4 in the transmissive zone (kg).• REMFluor-MD.out – concentration in the transmissive zone. Data is output as:  ○ Time (yrs),  ○ X-direction location (m),  ○ Y-direction location (m),  ○ Z-direction location (m),  ○ Concentration for component 1 (g/L),  ○ Concentration for component 2 (g/L),  ○ Concentration for component 3 (g/L),  ○ Concentration for component 4 (g/L).",
-    "crumbs": [
-      "Data Chicklets",
-      "Step 11: Modeling Parameters"
-    ]
-  },
-  {
-    "objectID": "appendix/appendix_9_2.html",
-    "href": "appendix/appendix_9_2.html",
-    "title": "APPENDIX 9.2 CAC BARRIER PAPER",
-    "section": "",
-    "text": "Download this open access paper here: https://onlinelibrary.wiley.com/doi/10.1002/rem.70017\n\nNewell, C. J., Smith, W. B., Kearney, K., Clay, S., Javed, H., Carey, G. R., Richardson, S. D., & Werth, C. J. (2025). Tool and Database for Estimating Potential Longevity of Colloidal Activated Carbon Barriers for PFAS in Groundwater. Remediation Journal, 35(3), e70017. https://doi.org/10.1002/rem.70017",
-    "crumbs": [
-      "Appendices",
-      "APPENDIX 9.2  CAC BARRIER PAPER"
-    ]
-  },
-  {
-    "objectID": "appendix/appendix_10_1.html",
-    "href": "appendix/appendix_10_1.html",
-    "title": "APPENDIX 10.1 ENTERING FIELD DATA FOR CALIBRATION",
-    "section": "",
-    "text": "Contributors: Hort, Singh\nOVERVIEW\nThe approach for entering field data depends on the level of complexity selected for calibration. Two options are available: Simple and Detailed. Each option differs in the type and amount of field data required, as well as how the data are incorporated into the calibration process.\nSIMPLE OPTION\nUnder the Simple option, the user is required to enter the monitoring well name, the measured concentration (µg/L), and the distance from the source. Only one data point per well, sampled within a single year, can be used for calibration. This approach is intended to represent general site conditions rather than temporal trends.\nIn the Simple option, the spatial configuration of monitoring wells is also simplified. All wells are assumed to be located along the plume centerline extending from the source, regardless of their actual lateral position. As a result, the distance from the source is treated as a one-dimensional parameter, which reduces spatial complexity and facilitates rapid calibration.\n\nDETAILED OPTION\nUnder the Detailed option, monitoring well data are entered using a standardized Excel template. After clicking the Enter Monitoring Well Data button, the Calibration Data Upload dialog box appears, allowing the user to select the Excel file (e.g., CalibrationTemplate_test.xlsx) from their local directory.\n\nThe Excel template contains two worksheets: Model Location and Model Data. The Model Location worksheet defines the spatial configuration of monitoring wells and includes the following required fields:\n\nMonitoring well name\nDistance from the source\nMonitoring well Y-distance\nDistance from model top to screen top (m)\nDistance from model top to screen bottom (m)\n\nUnlike the Simple option, the Detailed option allows the user to account for spatial variability in lateral position and well screen depth. If calibration is focused on a specific screened interval, the model grid should be discretized in the vertical (z) direction to align with the screen top and bottom depths provided in the template.\nThe Model Data worksheet contains the monitoring results and includes:\n\nSampling date (month, day, and year)\nMonitoring well name\nAnalyte\nMeasured concentration\nUnit\n\nAnalyte names can be any valid name except for the reserved fields “PFAA 1-able” and “PFAA 2-able”. The concentration unit must always be µg/L. Unlike the Simple option, the Detailed option allows multiple sampling dates per well, enabling evaluation of temporal trends in PFAS concentrations.",
-    "crumbs": [
-      "Appendices",
-      "APPENDIX 10.1 ENTERING FIELD DATA FOR CALIBRATION"
-    ]
-  },
-  {
-    "objectID": "appendix/appendix_11_2.html",
-    "href": "appendix/appendix_11_2.html",
-    "title": "APPENDIX 11.2 CHANGING NUMERICAL PARAMETERS",
-    "section": "",
-    "text": "Contributors: Newell, Falta, Hort\nOVERVIEW\nThe numerical parameters in REMFluor-MD control both the accuracy of the solution and the run time of the model. For most screening- and intermediate-level applications, the default values provide a conservative and stable starting point:\n\nInitial time step (Δt): 0.1 years\nMaximum number of Gauss–Seidel iterations: 500\nConvergence tolerance: 1 ng/L\nOutput interval (“See Results Every”): 10–20 years\n\nThese values are intentionally conservative and are appropriate for most plume-scale simulations using the default grid (e.g., Δx = 5 m or 10 ft).\nIMPROVING SIMULATION ACCURACY\nAccuracy in REMFluor-MD is primarily controlled by:\n\nTime step (Δt)\nGrid resolution (Δx, Δy, Δz)\nConvergence tolerance\nVerification of numerical stability (Courant number)\n\nA summary of some key actions related to these parameters is provided below.\n1. Reduce the Time Step to Increase Accuracy\nTo get accurate output, the time step should satisfy this formula where C (Courant number) should be less than 1.0.\n\\[\nC = \\frac{v \\, \\Delta t}{\\Delta x}\n\\]\nWith a default Δt of 0.1 years, most moderate-velocity groundwater systems will remain stable.\nIf you need to improve accuracy:\n\nReduce Δt from 0.1 years to 0.05 years or 0.02 years.\nThis is especially important if:\n\nGroundwater velocity is high,\nΔx is relatively coarse,\nYou are modeling sharp fronts (e.g., near a PSB),\nLongitudinal dispersivity is small.\n\n\nSmaller time steps reduce artificial plume smearing and improve representation of steep gradients, but they increase run time proportionally.\n2. Refine the Spatial Grid to Reduce Model Runtimes\nReducing Δx decreases numerical dispersion. For example:\n\nDefault Δx = 5 m\nRefining to Δx = 2.5 m doubles the number of X-cells and improves resolution of longitudinal dispersion.\n\nHowever, total cells = (Nx × Ny × Nz). Since run time scales directly with total cells, doubling Nx roughly doubles run time.\nFor higher accuracy:\n\nRefine Δx in regions of steep gradients (e.g., near a permeable sorption barrier).\nKeep total cells ideally below ~10,000 when possible.\nAvoid exceeding the 50-cell vertical limit.\n\nIn many cases, reducing Δx below ~0.5–1 m in barrier zones does not materially improve results.\n3. Tighten Convergence Tolerance to Increase Accuracy\nDefault: 1 ng/L\nThis corresponds to roughly 6 orders of magnitude below a strong PFAS source concentration and is generally sufficient.\nFor higher precision:\n\nReduce to 0.1 ng/L if modeling very low regulatory thresholds.\nOnly do this if breakthrough timing or very low-level concentrations are critical.\n\nNote: Tightening tolerance increases iteration count and run time.\n4. Increase Maximum Iterations (If Needed)\nDefault: 500 iterations\nThis is usually sufficient. Increasing this to 800–1,000 may help convergence in difficult cases, but it rarely improves solution accuracy. It mainly prevents premature stopping.\nREDUCING RUN TIME OVERVIEW\nRun time increases with:\n\nTotal number of cells\nNumber of time steps\nNumber of Gauss–Seidel iterations required per step\n\nTo reduce run time:\n1. Increase Time Step (Carefully)\nΔt can be increased from 0.1 years to:\n\n0.2 or 0.25 years, provided the Courant number remains acceptable.\n\nThis reduces the number of time steps by half or more.\nHowever:\n\nIncreasing Δt too much increases numerical dispersion.\nAlways check that plume shape and breakthrough timing remain similar.\n\n2. Coarsen the Grid\nIf total cells exceed ~10,000:\n\nIncrease Δx (e.g., from 5 m to 10 m).\nReduce number of Y-cells if lateral detail is unnecessary (but keep at least 5 cells in Y-direction and keep the width in the Y-direction about the width of the downgradient plume or 2× the source width).\nReduce Z-cells if vertical discretization is not needed; many shallow plumes may only need one layer in the Z-direction.\n\nFor screening runs, the simple model (1 Y-cell) dramatically reduces computation time.\n3. Relax Convergence Tolerance\nIf 1 ng/L is more precise than necessary:\n\nIncrease to 5 ng/L or 10 ng/L for faster convergence.\n\nThis is appropriate when source concentrations are mg/L and regulatory targets are in µg/L.\n4. Increase Output Interval\n“See Results Every” only affects plotting, not computation, but:\n\nIncreasing from 10 years to 20 years or more reduces output storage and speeds visualization.\n\nRECOMMENDED WORKFLOW FOR SPEED OPTIMIZATION\nIf users adjust parameters to increase run speed:\n\nFirst run the model with conservative settings\n\nΔt = 0.1 yr\nMax iterations = 500\nConvergence tolerance = 1 ng/L\nDefault grid\n\nCreate a faster version\n\nLarger Δt\nSlightly coarser grid\nSlightly relaxed tolerance\n\nCompare results directly\n\nPlume length\nBreakthrough timing\nPeak concentrations\nMass removal predictions\n\n\nIf results differ materially (more than a few percent in timing or concentration), revert to the more conservative setup.\nBEST PRACTICE RECOMMENDATION\nWhen increasing run speed:\nAlways compare the modified faster run to the original conservative run to confirm that plume shape, breakthrough timing, and concentration magnitudes remain essentially unchanged.\nIf results change meaningfully, the faster model is introducing numerical dispersion or insufficient convergence and should not be used for decision-level analysis.\nPRACTICAL GUIDANCE SUMMARY\n\n\n\n\n\n\n\n\nGoal\nRecommended Adjustment\nTradeoff\n\n\n\n\nImprove accuracy\nReduce Δt\nLonger run time\n\n\nImprove accuracy\nReduce Δx\nMore cells\n\n\nImprove accuracy\nTighten tolerance\nMore iterations\n\n\nReduce run time\nIncrease Δt\nRisk of dispersion\n\n\nReduce run time\nCoarsen grid\nReduced spatial detail\n\n\nReduce run time\nRelax tolerance\nSlight loss of precision\n\n\n\nIn practice, the time step and longitudinal grid spacing are the two most important parameters controlling both numerical dispersion and computational cost. For most REMFluor-MD applications, the default Δt of 0.1 years and Δx of 5 m provide a good balance between stability, accuracy, and efficiency.",
-    "crumbs": [
-      "Appendices",
-      "APPENDIX 11.2 CHANGING NUMERICAL PARAMETERS"
-    ]
-  },
-  {
-    "objectID": "appendix/appendix_11_1.html",
-    "href": "appendix/appendix_11_1.html",
-    "title": "APPENDIX 11.1 CALIBRATING THE MODEL",
-    "section": "",
-    "text": "Contributors: Singh, Hort, Falta\nOVERVIEW\nThere are two calibration options: Manual Calibration or Auto-Calibration.\nMANUAL CALIBRATION (TRIAL BY ERROR)\nFor the Manual Calibration, follow these general steps:\n\nCompare model outputs to observed plume data, focusing on matching concentrations and plume length\nAdjust key parameters through multiple model runs, in particular:\n\nSource concentration and source mass\nHydraulic conductivity and porosity of transmissive zone\nRetardation factors\nDecay rates (if any degradation is occurring)\n\nIteratively refine parameters to improve match between simulated and observed concentrations\nFocus on matching the overall plume extent and concentration trends rather than exact point values\nDocument calibration steps and final parameter set\n\nThe Manual Calibration process requires scientific judgment to determine which parameters to adjust. Sensitivity analyses can help identify the most influential parameters. The goal is to achieve a reasonable match to observed data while maintaining physically realistic parameter values. Multiple calibration targets (e.g., concentrations at different distances/times and for different PFAS) should be considered.\nAUTO-CALIBRATION\nAutomated calibration methodologies—such as parameter estimation approaches (e.g., PEST) and the implemented Dynamically Dimensioned Search (DDS; Tolson, 2007) use algorithms to iteratively adjust groundwater model parameters so that simulated outputs closely match observed data. The auto-calibration process begins with user-defined values for 11 key parameters, around which permissible parameter ranges are specified. The optimization algorithms then perform thousands of model realizations, systematically adjusting parameter values to minimize the discrepancy between model predictions and observed measurements, as quantified by an objective function. For both simple and detailed implementations, the objective function is defined as the root mean squared logarithmic error (RMSLE). RMSLE is calculated using observed concentration data from all monitoring wells, providing a compound-specific, plume-wide measure of goodness-of-fit. Results can be evaluated in the REMFluor-MD Output Dashboard by selecting the analysis type “Concentration vs. Time at Observation Wells.” Similar to Monte Carlo approaches, the calibration process requires a large number of model runs to identify parameter combinations that achieve an acceptable fit to calibration targets. In the detailed implementation, additional flexibility is provided by allowing observations at individual wells to be weighted, in addition to incorporating expanded time-series data across the monitoring network.\n\nThe calibration process starts with a set of initial parameter estimates which are then systematically varied. The sensitivity of the model outputs to changes in parameters is analyzed to direct the optimization process, facilitating the identification of parameter sets that produce the most accurate and realistic simulations. This process not only improves the model’s predictive accuracy but also enhances the understanding of the physical processes represented by the model. The DDS methodology implemented for this work is a heuristic global search designed to scale the search space with respect to maximum function evaluations. The algorithm begins with a broad search across all decision variables and progressively reduces the number of perturbed dimensions as iterations proceed, shifting from global exploration to local exploitation. At each iteration, a probabilistically selected subset of parameters is perturbed using a Gaussian distribution, while unselected parameters remain fixed. This dynamic reduction in search dimensionality allows DDS to efficiently navigate large parameter spaces, making it particularly well suited for complex environmental and hydrologic model calibration problems where objective function evaluations are computationally expensive.",
-    "crumbs": [
-      "Appendices",
-      "APPENDIX 11.1 CALIBRATING THE MODEL"
     ]
   }
 ]

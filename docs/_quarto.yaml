@@ -34,7 +34,7 @@ website:
     keyboard-shortcut: ["/", "H"]
     show-item-context: true
   page-footer:
-    left: "&copy; 2025 [GSI Environmental Inc.](https://gsienv.com)"
+    left: "&copy; 2027 [GSI Environmental Inc.](https://gsienv.com)"
     center: |
       [![](/static/logo.svg){fig-alt="GSI Environmental Inc." width=65px}](https://gsienv.com)
     right: |
@@ -86,6 +86,8 @@ website:
             - href: data_chicklets/Step9_PlumeRemediationPSB.qmd
             - href: data_chicklets/Step10_FieldDataToCalibrate.qmd
             - href: data_chicklets/Step11_ModelingParameters.qmd
+            - href: data_chicklets/SensitivityAnalysis.qmd
+              text: "Sensitivity / Uncertainty Analysis"
 
 format:
   html:
