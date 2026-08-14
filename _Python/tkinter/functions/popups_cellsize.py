@@ -166,11 +166,10 @@ def run(app, parent=None):
             dz = _safe_float(sv_dz.get(), 0)
             label_nx.config(text=f"-> {int(round(Lx/dx))} cells"
                             if Lx and dx > 0 else "")
-            if is_simple:
-                label_ny.config(text="-")
-            else:
-                label_ny.config(text=f"-> {int(round(Ly/dy))} cells"
-                                if Ly and dy > 0 else "")
+            # v112h: Y count now live in BOTH versions (was hard-coded
+            # to "-" in Simple, so typing a dy appeared to do nothing).
+            label_ny.config(text=f"-> {int(round(Ly/dy))} cells"
+                            if Ly and dy > 0 else "")
             label_nz.config(text=f"-> {int(round(Lz/dz))} cells"
                             if Lz and dz > 0 else "")
         except Exception:
