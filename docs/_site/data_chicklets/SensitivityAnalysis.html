@@ -479,7 +479,7 @@ table td:nth-child(2) {
 </tr>
 <tr class="even">
 <td><strong>Log-normal</strong></td>
-<td>A skewed distribution: most samples near the low end with a tail toward high values. Appropriate for parameters that naturally vary over orders of magnitude — hydraulic conductivity is the classic example (field studies routinely find K to be log-normally distributed). The Mid-Range Value is used as the <strong>median</strong>, the Lowest / Highest Likely Values as the <strong>5th / 95th percentiles</strong>, and samples are still limited to the Low–High range. All three values must be greater than zero; rows that cannot support the mapping (e.g.&nbsp;Source Start Year) automatically fall back to Triangular and are reported.</td>
+<td>For parameters that naturally vary over orders of magnitude — hydraulic conductivity is the classic example. ln(parameter value) is sampled from a normal distribution, and the Step 4 columns hold that distribution’s own parameters: the <strong>Lowest column = mu, the mean of ln(parameter value)</strong>, and the <strong>Highest column = sigma, the standard deviation of ln(parameter value)</strong> — the column headers relabel themselves to show this. The Mid-Range Value (the model’s current value) is displayed for reference. Practical notes: to center the distribution on a known value, enter mu = ln(that value), e.g.&nbsp;mu = ln(5566) = 8.62 for K of 5,566 m/yr; if a site report gives the <em>variance</em> of ln K, enter its square root as sigma. Enter values in the current unit system (feet or meters). Sigma must be greater than zero, and the choice applies to every checked row.</td>
 </tr>
 </tbody>
 </table>

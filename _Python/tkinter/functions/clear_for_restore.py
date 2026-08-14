@@ -34,6 +34,34 @@ def run(app, delete_files: bool = True) -> list:
     work_dir = state.work_dir or os.getcwd()
     deleted = []
     if delete_files:
+        # v111c (CRITICAL): since v106, Save Data makes the SAVED MODEL
+        # folder the active work_dir.  Clearing then deleted the
+        # sidecars INSIDE the user's saved model (grid, heterogeneity,
+        # gwvelocity, retardation, …) — Load afterwards found a gutted
+        # model (user report: custom grid gone after save→clear→load).
+        # A real "Clear All Data" means: leave any saved model folder
+        # untouched, return to the app's base folder, and clean THAT.
+        _base = getattr(state, "base_dir", "") or ""
+        try:
+            if (_base and os.path.isdir(_base)
+                    and os.path.normcase(os.path.realpath(work_dir))
+                    != os.path.normcase(os.path.realpath(_base))):
+                state.work_dir = _base
+                work_dir = _base
+        except Exception:
+            pass
+        # Fresh slate for the session-tracking safety nets too —
+        # otherwise the Save_Data recovery sweep / grid memory could
+        # resurrect the PREVIOUS model's files into the next save.
+        try:
+            state.dir_history = ([os.path.abspath(_base)]
+                                 if _base else [])
+        except Exception:
+            pass
+        try:
+            app._grid_cellsize = None
+        except Exception:
+            pass
         for fname in INPUT_TXT_FILES:
             fpath = os.path.join(work_dir, fname)
             if os.path.exists(fpath):
@@ -44,6 +72,14 @@ def run(app, delete_files: bool = True) -> list:
                     print(f"Deleted: {fname}")
                 except Exception as e:
                     print(f"Warning: could not delete {fname}: {e}")
+
+    if not delete_files:
+        # v111c: Load is about to make another model current — the old
+        # model's in-memory grid must not leak into a later Save.
+        try:
+            app._grid_cellsize = None
+        except Exception:
+            pass
 
     state.push(app)
 
@@ -69,6 +105,21 @@ def run(app, delete_files: bool = True) -> list:
         # cell re-auto-fills from the table once the user picks a §5 PFAA-1.
         app._mol_diff_user_edited = False
         app._mol_diff_last_species = None
+    except Exception:
+        pass
+
+    # v110c: same idea for the §6 dispersivity cells.  state.push
+    # blanks V4/X4/Z4, but pushing A1 (v_het — a preserved pink
+    # dropdown) fires _on_het_change, which immediately RE-FILLS the
+    # alpha cells from the preset — so Clear All Data appeared to
+    # leave §6 untouched (user report).  Blank them as the final word;
+    # they re-derive automatically the next time the user touches the
+    # §6 heterogeneity dropdown.
+    try:
+        for _an in ("v_alpha_l", "v_alpha_t", "v_alpha_v"):
+            _v = getattr(app, _an, None)
+            if _v is not None:
+                _v.set("")
     except Exception:
         pass
 

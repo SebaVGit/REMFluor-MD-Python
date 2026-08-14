@@ -723,13 +723,12 @@ def run_script(macro_name, extra_args=None):
     if _FUNCS_LOADED and _app_ref is not None:
 
         if macro_name == "Clear_Data":
-            # v108 (client): make Clear All Data explicit and safe.  Show
-            # the user exactly which files will be deleted from the active
-            # model folder -- including calibration results such as
-            # optimal_model.txt / best_calib.json -- and require an explicit
-            # Yes before wiping anything.  This is why "Load Optimal Data"
-            # reported nothing to load after a Clear: the snapshot was
-            # deleted silently.  Now the user decides with full knowledge.
+            # v112b (user feedback): ONE dialog, not two.  Clear now
+            # primarily means "blank the interface values"; deleting the
+            # working folder's input .txt files is an OPT-IN checkbox in
+            # the same window (unchecked by default), with the file list
+            # shown so the choice is informed.  Saved model folders are
+            # never touched either way (v111c).
             from functions.state import INPUT_TXT_FILES as _CLR_FILES
             _cdir = _active_dir()
             _will = [f for f in _CLR_FILES
@@ -737,18 +736,69 @@ def run_script(macro_name, extra_args=None):
             _calib_hits = [f for f in _will if f in (
                 "optimal_model.txt", "best_calib.json", "run_history.csv",
                 "calibration_inputs.txt")]
-            _msg = ("This clears EVERY input cell in the form"
-                    + (f" and deletes {len(_will)} file(s) from:\n{_cdir}\n\n"
-                       + "\n".join(f"  {f}" for f in _will[:14])
-                       if _will else " (no input files found to delete)."))
-            if _calib_hits:
-                _msg += ("\n\nWARNING: this includes calibration results\n"
-                         "(" + ", ".join(_calib_hits) + ") -- after clearing,\n"
-                         "'Load Optimal Data' will have nothing to load.")
-            _msg += "\n\nClear everything?"
-            if not messagebox.askyesno("Clear All Data?", _msg):
+
+            _choice = {"v": None}
+            _dlg = tk.Toplevel(_app_ref)
+            _dlg.title("Clear All Data")
+            _dlg.configure(bg="#F0F0F0")
+            try:
+                _dlg.transient(_app_ref); _dlg.grab_set()
+            except Exception:
+                pass
+            tk.Label(_dlg, text="Clear every input value in the form?",
+                     font=("Arial", 13, "bold"), bg="#F0F0F0"
+                     ).pack(padx=28, pady=(18, 8))
+            _del_var = tk.BooleanVar(value=False)
+            if _will:
+                _files_txt = ", ".join(_will[:6])
+                if len(_will) > 6:
+                    _files_txt += f", … ({len(_will)} total)"
+                tk.Checkbutton(
+                    _dlg, variable=_del_var, bg="#F0F0F0",
+                    font=("Arial", 10),
+                    text=(f"Also delete the {len(_will)} input file(s) "
+                          "in the working folder\n"
+                          f"({_files_txt})"),
+                    justify="left", anchor="w"
+                    ).pack(padx=28, pady=(0, 2), anchor="w")
+                if _calib_hits:
+                    tk.Label(_dlg,
+                             text=("Note: deleting includes calibration "
+                                   "results — 'Load Optimal Data'\n"
+                                   "would then have nothing to load."),
+                             font=("Arial", 9, "italic"), fg="#B00000",
+                             bg="#F0F0F0", justify="left"
+                             ).pack(padx=48, pady=(0, 6), anchor="w")
+            _btns = tk.Frame(_dlg, bg="#F0F0F0")
+            _btns.pack(pady=(6, 16))
+            def _pick(ok):
+                _choice["v"] = ("files" if (ok and _del_var.get())
+                                else ("values" if ok else None))
+                _dlg.destroy()
+            tk.Button(_btns, text="Clear", width=12,
+                      command=lambda: _pick(True)
+                      ).pack(side="left", padx=8)
+            tk.Button(_btns, text="Cancel", width=12,
+                      command=lambda: _pick(False)
+                      ).pack(side="left", padx=8)
+            # v112c: center the dialog over the app window (same
+            # monitor, true center) instead of a fixed corner offset.
+            _dlg.update_idletasks()
+            try:
+                _w = _dlg.winfo_reqwidth()
+                _h = _dlg.winfo_reqheight()
+                _x = (_app_ref.winfo_rootx()
+                      + max(0, (_app_ref.winfo_width() - _w) // 2))
+                _y = (_app_ref.winfo_rooty()
+                      + max(0, (_app_ref.winfo_height() - _h) // 3))
+                _dlg.geometry(f"+{_x}+{_y}")
+            except Exception:
+                pass
+            _dlg.wait_window()
+            if _choice["v"] is None:
                 return
-            deleted = clear_for_restore.run(_app_ref)
+            deleted = clear_for_restore.run(
+                _app_ref, delete_files=(_choice["v"] == "files"))
             # v109: also blank the Step-4 Low/High range cells — they
             # are seeded from the loaded model, so a cleared app should
             # show them empty again.
@@ -758,8 +808,12 @@ def run_script(macro_name, extra_args=None):
                 if callable(cb):
                     try: cb()
                     except Exception: pass
-            msg = (f"Cleared {len(deleted)} file(s)." if deleted
-                   else "Cells cleared. No .txt files found.")
+            if _choice["v"] == "files":
+                msg = (f"Cleared values and {len(deleted)} file(s)."
+                       if deleted else
+                       "Cells cleared. No .txt files found.")
+            else:
+                msg = "Interface values cleared (files kept)."
             messagebox.showinfo("Clear Data", msg)
             return
 
@@ -1071,6 +1125,76 @@ def run_script(macro_name, extra_args=None):
                         continue
                     if _copy_one(src, os.path.join(dst, fname)):
                         copied.append(fname)
+                # v110b: SESSION-FOLDER RECOVERY SWEEP.  Popups write
+                # their sidecars to whatever work_dir was active at the
+                # time; if the user picks a different save folder later,
+                # those files were silently left behind (user report:
+                # "the grid is saved in the folder that holds the
+                # software, not in the model folder").  For every
+                # sidecar still missing, search the OTHER folders this
+                # session has used (newest first) + cwd, and copy the
+                # file ONLY if it was modified during THIS session —
+                # stale files from previous runs must never leak into a
+                # new save.
+                try:
+                    _t0 = getattr(_app_ref, "_session_t0", None)
+                    _cands = []
+                    for _d in (list(reversed(
+                            getattr(state, "dir_history", [])))
+                            + [os.getcwd()]):
+                        try:
+                            _dr = os.path.normcase(os.path.realpath(_d))
+                        except Exception:
+                            continue
+                        if _dr in (dst_dir_real and
+                                   os.path.normcase(dst_dir_real),
+                                   os.path.normcase(src_dir_real)):
+                            continue
+                        if _d not in _cands:
+                            _cands.append(_d)
+                    if _t0:
+                        for fname in _SIDECARS:
+                            if fname in _output_files:
+                                continue
+                            if any(c == fname or c.startswith(fname)
+                                   for c in copied):
+                                continue
+                            for _d in _cands:
+                                _src2 = os.path.join(_d, fname)
+                                try:
+                                    if (os.path.exists(_src2) and
+                                            os.path.getmtime(_src2) >= _t0):
+                                        if _copy_one(_src2,
+                                                os.path.join(dst, fname)):
+                                            copied.append(
+                                                f"{fname} (recovered)")
+                                        break
+                                except Exception:
+                                    continue
+                except Exception as exc:
+                    print(f"[Save_Data] recovery sweep failed: {exc}")
+                # v110b: custom grid safety net.  If cellsize_input.txt
+                # was not found in work_dir (the popup may have written
+                # it to a different folder earlier in the session, or
+                # the write failed), reconstruct it in the destination
+                # from the in-memory values the popup remembered.
+                if not any(c.startswith("cellsize_input.txt")
+                           for c in copied):
+                    _gc = getattr(_app_ref, "_grid_cellsize", None)
+                    if _gc:
+                        try:
+                            with open(os.path.join(dst,
+                                      "cellsize_input.txt"), "w") as _fp:
+                                _fp.write("Grid Cell Sizes\n")
+                                _fp.write("Parameter,Value\n")
+                                _fp.write(f"Cell Size X:,{_gc['dx']}\n")
+                                _fp.write(f"Cell Size Y:,{_gc['dy']}\n")
+                                _fp.write(f"Cell Size Z:,{_gc['dz']}\n")
+                                _fp.write(f"Unit Flag:,{_gc['unit_flag']}\n")
+                            copied.append("cellsize_input.txt (from memory)")
+                        except Exception as exc:
+                            print(f"[Save_Data] cellsize memory write "
+                                  f"failed: {exc}")
                 # v106: adopt the saved folder as the ACTIVE working folder
                 # so subsequent Run Model writes its input.inp + .out results
                 # here, and Visualize Results reads from here — one folder
@@ -1080,6 +1204,10 @@ def run_script(macro_name, extra_args=None):
                     state.work_dir = dst
                 except Exception as exc:
                     print(f"[Save_Data] could not set work_dir: {exc}")
+                cb = getattr(_app_ref, "_refresh_grid_status", None)
+                if callable(cb):
+                    try: cb()
+                    except Exception: pass
                 # User-facing summary
                 same_note = ("\n(destination is the same as the work "
                              "folder — existing files left in place)"
@@ -2067,6 +2195,10 @@ class REMFluorApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("REMFluor-MD Model Input Screen  v3.0")
+        # v110b: session start time — Save_Data's recovery sweep only
+        # picks up sidecar files written during THIS session.
+        import time as _time
+        self._session_t0 = _time.time()
         self.configure(bg=BG_MAIN)
         self.resizable(True, True)
 
@@ -6000,15 +6132,15 @@ class REMFluorApp(tk.Tk):
         tk.Label(tbl, text="Use this\nParameter?", font=FONT_LABEL_BI,
                  bg=BG_MAIN, fg=FG_INPUT
                  ).grid(row=0, column=1, padx=2, pady=2)
-        tk.Label(tbl, text="Lowest\nLikely Value", font=FONT_LABEL_BI,
-                 bg=BG_MAIN, fg=FG_INPUT
-                 ).grid(row=0, column=2, padx=2, pady=2)
+        self._calib_hdr_low = tk.Label(tbl, text="Lowest\nLikely Value",
+                 font=FONT_LABEL_BI, bg=BG_MAIN, fg=FG_INPUT)
+        self._calib_hdr_low.grid(row=0, column=2, padx=2, pady=2)
         tk.Label(tbl, text="Mid-Range\nValue", font=FONT_LABEL_BI,
                  bg=FG_YELLOW, fg=FG_INPUT, padx=4
                  ).grid(row=0, column=3, padx=2, pady=2, sticky="ew")
-        tk.Label(tbl, text="Highest\nLikely Value", font=FONT_LABEL_BI,
-                 bg=BG_MAIN, fg=FG_INPUT
-                 ).grid(row=0, column=4, padx=2, pady=2)
+        self._calib_hdr_high = tk.Label(tbl, text="Highest\nLikely Value",
+                 font=FONT_LABEL_BI, bg=BG_MAIN, fg=FG_INPUT)
+        self._calib_hdr_high.grid(row=0, column=4, padx=2, pady=2)
 
         # Each row: (label, lo, mid, hi, unit, section)
         # v109: Low / Mid / High start BLANK.  Previously these were
@@ -6141,11 +6273,11 @@ class REMFluorApp(tk.Tk):
         # Read by functions/sensitivity.py via self.v_sens_dist.
         self.v_sens_dist = tk.StringVar(value="triangular")
         dist_box = tk.Frame(tbl, bg=BG_MAIN, bd=1, relief="solid",
-                            padx=10, pady=8)
-        dist_box.grid(row=1, column=7, rowspan=8, sticky="nw",
+                            padx=12, pady=8)
+        dist_box.grid(row=1, column=7, rowspan=9, sticky="nw",
                       padx=(24, 4), pady=(0, 4))
         _dist_hdr = tk.Frame(dist_box, bg=BG_MAIN)
-        _dist_hdr.pack(anchor="w", fill="x", pady=(0, 4))
+        _dist_hdr.pack(anchor="w", fill="x", pady=(0, 6))
         tk.Label(_dist_hdr, text="Distribution for Sensitivity Analysis",
                  font=FONT_LABEL_B, bg=BG_MAIN, anchor="w"
                  ).pack(side="left")
@@ -6156,26 +6288,47 @@ class REMFluorApp(tk.Tk):
                   self.v_sens_dist, "triangular",
                   bg=BG_MAIN).pack(anchor="w")
         tk.Label(dist_box,
-                 text="Samples stay strictly between the Lowest and\n"
-                      "Highest Likely Values; the Mid-Range Value is\n"
-                      "the most likely (the peak of the triangle).",
-                 font=FONT_LABEL_SMI, fg="#555555", bg=BG_MAIN,
+                 text="Samples stay between the Lowest and Highest "
+                      "Likely Values; the Mid-Range Value is the most "
+                      "likely (the peak of the triangle).",
+                 font=FONT_LABEL_I, fg="#555555", bg=BG_MAIN,
+                 wraplength=460,
                  justify="left").pack(anchor="w", padx=(24, 0),
-                                      pady=(0, 6))
+                                      pady=(0, 8))
         big_radio(dist_box, "Log-normal",
                   self.v_sens_dist, "lognormal",
                   bg=BG_MAIN).pack(anchor="w")
         tk.Label(dist_box,
-                 text="Skewed: most samples near the low end with a\n"
-                      "tail toward high values — typical for parameters\n"
-                      "spanning orders of magnitude (e.g. hydraulic\n"
-                      "conductivity).  Mid-Range Value = median;\n"
-                      "Lowest / Highest = 5th / 95th percentiles.\n"
-                      "Samples are still limited to the Low-High range.\n"
-                      "All three values must be > 0 (rows that are not\n"
-                      "fall back to Triangular automatically).",
-                 font=FONT_LABEL_SMI, fg="#555555", bg=BG_MAIN,
+                 text="For parameters spanning orders of magnitude "
+                      "(e.g. hydraulic conductivity): ln(parameter "
+                      "value) is sampled from a normal distribution.\n"
+                      "     Lowest column  =  mu — mean of ln(value)\n"
+                      "     Highest column =  sigma — standard\n"
+                      "     deviation of ln(value)\n"
+                      "Enter values in the current unit system.  "
+                      "Applies to every checked row.",
+                 font=FONT_LABEL_I, fg="#555555", bg=BG_MAIN,
+                 wraplength=460,
                  justify="left").pack(anchor="w", padx=(24, 0))
+
+        # v111: relabel the Lowest/Highest column headers when the
+        # Log-normal distribution is selected, so the table itself
+        # tells the user those cells now hold mu / sigma.
+        def _swap_calib_headers(*_):
+            try:
+                if self.v_sens_dist.get() == "lognormal":
+                    self._calib_hdr_low.config(
+                        text="mu\nmean of ln(value)", fg="#7A2E8D")
+                    self._calib_hdr_high.config(
+                        text="sigma\nstd dev of ln(value)", fg="#7A2E8D")
+                else:
+                    self._calib_hdr_low.config(
+                        text="Lowest\nLikely Value", fg=FG_INPUT)
+                    self._calib_hdr_high.config(
+                        text="Highest\nLikely Value", fg=FG_INPUT)
+            except Exception:
+                pass
+        self.v_sens_dist.trace_add("write", _swap_calib_headers)
         # Right-side red note next to the 2 PFAA multiplier rows
         note_pfaa = tk.Label(tbl,
             text="(All 11 source concentrations for PFAA-1\n"

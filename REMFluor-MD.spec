@@ -15,7 +15,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['win32com', 'pythoncom', 'win32api', 'pywin32_system32', 'xlwings', 'matplotlib', 'matplotlib.tests', 'scipy', 'scipy.tests', 'sklearn', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6', 'IPython', 'ipykernel', 'jupyter', 'notebook', 'pytest', 'numpy.tests', 'numpy.distutils', 'numpy.f2py', 'pandas.tests', 'pandas.io.tests', 'openpyxl.tests', 'test', 'tests', 'tornado', 'zmq', 'lxml', 'h5py', 'tables'],
+    excludes=['win32com', 'pythoncom', 'win32api', 'pywin32_system32', 'xlwings', 'matplotlib.tests', 'scipy', 'scipy.tests', 'sklearn', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6', 'IPython', 'ipykernel', 'jupyter', 'notebook', 'pytest', 'numpy.tests', 'numpy.distutils', 'numpy.f2py', 'pandas.tests', 'pandas.io.tests', 'openpyxl.tests', 'test', 'tests', 'tornado', 'zmq', 'lxml', 'h5py', 'tables'],
     noarchive=False,
     optimize=2,
 )

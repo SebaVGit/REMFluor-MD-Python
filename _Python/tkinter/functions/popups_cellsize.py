@@ -136,17 +136,21 @@ def run(app, parent=None):
              ).grid(row=2, column=2, padx=4, sticky="w")
     label_nx.grid(row=2, column=3, padx=4, sticky="w")
 
-    if not is_simple:
-        tk.Label(outer, text="Cell Size Y:", font=FONT_LABEL, bg="#F0F0F0"
-                 ).grid(row=3, column=0, sticky="w", padx=4, pady=8)
-        tk.Entry(outer, textvariable=sv_dy, width=12, font=FONT_VAL
-                 ).grid(row=3, column=1, padx=4, pady=8)
-        tk.Label(outer, text=units_str, font=FONT_LABEL, bg="#F0F0F0"
-                 ).grid(row=3, column=2, padx=4, sticky="w")
-        label_ny.grid(row=3, column=3, padx=4, sticky="w")
-        row_z = 4
-    else:
-        row_z = 3
+    # v112d: the Y row used to be HIDDEN in the Simple version (legacy
+    # Excel parity) with dy silently fixed at 5 m / 16.4 ft.  The
+    # solver fully supports a custom dy, so show it in BOTH versions —
+    # pre-filled with the same default, so untouched behaviour is
+    # identical.
+    if not sv_dy.get():
+        sv_dy.set("16.4" if units_str == "feet" else "5")
+    tk.Label(outer, text="Cell Size Y:", font=FONT_LABEL, bg="#F0F0F0"
+             ).grid(row=3, column=0, sticky="w", padx=4, pady=8)
+    tk.Entry(outer, textvariable=sv_dy, width=12, font=FONT_VAL
+             ).grid(row=3, column=1, padx=4, pady=8)
+    tk.Label(outer, text=units_str, font=FONT_LABEL, bg="#F0F0F0"
+             ).grid(row=3, column=2, padx=4, sticky="w")
+    label_ny.grid(row=3, column=3, padx=4, sticky="w")
+    row_z = 4
 
     tk.Label(outer, text="Cell Size Z:", font=FONT_LABEL, bg="#F0F0F0"
              ).grid(row=row_z, column=0, sticky="w", padx=4, pady=8)
@@ -191,7 +195,7 @@ def run(app, parent=None):
         try:
             dx = float(dx_s)
             default_dy = 16.40 if units_str == "feet" else 5.0
-            dy = float(dy_s) if (not is_simple and dy_s) else default_dy
+            dy = float(dy_s) if dy_s else default_dy
             dz = float(dz_s)
         except ValueError:
             messagebox.showerror("Error",
@@ -199,17 +203,46 @@ def run(app, parent=None):
                 parent=root); return
 
         unit_flag = 1 if units_str == "feet" else 2
-        if os.path.exists(txt_path):
+        # v110b: ALWAYS remember the values on the app object.  Save
+        # Data uses this as the authoritative fallback, so the custom
+        # grid survives even if the sidecar file ends up in the wrong
+        # folder (work_dir changes between popup and save) or cannot
+        # be written at all.
+        try:
+            app._grid_cellsize = {"dx": dx, "dy": dy, "dz": dz,
+                                  "unit_flag": unit_flag}
+        except Exception:
+            pass
+        # v110: re-resolve the destination at SAVE time (work_dir may
+        # have changed since the popup opened) and guard the write —
+        # previously an unwritable folder (e.g. a fresh session whose
+        # working folder is the protected install directory) raised
+        # inside the Tk callback: no file, no error, and the grid
+        # silently vanished from Save Data / Load Data.
+        _wd = get_state().work_dir or os.getcwd()
+        _path = os.path.join(_wd, "cellsize_input.txt")
+        if os.path.exists(_path):
             try:
-                os.chmod(txt_path, 0o666); os.remove(txt_path)
+                os.chmod(_path, 0o666); os.remove(_path)
             except Exception: pass
-        with open(txt_path, "w") as f:
-            f.write("Grid Cell Sizes\n")
-            f.write("Parameter,Value\n")
-            f.write(f"Cell Size X:,{dx}\n")
-            f.write(f"Cell Size Y:,{dy}\n")
-            f.write(f"Cell Size Z:,{dz}\n")
-            f.write(f"Unit Flag:,{unit_flag}\n")
+        try:
+            with open(_path, "w") as f:
+                f.write("Grid Cell Sizes\n")
+                f.write("Parameter,Value\n")
+                f.write(f"Cell Size X:,{dx}\n")
+                f.write(f"Cell Size Y:,{dy}\n")
+                f.write(f"Cell Size Z:,{dz}\n")
+                f.write(f"Unit Flag:,{unit_flag}\n")
+        except Exception as exc:
+            messagebox.showerror(
+                "Grid Cell Sizes",
+                "Could not save the grid sizes to:\n"
+                f"{_path}\n\n{exc}\n\n"
+                "The folder may be read-only.  Use 'Save Data' to "
+                "choose a writable model folder first, then set the "
+                "grid sizes again.",
+                parent=root)
+            return
         # v103: close the popup after a successful save.  Previously
         # there was no destroy() call, leaving the dialog open with no
         # way to confirm + exit cleanly.

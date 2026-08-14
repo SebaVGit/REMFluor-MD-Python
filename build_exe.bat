@@ -140,7 +140,6 @@ pyinstaller ^
   --exclude-module "win32api" ^
   --exclude-module "pywin32_system32" ^
   --exclude-module "xlwings" ^
-  --exclude-module "matplotlib" ^
   --exclude-module "matplotlib.tests" ^
   --exclude-module "scipy" ^
   --exclude-module "scipy.tests" ^

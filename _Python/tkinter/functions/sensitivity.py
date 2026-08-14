@@ -165,6 +165,24 @@ def _lognormal_trunc_ppf(u: np.ndarray, lo: float, mode: float,
     return np.exp(mu + sigma * _norm_ppf(uu))
 
 
+def sample_lognormal_musigma(mus, sigmas, ns: int,
+                             seed: Optional[int] = 9000) -> np.ndarray:
+    """v111: ns × d samples where each parameter is log-normal with the
+    USER-ENTERED parameters: mu = mean of ln X (typed in the Lowest
+    column), sigma = standard deviation of ln X (typed in the Highest
+    column).  X = exp(mu + sigma·Z) via Latin Hypercube.  Median of
+    each parameter = e^mu.  Unbounded above by construction."""
+    mus = np.asarray(mus, dtype=float)
+    sigmas = np.asarray(sigmas, dtype=float)
+    dim = mus.size
+    rng = np.random.default_rng(seed)
+    u = _lhs(ns, dim, rng)
+    out = np.empty_like(u)
+    for j in range(dim):
+        out[:, j] = np.exp(mus[j] + sigmas[j] * _norm_ppf(u[:, j]))
+    return out
+
+
 def make_samples(x_min, x_mid, x_max, ns: int,
                  seed: Optional[int] = 9000,
                  dist: str = "triangular"):
@@ -280,6 +298,14 @@ def _compute_stats(vals: List[float]) -> Optional[Dict]:
     }
 
 
+# v112g: one shared font scale for every figure — bigger, report-ready
+FS_SUPTITLE = 19       # figure-level title
+FS_TITLE = 15          # per-panel title (species + percentile line)
+FS_LABEL = 14          # axis labels
+FS_TICK = 12.5         # tick labels
+FS_LEGEND = 12         # legend entries
+
+
 def _draw_hist_panel(ax1, stats: Dict, title: str, xlabel: str,
                      unit: str = "", fmt: str = ".1f",
                      legend: bool = True, title_size: Optional[int] = None):
@@ -294,9 +320,10 @@ def _draw_hist_panel(ax1, stats: Dict, title: str, xlabel: str,
         v, bins=nbins, color="#1F639E", edgecolor="white",
         alpha=0.85, zorder=2, label=f"Count ({v.size} runs)")
     binw = float(edges[1] - edges[0]) if len(edges) > 1 else 1.0
-    ax1.set_xlabel(xlabel)
-    ax1.set_ylabel("Count of runs", color="#1F639E")
-    ax1.tick_params(axis="y", labelcolor="#1F639E")
+    ax1.set_xlabel(xlabel, fontsize=FS_LABEL)
+    ax1.set_ylabel("Count of runs", color="#1F639E", fontsize=FS_LABEL)
+    ax1.tick_params(axis="y", labelcolor="#1F639E", labelsize=FS_TICK)
+    ax1.tick_params(axis="x", labelsize=FS_TICK)
 
     ax2 = ax1.twinx()
     if v.size >= 2 and np.std(v) > 0:
@@ -304,8 +331,9 @@ def _draw_hist_panel(ax1, stats: Dict, title: str, xlabel: str,
                            v.max() + 2 * np.std(v), 400)
         ax2.plot(grid, _gaussian_kde(v, grid), color="#C43B3B", lw=2.5,
                  zorder=3, label="Probability density")
-    ax2.set_ylabel("Probability density", color="#C43B3B")
-    ax2.tick_params(axis="y", labelcolor="#C43B3B")
+    ax2.set_ylabel("Probability density", color="#C43B3B",
+                   fontsize=FS_LABEL)
+    ax2.tick_params(axis="y", labelcolor="#C43B3B", labelsize=FS_TICK)
     ax1.set_ylim(bottom=0)
     ax2.set_ylim(0, ax1.get_ylim()[1] / (v.size * binw))
 
@@ -319,12 +347,21 @@ def _draw_hist_panel(ax1, stats: Dict, title: str, xlabel: str,
                   f"P5 = {stats['p05']:{fmt}}{u}   "
                   f"P50 = {stats['p50']:{fmt}}{u}   "
                   f"P95 = {stats['p95']:{fmt}}{u}   (n = {stats['n']})",
-                  fontsize=title_size)
+                  fontsize=title_size or FS_TITLE, pad=8)
     if legend:
         h1, l1 = ax1.get_legend_handles_labels()
         h2, l2 = ax2.get_legend_handles_labels()
-        ax1.legend(h1 + h2, l1 + l2, fontsize=8)
+        ax1.legend(h1 + h2, l1 + l2, fontsize=FS_LEGEND)
     ax1.grid(alpha=0.25, zorder=0)
+
+
+# v112e: ONE consistent figure format for every output figure —
+# same panel size, same resolution, same fonts.  A grid figure tiles
+# this exact panel; the single RMSE figure IS this panel.
+FIG_DPI = 300          # 300 dpi → 3300×2100 px per panel:
+                       # publication / report quality
+PANEL_W = 11.0         # inches
+PANEL_H = 7.0
 
 
 def _get_pyplot():
@@ -349,7 +386,7 @@ def write_histogram_png(vals: List[float], out_png: str, title: str,
     plt = _get_pyplot()
     if plt is None:
         return stats
-    fig, ax1 = plt.subplots(figsize=(9, 5.5), dpi=150)
+    fig, ax1 = plt.subplots(figsize=(PANEL_W, PANEL_H), dpi=FIG_DPI)
     _draw_hist_panel(ax1, stats, title, xlabel, unit, fmt)
     fig.tight_layout()
     fig.savefig(out_png)
@@ -359,7 +396,8 @@ def write_histogram_png(vals: List[float], out_png: str, title: str,
 
 def write_plume_grid_png(series: List, out_png: str,
                          target_ngl: float,
-                         time_label: str) -> Dict[str, Dict]:
+                         time_label: str,
+                         unit: str = "m") -> Dict[str, Dict]:
     """ONE combined plume-length figure — a 2-column grid with one
     dual-axis panel per configured species (1 species → single panel,
     2 → side by side, 3-4 → 2×2).  `series` is a list of
@@ -380,19 +418,30 @@ def write_plume_grid_png(series: List, out_png: str,
     n = len(panels)
     ncols = 1 if n == 1 else 2
     nrows = (n + ncols - 1) // ncols
+    # v112e: identical panel geometry to the single-figure output —
+    # a 1-species run produces a figure the same size and style as
+    # rmse_histogram.png; multi-species runs tile that same panel.
     fig, axes = plt.subplots(nrows, ncols,
-                             figsize=(9 * ncols * 0.85, 4.6 * nrows),
-                             dpi=150, squeeze=False)
+                             figsize=(PANEL_W * ncols, PANEL_H * nrows),
+                             dpi=FIG_DPI, squeeze=False)
     for k, (label, st) in enumerate(panels):
         ax = axes[k // ncols][k % ncols]
-        _draw_hist_panel(ax, st, label, "Plume length (m)", unit="m",
-                         legend=(k == 0), title_size=10)
+        _draw_hist_panel(ax, st, label, f"Plume length ({unit})",
+                         unit=unit, legend=(k == 0))
     # Hide any unused grid cell (e.g. 3 species on a 2x2 grid)
     for k in range(n, nrows * ncols):
         axes[k // ncols][k % ncols].axis("off")
+    # v112g: bigger suptitle kept TIGHT against the panels — reserve a
+    # fixed ~0.55 inch band for it (independent of grid height) instead
+    # of a fixed 5% of the figure, which left a large empty gap.
+    fig_h = PANEL_H * nrows
+    top = 1.0 - 0.50 / fig_h              # reserve a fixed 0.5" band
     fig.suptitle(f"Plume length @ {target_ngl:g} ng/L — {time_label}",
-                 fontsize=13)
-    fig.tight_layout(rect=(0, 0, 1, 0.95))
+                 fontsize=FS_SUPTITLE, y=top + 0.42 / fig_h, va="top")
+    fig.tight_layout(rect=(0, 0, 1, top))
+    # tight_layout leaves slack above the panel titles — pull the axes
+    # up so the 2-line panel title (~0.68") sits right under the band.
+    fig.subplots_adjust(top=top - 0.68 / fig_h)
     fig.savefig(out_png)
     plt.close(fig)
     return all_stats
@@ -455,10 +504,24 @@ def run(app, parent=None) -> bool:
         except (ValueError, TypeError, AttributeError, IndexError):
             return None
 
+    # v111: the distribution decides how the Step-4 cells are READ, so
+    # resolve it BEFORE gathering.
+    #   triangular — Lowest / Mid / Highest are natural values.
+    #   lognormal  — Lowest column = mu (mean of ln X), Highest column
+    #                = sigma (std dev of ln X); Mid-Range is the
+    #                model's actual value, shown for reference only.
+    try:
+        dist = str(app.v_sens_dist.get()).strip().lower()
+    except Exception:
+        dist = "triangular"
+    if dist not in ("triangular", "lognormal"):
+        dist = "triangular"
+
     labels: List[str] = []
     x_min: List[float] = []
     x_mid: List[float] = []
     x_max: List[float] = []
+    bad_rows: List[str] = []
     for i, label in enumerate(_CALIB_PARAMS):
         if i >= len(chk):
             break
@@ -468,16 +531,34 @@ def run(app, parent=None) -> bool:
         except Exception:
             continue
         lo_v, hi_v = _fnum(lo_l, i), _fnum(hi_l, i)
-        if lo_v is None or hi_v is None or hi_v <= lo_v:
+        if lo_v is None or hi_v is None:
             continue
+        if dist == "lognormal":
+            # lo_v = mu, hi_v = sigma of ln X
+            if hi_v <= 0:
+                bad_rows.append(label)
+                continue
+        else:
+            if hi_v <= lo_v:
+                continue
         mid_v = _fnum(mid_l, i)
-        if mid_v is None or not (lo_v <= mid_v <= hi_v):
+        if mid_v is None or not (min(lo_v, hi_v) <= mid_v
+                                 <= max(lo_v, hi_v)):
             mid_v = lo_v + 0.5 * (hi_v - lo_v)
         labels.append(label)
         x_min.append(lo_v)
         x_mid.append(mid_v)
         x_max.append(hi_v)
 
+    if bad_rows:
+        messagebox.showerror(
+            "Run Sensitivity Analysis",
+            "Log-normal needs sigma > 0 in the Highest column for:\n\n"
+            + "\n".join(f"  • {r}" for r in bad_rows)
+            + "\n\n(With Log-normal selected, the Lowest column is mu,\n"
+              "the mean of ln(parameter value), and the Highest column\n"
+              "is sigma, the standard deviation of ln(parameter value).)")
+        return False
     if not labels:
         messagebox.showinfo(
             "Run Sensitivity Analysis",
@@ -553,13 +634,6 @@ def run(app, parent=None) -> bool:
         default_runs = str(int(float(str(app.v_sens_runs.get()).strip())))
     except (ValueError, TypeError, AttributeError):
         default_runs = "1000"
-    try:
-        dist = str(app.v_sens_dist.get()).strip().lower()
-    except Exception:
-        dist = "triangular"
-    if dist not in ("triangular", "lognormal"):
-        dist = "triangular"
-
     # v109: target concentration default comes from the calibration
     # panel's "Concentration for plume (ng/L)" box (v_sens_target).
     try:
@@ -583,7 +657,8 @@ def run(app, parent=None) -> bool:
         e.grid(row=r, column=1, sticky="w", padx=(0, 16), pady=6)
         entries.append(e)
     _dist_desc = ("Triangular (peak at Mid-Range)" if dist == "triangular"
-                  else "Log-normal (Mid = median, Low/High = P5/P95)")
+                  else "Log-normal (Lowest col = mu, Highest col = sigma "
+                       "of ln(parameter value))")
     tk.Label(dlg, text=f"{len(labels)} checked parameter(s) will be varied.\n"
                        f"Distribution: {_dist_desc}\n"
                        f"(change it in the calibration panel's "
@@ -715,16 +790,25 @@ def run(app, parent=None) -> bool:
     plume_t = (None if plume_year is None
                else max(0, plume_year - start_year))    # for plume length
 
-    samples, dist_fallback = make_samples(x_min, x_mid, x_max, ns,
-                                          settings["seed"], dist=dist)
-    if dist_fallback:
-        fb_names = [labels[j] for j in dist_fallback]
-        messagebox.showwarning(
-            "Sensitivity Analysis",
-            "Log-normal needs 0 < Lowest < Highest.  These rows fell "
-            "back to the Triangular distribution:\n\n"
-            + "\n".join(f"  • {n}" for n in fb_names),
-            parent=parent or app)
+    # v110c: plume lengths are computed in METERS (solver units) but
+    # reported in the USER'S display unit — CSV columns, figures and
+    # progress preview all follow the §1 feet/meters selection.
+    try:
+        len_unit = app._unit_len()          # 'm' or 'ft'
+    except Exception:
+        len_unit = "m"
+    len_factor = (1.0 / 0.3048) if len_unit == "ft" else 1.0
+
+    if dist == "lognormal":
+        # v111: user-entered parameters — Lowest col = mu, Highest col
+        # = sigma (both of ln X, X in the current display unit).
+        samples = sample_lognormal_musigma(x_min, x_max, ns,
+                                           settings["seed"])
+        dist_fallback = []
+    else:
+        samples, dist_fallback = make_samples(x_min, x_mid, x_max, ns,
+                                              settings["seed"],
+                                              dist="triangular")
 
     # ── Progress popup ───────────────────────────────────────────────
     root = tk.Toplevel(parent or app)
@@ -772,7 +856,8 @@ def run(app, parent=None) -> bool:
             fp.write("REMFluor-MD sensitivity analysis log\n"
                      f"runs={ns}  target={settings['target_ngl']} ng/L "
                      f"({target_ugl} ug/L)  plume_year={plume_year}  "
-                     f"seed={settings['seed']}  distribution={dist}\n"
+                     f"seed={settings['seed']}  distribution={dist}  "
+                     f"plume_length_unit={len_unit}\n"
                      f"parameters={labels}\n"
                      + (f"triangular fallback rows={[labels[j] for j in dist_fallback]}\n\n"
                         if dist_fallback else "\n"))
@@ -878,10 +963,13 @@ def run(app, parent=None) -> bool:
             return row
 
         # Plume length per configured species from REMFluor-MD.out
+        # (computed in metres, converted to the display unit).
         md = os.path.join(work, "REMFluor-MD.out")
         for key, _lbl, col in species:
-            row["plume"][key] = plume_length_from_md(md, target_ugl,
-                                                     col, plume_t)
+            _pl = plume_length_from_md(md, target_ugl, col, plume_t)
+            row["plume"][key] = (_pl * len_factor
+                                 if _pl is not None and math.isfinite(_pl)
+                                 else _pl)
         return row
 
     # ── Worker thread: serial loop over samples ──────────────────────
@@ -915,7 +1003,7 @@ def run(app, parent=None) -> bool:
                            + _fmt_eta(done, ns, holder["t0"]))
                     if pl:
                         msg += (f"\nPFAA-1 plume length so far: "
-                                f"median {np.median(pl):.1f} m "
+                                f"median {np.median(pl):.1f} {len_unit} "
                                 f"(min {min(pl):.1f}, max {max(pl):.1f})")
                     root.after(0, lambda m=msg: detail.config(text=m))
                 except Exception:
@@ -959,7 +1047,8 @@ def run(app, parent=None) -> bool:
             if has_pfaa2:
                 hdr += ([f"obs_PFAA2_w{i+1}" for i in range(7)]
                         + [f"sim_PFAA2_w{i+1}" for i in range(7)])
-            hdr += [f"plume_length_{key}_m" for key, _l, _c in species]
+            hdr += [f"plume_length_{key}_{len_unit}"
+                    for key, _l, _c in species]
             hdr += ["status"]
 
             def _c(v):
@@ -1009,11 +1098,11 @@ def run(app, parent=None) -> bool:
                 series.append((lbl, vals))
             grid_stats = write_plume_grid_png(
                 series, os.path.join(work, "plume_length_histograms.png"),
-                settings["target_ngl"], time_label)
+                settings["target_ngl"], time_label, unit=len_unit)
             for lbl, st in grid_stats.items():
                 png_msgs.append(
                     f"{lbl}: P5={st['p05']:.1f}  P50={st['p50']:.1f}  "
-                    f"P95={st['p95']:.1f} m")
+                    f"P95={st['p95']:.1f} {len_unit}")
             rmse_vals = [r["rmse"] for r in results if r["status"] == "ok"]
             st3 = write_histogram_png(
                 rmse_vals, os.path.join(work, "rmse_histogram.png"),
@@ -1026,6 +1115,17 @@ def run(app, parent=None) -> bool:
                     f"P95={st3['p95']:.3g}")
         except Exception as exc:
             _log(f"PNG write failed: {exc}")
+        # v112d: figures are a core deliverable — if they were skipped
+        # (matplotlib missing from the frozen build), SAY SO in the
+        # completion popup instead of a console print nobody sees.
+        if n_ok > 0 and not os.path.exists(
+                os.path.join(work, "plume_length_histograms.png")):
+            png_msgs.append(
+                "WARNING: figures were NOT created — matplotlib is "
+                "missing from this build.\n"
+                "Install it (pip install matplotlib), remove it from "
+                "the build excludes, and rebuild.")
+            _log("WARNING: PNGs skipped — matplotlib unavailable")
 
         cancelled = stop_flag.get("stop") and n_done < ns
         label.config(text=("Cancelled — partial results saved"

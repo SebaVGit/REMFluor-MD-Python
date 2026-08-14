@@ -238,7 +238,13 @@ class AppState:
 
     def __init__(self):
         self._cells: dict = {}
-        self.work_dir: str = ""   # project directory (where .txt/.inp files live)
+        # v110b: every folder this session has used as work_dir, in
+        # order.  Save_Data searches these (newest first) to recover
+        # sidecar files a popup wrote BEFORE the user picked the save
+        # folder — the "grid saved next to the software, not in the
+        # model folder" bug generalized to every popup sidecar.
+        self.dir_history: list = []
+        self._work_dir: str = ""  # backing store for the property below
         # v100: read-only assets dir.  In dev = work_dir.  In a frozen
         # --onefile build = sys._MEIPASS (the temp unpack location for
         # PyInstaller --add-data files like Example/, docs/, Figures/).
@@ -248,6 +254,23 @@ class AppState:
         # model into another folder — used to find the shipped Example/
         # folder, which lives next to the .exe.
         self.base_dir: str = ""
+
+    @property
+    def work_dir(self) -> str:
+        """Project directory (where .txt/.inp files live)."""
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, value):
+        self._work_dir = value or ""
+        if value:
+            try:
+                v = os.path.abspath(value)
+                if v in self.dir_history:
+                    self.dir_history.remove(v)
+                self.dir_history.append(v)   # newest last
+            except Exception:
+                pass
 
     # ── primitive access ─────────────────────────────────────────────────
 
