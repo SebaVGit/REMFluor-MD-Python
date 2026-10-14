@@ -4,8 +4,9 @@ run_model.py — Run Model pipeline (replaces the broken inline launcher).
 Mirrors the Source_Py/input_variables.py __main__ block:
 
     1.  Build/refresh input.inp via generate_input_file.run(app)
-    2.  Run remfluor_v8a.exe in a shell with stdin/stdout redirection:
-            remfluor_v8a.exe < input.inp > output.out
+    2.  Run remfluor_v9a.exe with stdin/stdout redirection
+        (equivalent of  remfluor_v9a.exe < input.inp > output.out,
+        done in Python via solver_io - no cmd.exe, so UNC paths work)
     3.  Show a tkinter Toplevel with a live "Runtime Clock" while the
         Fortran solver runs.
     4.  When the model finishes, launch the Plotly-Dash dashboard
@@ -26,6 +27,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from . import generate_input_file
+from . import solver_io
 
 
 # Track the most-recently-spawned dashboard subprocess so we can
@@ -833,10 +835,13 @@ def run(app, parent=None, target_dir=None) -> bool:
     except Exception:
         pass
 
-    # Step 2: spawn the Fortran solver with shell redirection --------------
-    cmd = '"{}" < "input.inp" > "output.out"'.format(exe_path)
+    # Step 2: spawn the Fortran solver ---------------------------------------
+    # v113: no cmd.exe (shell=True) - cmd can't use a UNC cwd
+    # (\\server\share\...) and fell back to C:\Windows, so runs failed
+    # when the model lived on the network.  solver_io redirects
+    # input.inp / output.out from Python instead.
     try:
-        process = subprocess.Popen(cmd, shell=True, cwd=project)
+        process = solver_io.start_solver(exe_path, project)
     except Exception as e:
         messagebox.showerror("Run Model",
                              f"Could not start {os.path.basename(exe_path)}:\n{e}")

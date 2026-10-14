@@ -39,6 +39,7 @@ from tkinter import messagebox
 from typing import Callable, Optional, List, Dict, Any
 
 from . import generate_input_file
+from . import solver_io
 from .state import get_state
 from .inp_parser import parse_input_inp
 
@@ -437,9 +438,8 @@ def _objective_for_app(app, work_dir, exe_path) -> Callable:
 
         # Run solver
         try:
-            cmd = '"{}" < "input.inp" > "output.out"'.format(exe_path)
-            cp = subprocess.run(cmd, shell=True, cwd=proj, timeout=600,
-                                capture_output=True)
+            # v113: no cmd.exe - UNC (\\server\...) model folders work.
+            cp = solver_io.run_solver(exe_path, proj, timeout=600)
             if cp.returncode != 0:
                 _log_fail(f"solver exited with code {cp.returncode}; "
                           f"stderr_tail={(cp.stderr or b'').decode(errors='replace')[-200:]}")

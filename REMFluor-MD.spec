@@ -7,8 +7,8 @@ hiddenimports += collect_submodules('dash')
 
 
 a = Analysis(
-    ['_Python\\tkinter\\main.py'],
-    pathex=['_Python\\tkinter'],
+    ['_Python/tkinter/main.py'],
+    pathex=['_Python/tkinter'],
     binaries=[],
     datas=[('Figures', 'Figures'), ('template.inp', '.')],
     hiddenimports=hiddenimports,

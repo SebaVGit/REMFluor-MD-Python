@@ -55,6 +55,7 @@ from typing import Dict, List, Optional
 import numpy as np
 
 from . import generate_input_file
+from . import solver_io
 from .state import get_state, INPUT_TXT_FILES
 from .cali_1 import PARAM_MAP, _set_vd, _read_obs_wells, _rmsle
 
@@ -927,9 +928,8 @@ def run(app, parent=None) -> bool:
             row["status"] = "template_failed"
             return row
         try:
-            cmd = '"{}" < "input.inp" > "output.out"'.format(exe_path)
-            subprocess.run(cmd, shell=True, cwd=work, timeout=600,
-                           capture_output=True)
+            # v113: no cmd.exe - UNC (\\server\...) model folders work.
+            solver_io.run_solver(exe_path, work, timeout=600)
         except Exception as exc:
             _log(f"run {run_id}: solver failed: {exc}")
             row["status"] = "solver_failed"
