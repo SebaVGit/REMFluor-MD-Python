@@ -1609,7 +1609,7 @@ def run_script(macro_name, extra_args=None):
     if macro_name == "Authors":
         messagebox.showinfo(
             "REMFluor-MD Authors",
-            "REMFluor-MD v3.0\n\n"
+            "REMFluor-MD v3.1\n\n"
             "Singh et al. (2025)\n"
             "Falta et al. (2025)\n\n"
             "ESTCP – Environmental Security Technology Certification Program"
@@ -2194,7 +2194,7 @@ def _load_logo_image(target_height: int = 50):
 class REMFluorApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("REMFluor-MD Model Input Screen  v3.0")
+        self.title("REMFluor-MD Model Input Screen  v3.1")
         # v110b: session start time — Save_Data's recovery sweep only
         # picks up sidecar files written during THIS session.
         import time as _time
@@ -3681,7 +3681,7 @@ class REMFluorApp(tk.Tk):
 
         # Title styled per the Excel storyboard reference: "REMFluor-MD"
         # (the product name) is greenish (#DAF2D0); " Model Input Screen"
-        # and "Vers. 3.0" are white.  All three labels use the bold
+        # and "Vers. 3.1" are white.  All three labels use the bold
         # AppTitle / AppVersion fonts.
         title_fr = tk.Frame(bar, bg=BG_HEADER_BAR)
         title_fr.pack(side="left", padx=18)
@@ -3692,7 +3692,7 @@ class REMFluorApp(tk.Tk):
                  font=FONT_TITLE, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left")
 
-        tk.Label(bar, text="Vers. 3.0",
+        tk.Label(bar, text="Vers. 3.1",
                  font=FONT_VERSION, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left", padx=10)
 
