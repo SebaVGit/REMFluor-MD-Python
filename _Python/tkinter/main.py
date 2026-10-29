@@ -1609,7 +1609,7 @@ def run_script(macro_name, extra_args=None):
     if macro_name == "Authors":
         messagebox.showinfo(
             "REMFluor-MD Authors",
-            "REMFluor-MD v3.1\n\n"
+            "REMFluor-MD v3.2\n\n"
             "Singh et al. (2025)\n"
             "Falta et al. (2025)\n\n"
             "ESTCP – Environmental Security Technology Certification Program"
@@ -2194,7 +2194,7 @@ def _load_logo_image(target_height: int = 50):
 class REMFluorApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("REMFluor-MD Model Input Screen  v3.1")
+        self.title("REMFluor-MD Model Input Screen  v3.2")
         # v110b: session start time — Save_Data's recovery sweep only
         # picks up sidecar files written during THIS session.
         import time as _time
@@ -2314,6 +2314,22 @@ class REMFluorApp(tk.Tk):
                              lambda e: self._wheel_dir(e, dx=-1))
         self.canvas.bind_all("<Shift-Button-5>",
                              lambda e: self._wheel_dir(e, dx=+1))
+        # v3.2 FIX: ttk.Combobox's CLASS binding changes the selected
+        # value on every mouse-wheel tick (even when readonly).  Because
+        # class bindings fire BEFORE the bind_all page-scroll above,
+        # scrolling the form with the cursor resting on a dropdown
+        # silently changed it — e.g. §9 "PSB's Freundlich Kf" unit jumped
+        # from (ug/kg)(ug/L)^(-a) to the first list entry
+        # (ng/kg)(ng/L)^(-a) on one wheel-up tick, and the Converted Kf
+        # was recomputed with the wrong factor.  Remove the wheel
+        # bindings from the TCombobox class so the wheel only scrolls
+        # the page; values change only via an explicit click/select.
+        for _seq in ("<MouseWheel>", "<Shift-MouseWheel>",
+                     "<Button-4>", "<Button-5>"):
+            try:
+                self.unbind_class("TCombobox", _seq)
+            except Exception:
+                pass
 
         self._build_ui()
         # Scale the initial window with DPI so it isn't a tiny postage stamp
@@ -3681,7 +3697,7 @@ class REMFluorApp(tk.Tk):
 
         # Title styled per the Excel storyboard reference: "REMFluor-MD"
         # (the product name) is greenish (#DAF2D0); " Model Input Screen"
-        # and "Vers. 3.1" are white.  All three labels use the bold
+        # and "Vers. 3.2" are white.  All three labels use the bold
         # AppTitle / AppVersion fonts.
         title_fr = tk.Frame(bar, bg=BG_HEADER_BAR)
         title_fr.pack(side="left", padx=18)
@@ -3692,7 +3708,7 @@ class REMFluorApp(tk.Tk):
                  font=FONT_TITLE, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left")
 
-        tk.Label(bar, text="Vers. 3.1",
+        tk.Label(bar, text="Vers. 3.2",
                  font=FONT_VERSION, fg=FG_TITLE, bg=BG_HEADER_BAR
                  ).pack(side="left", padx=10)
 
